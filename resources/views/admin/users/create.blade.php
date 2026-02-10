@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Add User') }}
             </h2>
-            <x-admin-tabs active="users" />
+            {{-- <x-admin-tabs active="users" /> --}}
         </div>
     </x-slot>
 

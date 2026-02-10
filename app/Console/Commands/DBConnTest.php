@@ -106,6 +106,11 @@ class DBConnTest extends Command
         
         Artisan::call('cache:clear');
         $this->info("Application cache cleared!");
+
+        if ($this->confirm('Clear view cache as well?')) {
+                Artisan::call('view:clear');
+                $this->info("View cache cleared!");
+            }
         
         $this->info("All caches cleared!");
         $this->line("");

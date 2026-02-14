@@ -1,4 +1,21 @@
-CREATE TABLE majors (
+DROP DATABASE IF EXISTS sekai;
+CREATE DATABASE sekai;
+USE sekai;
+
+DROP TABLE IF EXISTS users;
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(63) NOT NULL,
+    email VARCHAR(127) UNIQUE NOT NULL,
+    identifier VARCHAR(31) UNIQUE NOT NULL,
+    role ENUM('STUDENT', 'TEACHER', 'VP', 'ADMIN') NOT NULL,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+DROP TABLE IF EXISTS majors;
+CREATE TABLE IF NOT EXISTS majors (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(63) UNIQUE NOT NULL,
     deleted TINYINT(1) NOT NULL DEFAULT 0,
@@ -6,11 +23,13 @@ CREATE TABLE majors (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE grades (
+DROP TABLE IF EXISTS grades;
+CREATE TABLE IF NOT EXISTS grades (
     id INT PRIMARY KEY
 );
 
-CREATE TABLE classes (
+DROP TABLE IF EXISTS classes;
+CREATE TABLE IF NOT EXISTS classes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(63) UNIQUE NOT NULL,
     major_id INT NOT NULL,
@@ -23,7 +42,8 @@ CREATE TABLE classes (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE subjects (
+DROP TABLE IF EXISTS subjects;
+CREATE TABLE IF NOT EXISTS subjects (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(63) UNIQUE NOT NULL,
     deleted TINYINT(1) NOT NULL DEFAULT 0,
@@ -31,7 +51,8 @@ CREATE TABLE subjects (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE majors_subjects (
+DROP TABLE IF EXISTS majors_subjects;
+CREATE TABLE IF NOT EXISTS majors_subjects (
     major_id INT NOT NULL,
     subject_id INT NOT NULL,
     PRIMARY KEY (major_id, subject_id),
@@ -42,7 +63,8 @@ CREATE TABLE majors_subjects (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE grades_subjects (
+DROP TABLE IF EXISTS grades_subjects;
+CREATE TABLE IF NOT EXISTS grades_subjects (
     grade_id INT NOT NULL,
     subject_id INT NOT NULL,
     PRIMARY KEY (grade_id, subject_id),
@@ -53,18 +75,33 @@ CREATE TABLE grades_subjects (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE lesson_periods (
+DROP TABLE IF EXISTS academic_semesters;
+CREATE TABLE IF NOT EXISTS academic_semesters (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    weekday TINYINT(6) NOT NULL,
-    time_begin TIME NOT NULL,
-    time_end TIME NOT NULL,
-    UNIQUE(weekday, time_begin, time_end),
+    academic_year CHAR(9) NOT NULL,
+    semester TINYINT NOT NULL,
+    UNIQUE(academic_year, semester),
     deleted TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE activities (
+DROP TABLE IF EXISTS lesson_periods;
+CREATE TABLE IF NOT EXISTS lesson_periods (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    weekday TINYINT(6) NOT NULL,
+    time_begin TIME NOT NULL,
+    time_end TIME NOT NULL,
+    semester_id INT NOT NULL,
+    UNIQUE(weekday, time_begin, time_end, semester_id),
+    CONSTRAINT fk_period_semester_id FOREIGN KEY (semester_id) REFERENCES academic_semesters(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+DROP TABLE IF EXISTS activities;
+CREATE TABLE IF NOT EXISTS activities (
     id INT AUTO_INCREMENT PRIMARY KEY,
     subject_id INT NOT NULL,
     teacher_id INT NOT NULL,
@@ -80,17 +117,28 @@ CREATE TABLE activities (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE activity_reports (
+DROP TABLE IF EXISTS activity_presences;
+CREATE TABLE IF NOT EXISTS activity_presences (
     id INT AUTO_INCREMENT PRIMARY KEY,
     activity_id INT NOT NULL,
     student_id INT NOT NULL,
     activity_date DATE DEFAULT (CURRENT_DATE),
     UNIQUE (activity_id, student_id, activity_date),
     score TINYINT(3) NOT NULL,
+    CONSTRAINT fk_presence_activity_id FOREIGN KEY (activity_id) REFERENCES activities(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_presence_student_id FOREIGN KEY (student_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+DROP TABLE IF EXISTS activity_reports;
+CREATE TABLE IF NOT EXISTS activity_reports (
+    presence_id INT PRIMARY KEY,
+    score TINYINT(3) NOT NULL,
     topic VARCHAR(255) NOT NULL,
     details TEXT NOT NULL,
-    CONSTRAINT fk_report_activity_id FOREIGN KEY (activity_id) REFERENCES activities(id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_report_student_id FOREIGN KEY (student_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_report_presence_id FOREIGN KEY (presence_id) REFERENCES activity_presences(id) ON UPDATE CASCADE ON DELETE RESTRICT,
     deleted TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

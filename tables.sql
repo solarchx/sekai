@@ -25,7 +25,10 @@ CREATE TABLE IF NOT EXISTS majors (
 
 DROP TABLE IF EXISTS grades;
 CREATE TABLE IF NOT EXISTS grades (
-    id INT PRIMARY KEY
+    id INT PRIMARY KEY,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 DROP TABLE IF EXISTS classes;
@@ -117,15 +120,26 @@ CREATE TABLE IF NOT EXISTS activities (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+DROP TABLE IF EXISTS activity_forms;
+CREATE TABLE IF NOT EXISTS activity_forms (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    activity_id INT NOT NULL,
+    activity_date DATE DEFAULT (CURRENT_DATE),
+    UNIQUE (activity_id, activity_date),
+    CONSTRAINT fk_activity_form_activity_id FOREIGN KEY (activity_id) REFERENCES activities(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 DROP TABLE IF EXISTS activity_presences;
 CREATE TABLE IF NOT EXISTS activity_presences (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    activity_id INT NOT NULL,
+    form_id INT NOT NULL,
     student_id INT NOT NULL,
-    activity_date DATE DEFAULT (CURRENT_DATE),
-    UNIQUE (activity_id, student_id, activity_date),
+    UNIQUE (form_id, student_id),
     score TINYINT(3) NOT NULL,
-    CONSTRAINT fk_presence_activity_id FOREIGN KEY (activity_id) REFERENCES activities(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_presence_form_id FOREIGN KEY (form_id) REFERENCES activity_forms(id) ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_presence_student_id FOREIGN KEY (student_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE RESTRICT,
     deleted TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -139,6 +153,68 @@ CREATE TABLE IF NOT EXISTS activity_reports (
     topic VARCHAR(255) NOT NULL,
     details TEXT NOT NULL,
     CONSTRAINT fk_report_presence_id FOREIGN KEY (presence_id) REFERENCES activity_presences(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+DROP TABLE IF EXISTS score_distributions;
+CREATE TABLE IF NOT EXISTS score_distributions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    activity_id INT NOT NULL,
+    CONSTRAINT fk_score_distribution_activity_id FOREIGN KEY (activity_id) REFERENCES activities(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+DROP TABLE IF EXISTS score_distribution_weights;
+CREATE TABLE IF NOT EXISTS score_distribution_weights (
+    distribution_id INT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    weight INT NOT NULL,
+    CONSTRAINT fk_weight_score_distribution_id FOREIGN KEY (distribution_id) REFERENCES score_distributions(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+DROP TABLE IF EXISTS student_scores;
+CREATE TABLE IF NOT EXISTS student_scores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    activity_id INT NOT NULL,
+    student_id INT NOT NULL,
+    UNIQUE (activity_id, student_id),
+    CONSTRAINT fk_student_score_activity_id FOREIGN KEY (activity_id) REFERENCES activities(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_student_score_student_id FOREIGN KEY (student_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+DROP TABLE IF EXISTS student_score_details;
+CREATE TABLE IF NOT EXISTS student_score_details (
+    score_id INT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    score TINYINT NOT NULL CHECK (score BETWEEN 0 AND 100),
+    CONSTRAINT fk_student_score_id FOREIGN KEY (score_id) REFERENCES student_scores(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+DROP TABLE IF EXISTS announcements;
+CREATE TABLE IF NOT EXISTS announcements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    subtitle VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    sender_id INT NOT NULL,
+    scope ENUM('SPECIFIC-CLASS', 'CLASS-TAUGHT', 'SPECIFIC-GRADE', 'TEACHERS', 'PUBLIC') NOT NULL,
+    activity_id INT,
+    grade_id INT,
+    CONSTRAINT fk_announcement_activity_id FOREIGN KEY (activity_id) REFERENCES activities(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_announcement_grade_id FOREIGN KEY (grade_id) REFERENCES grades(id) ON UPDATE CASCADE ON DELETE RESTRICT,
     deleted TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

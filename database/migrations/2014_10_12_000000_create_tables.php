@@ -9,6 +9,19 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Users
+        Schema::create('users', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->rememberToken();
+            $table->enum('role', ['STUDENT', 'TEACHER', 'VP', 'ADMIN']);
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
         // Majors
         Schema::create('majors', function (Blueprint $table) {
             $table->increments('id');
@@ -179,7 +192,7 @@ return new class extends Migration
         Schema::create('activity_forms', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('activity_id');
-            $table->date('activity_date')->default(DB::raw('CURRENT_DATE'));
+            $table->date('activity_date')->default(DB::raw('(CURRENT_DATE)'));
             $table->unique(['activity_id', 'activity_date']);
             $table->softDeletes();
             $table->timestamp('created_at')->useCurrent();
@@ -289,7 +302,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        // rGV: Drop tables in reversed order.
+        // rGV: DROP VEN FROM 10KM HEIGHT
         Schema::dropIfExists('announcements');
         Schema::dropIfExists('student_score_details');
         Schema::dropIfExists('student_scores');
@@ -307,5 +320,6 @@ return new class extends Migration
         Schema::dropIfExists('subjects');
         Schema::dropIfExists('grades');
         Schema::dropIfExists('majors');
+        Schema::dropIfExists('users');
     }
 };

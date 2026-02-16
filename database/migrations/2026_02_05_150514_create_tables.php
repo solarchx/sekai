@@ -57,11 +57,11 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
 
-            $table->foreign('major_id')
+            $table->foreign('major_id', 'fk_class_id_major')
                 ->references('id')->on('majors')
                 ->onUpdate('cascade')->onDelete('restrict');
 
-            $table->foreign('grade_id')
+            $table->foreign('grade_id', 'fk_class_id_grade')
                 ->references('id')->on('grades')
                 ->onUpdate('cascade')->onDelete('restrict');
         });
@@ -75,11 +75,11 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
 
-            $table->foreign('major_id')
+            $table->foreign('major_id', 'fk_majors_subjects_id_major')
                 ->references('id')->on('majors')
                 ->onUpdate('cascade')->onDelete('restrict');
 
-            $table->foreign('subject_id')
+            $table->foreign('subject_id', 'fk_majors_subjects_id_subject')
                 ->references('id')->on('subjects')
                 ->onUpdate('cascade')->onDelete('restrict');
         });
@@ -93,11 +93,11 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
 
-            $table->foreign('grade_id')
+            $table->foreign('grade_id', 'fk_grades_subjects_id_grade')
                 ->references('id')->on('grades')
                 ->onUpdate('cascade')->onDelete('restrict');
 
-            $table->foreign('subject_id')
+            $table->foreign('subject_id', 'fk_grades_subjects_id_subject')
                 ->references('id')->on('subjects')
                 ->onUpdate('cascade')->onDelete('restrict');
         });
@@ -114,7 +114,7 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
 
-            $table->foreign('semester_id')
+            $table->foreign('semester_id', 'fk_period_semester_id')
                 ->references('id')->on('academic_semesters')
                 ->onUpdate('cascade')->onDelete('restrict');
         });
@@ -131,19 +131,19 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
 
-            $table->foreign('subject_id')
+            $table->foreign('subject_id', 'fk_activity_subject_id')
                 ->references('id')->on('subjects')
                 ->onUpdate('cascade')->onDelete('restrict');
 
-            $table->foreign('teacher_id')
+            $table->foreign('teacher_id', 'fk_activity_teacher_id')
                 ->references('id')->on('users')
                 ->onUpdate('cascade')->onDelete('restrict');
 
-            $table->foreign('period_id')
+            $table->foreign('period_id', 'fk_activity_period_id')
                 ->references('id')->on('lesson_periods')
                 ->onUpdate('cascade')->onDelete('restrict');
 
-            $table->foreign('class_id')
+            $table->foreign('class_id', 'fk_activity_class_id')
                 ->references('id')->on('classes')
                 ->onUpdate('cascade')->onDelete('restrict');
         });
@@ -156,7 +156,7 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
 
-            $table->foreign('activity_id')
+            $table->foreign('activity_id', 'fk_score_distribution_activity_id')
                 ->references('id')->on('activities')
                 ->onUpdate('cascade')->onDelete('restrict');
         });
@@ -170,7 +170,7 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
 
-            $table->foreign('distribution_id')
+            $table->foreign('distribution_id', 'fk_weight_score_distribution_id')
                 ->references('id')->on('score_distributions')
                 ->onUpdate('cascade')->onDelete('restrict');
         });
@@ -185,7 +185,7 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
 
-            $table->foreign('activity_id')
+            $table->foreign('activity_id', 'fk_activity_form_activity_id')
                 ->references('id')->on('activities')
                 ->onUpdate('cascade')->onDelete('restrict');
         });
@@ -201,11 +201,11 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
 
-            $table->foreign('form_id')
+            $table->foreign('form_id', 'fk_presence_form_id')
                 ->references('id')->on('activity_forms')
                 ->onUpdate('cascade')->onDelete('restrict');
 
-            $table->foreign('student_id')
+            $table->foreign('student_id', 'fk_presence_student_id')
                 ->references('id')->on('users')
                 ->onUpdate('cascade')->onDelete('restrict');
         });
@@ -220,7 +220,7 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
 
-            $table->foreign('presence_id')
+            $table->foreign('presence_id', 'fk_report_presence_id')
                 ->references('id')->on('activity_presences')
                 ->onUpdate('cascade')->onDelete('restrict');
         });
@@ -235,11 +235,11 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
 
-            $table->foreign('activity_id')
+            $table->foreign('activity_id', 'fk_student_score_activity_id')
                 ->references('id')->on('activities')
                 ->onUpdate('cascade')->onDelete('restrict');
 
-            $table->foreign('student_id')
+            $table->foreign('student_id', 'fk_student_score_student_id')
                 ->references('id')->on('users')
                 ->onUpdate('cascade')->onDelete('restrict');
         });
@@ -253,7 +253,7 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
 
-            $table->foreign('score_id')
+            $table->foreign('score_id', 'fk_student_score_id')
                 ->references('id')->on('student_scores')
                 ->onUpdate('cascade')->onDelete('restrict');
         });
@@ -273,15 +273,15 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
 
-            $table->foreign('sender_id')
+            $table->foreign('sender_id', 'fk_announcement_sender_id')
                 ->references('id')->on('users')
                 ->onUpdate('cascade')->onDelete('restrict');
 
-            $table->foreign('activity_id')
+            $table->foreign('activity_id', 'fk_announcement_activity_id')
                 ->references('id')->on('activities')
                 ->onUpdate('cascade')->onDelete('restrict');
 
-            $table->foreign('grade_id')
+            $table->foreign('grade_id', 'fk_announcement_grade_id')
                 ->references('id')->on('grades')
                 ->onUpdate('cascade')->onDelete('restrict');
         });
@@ -289,7 +289,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        // rGV: Drop all tables in reversed order.
+        // rGV: Drop tables in reversed order.
         Schema::dropIfExists('announcements');
         Schema::dropIfExists('student_score_details');
         Schema::dropIfExists('student_scores');

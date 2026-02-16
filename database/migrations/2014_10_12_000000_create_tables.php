@@ -14,12 +14,13 @@ return new class extends Migration
             $table->increments('id');
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('identifier')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
             $table->enum('role', ['STUDENT', 'TEACHER', 'VP', 'ADMIN']);
-            $table->timestamps();
             $table->softDeletes();
+            $table->timestamps();
         });
 
         // Majors
@@ -27,16 +28,14 @@ return new class extends Migration
             $table->increments('id');
             $table->string('name', 63)->unique();
             $table->softDeletes();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
         });
 
         // Grades
         Schema::create('grades', function (Blueprint $table) {
             $table->unsignedInteger('id')->primary();
             $table->softDeletes();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
         });
 
         // Subjects
@@ -44,8 +43,7 @@ return new class extends Migration
             $table->increments('id');
             $table->string('name', 63)->unique();
             $table->softDeletes();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
         });
 
         // Academic Semesters
@@ -55,8 +53,7 @@ return new class extends Migration
             $table->tinyInteger('semester');
             $table->unique(['academic_year', 'semester']);
             $table->softDeletes();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
         });
 
         // Classes
@@ -67,8 +64,7 @@ return new class extends Migration
             $table->unsignedInteger('grade_id');
             $table->integer('capacity')->default(50);
             $table->softDeletes();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
 
             $table->foreign('major_id', 'fk_class_id_major')
                 ->references('id')->on('majors')
@@ -85,8 +81,7 @@ return new class extends Migration
             $table->unsignedInteger('subject_id');
             $table->primary(['major_id', 'subject_id']);
             $table->softDeletes();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
 
             $table->foreign('major_id', 'fk_majors_subjects_id_major')
                 ->references('id')->on('majors')
@@ -103,8 +98,7 @@ return new class extends Migration
             $table->unsignedInteger('subject_id');
             $table->primary(['grade_id', 'subject_id']);
             $table->softDeletes();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
 
             $table->foreign('grade_id', 'fk_grades_subjects_id_grade')
                 ->references('id')->on('grades')
@@ -124,8 +118,7 @@ return new class extends Migration
             $table->unsignedInteger('semester_id');
             $table->unique(['weekday', 'time_begin', 'time_end', 'semester_id'], 'unique_period_per_semester');
             $table->softDeletes();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
 
             $table->foreign('semester_id', 'fk_period_semester_id')
                 ->references('id')->on('academic_semesters')
@@ -141,8 +134,7 @@ return new class extends Migration
             $table->unsignedInteger('class_id');
             $table->unique(['subject_id', 'teacher_id', 'period_id', 'class_id'], 'unique_activity');
             $table->softDeletes();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
 
             $table->foreign('subject_id', 'fk_activity_subject_id')
                 ->references('id')->on('subjects')
@@ -166,8 +158,7 @@ return new class extends Migration
             $table->increments('id');
             $table->unsignedInteger('activity_id');
             $table->softDeletes();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
 
             $table->foreign('activity_id', 'fk_score_distribution_activity_id')
                 ->references('id')->on('activities')
@@ -180,8 +171,7 @@ return new class extends Migration
             $table->string('name', 255);
             $table->integer('weight');
             $table->softDeletes();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
 
             $table->foreign('distribution_id', 'fk_weight_score_distribution_id')
                 ->references('id')->on('score_distributions')
@@ -195,8 +185,7 @@ return new class extends Migration
             $table->date('activity_date')->default(DB::raw('(CURRENT_DATE)'));
             $table->unique(['activity_id', 'activity_date']);
             $table->softDeletes();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
 
             $table->foreign('activity_id', 'fk_activity_form_activity_id')
                 ->references('id')->on('activities')
@@ -211,8 +200,7 @@ return new class extends Migration
             $table->tinyInteger('score');
             $table->unique(['form_id', 'student_id']);
             $table->softDeletes();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
 
             $table->foreign('form_id', 'fk_presence_form_id')
                 ->references('id')->on('activity_forms')
@@ -230,8 +218,7 @@ return new class extends Migration
             $table->string('topic', 255);
             $table->text('details');
             $table->softDeletes();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
 
             $table->foreign('presence_id', 'fk_report_presence_id')
                 ->references('id')->on('activity_presences')
@@ -245,8 +232,7 @@ return new class extends Migration
             $table->unsignedInteger('student_id');
             $table->unique(['activity_id', 'student_id']);
             $table->softDeletes();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
 
             $table->foreign('activity_id', 'fk_student_score_activity_id')
                 ->references('id')->on('activities')
@@ -263,8 +249,7 @@ return new class extends Migration
             $table->string('name', 255);
             $table->tinyInteger('score');
             $table->softDeletes();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
 
             $table->foreign('score_id', 'fk_student_score_id')
                 ->references('id')->on('student_scores')
@@ -283,8 +268,7 @@ return new class extends Migration
             $table->unsignedInteger('activity_id')->nullable();
             $table->unsignedInteger('grade_id')->nullable();
             $table->softDeletes();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
 
             $table->foreign('sender_id', 'fk_announcement_sender_id')
                 ->references('id')->on('users')

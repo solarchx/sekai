@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -31,5 +35,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('majors', \App\Http\Controllers\MajorController::class);
     Route::resource('classes', \App\Http\Controllers\SchoolClassController::class);
 });
+Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
 
 require __DIR__.'/auth.php';

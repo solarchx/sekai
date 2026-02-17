@@ -15,11 +15,11 @@ class DashboardController extends Controller
         $user = auth()->user();
 
         return match ($user->role) {
-            'ADMIN' => view('dashboards.admin-dashboard'),
-            'VP' => view('dashboards.vp-dashboard'),
-            'TEACHER' => view('dashboards.teacher-dashboard'),
-            'STUDENT' => view('dashboards.student-dashboard'),
-            default => view('dashboards.student-dashboard'),
+            'ADMIN' => view('admin.admin-dashboard'),
+            'VP' => view('vp.vp-dashboard'),
+            'TEACHER' => view('teacher.teacher-dashboard'),
+            'STUDENT' => view('student.student-dashboard'),
+            default => view('student.student-dashboard'),
         };
     }
 }

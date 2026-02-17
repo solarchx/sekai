@@ -54,11 +54,11 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <a href="{{ route('users.edit', $user) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                        <button onclick="window.location.href='{{ route('users.edit', $user) }}'" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors bi bi-pencil-square"></button>
                                         <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure?')">Delete</button>
+                                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors bi bi-trash" onclick="return confirm('Are you sure?')"></button>
                                         </form>
                                     </td>
                                 </tr>

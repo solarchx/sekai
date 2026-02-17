@@ -40,11 +40,11 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{{ $major->id }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $major->name }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <a href="{{ route('majors.edit', $major) }}" class="text-green-600 hover:text-green-900 mr-3">Edit</a>
+                                        <button onclick="window.location.href='{{ route('majors.edit', $major) }}'" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors bi bi-pencil-square"></button>
                                         <form action="{{ route('majors.destroy', $major) }}" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure?')">Delete</button>
+                                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors bi bi-trash" onclick="return confirm('Are you sure?')"></button>
                                         </form>
                                     </td>
                                 </tr>

@@ -155,26 +155,15 @@ return new class extends Migration
 
         // Score Distributions
         Schema::create('score_distributions', function (Blueprint $table) {
-            $table->increments('id');
             $table->unsignedInteger('activity_id');
+            $table->string('name', 255);
+            $table->unsignedInteger('weight')->default(1);
+            $table->primary(['activity_id', 'name']);
             $table->softDeletes();
             $table->timestamps();
 
             $table->foreign('activity_id', 'fk_score_distribution_activity_id')
                 ->references('id')->on('activities')
-                ->onUpdate('cascade')->onDelete('restrict');
-        });
-
-        // Score Distribution Weights
-        Schema::create('score_distribution_weights', function (Blueprint $table) {
-            $table->unsignedInteger('distribution_id')->primary();
-            $table->string('name', 255);
-            $table->integer('weight');
-            $table->softDeletes();
-            $table->timestamps();
-
-            $table->foreign('distribution_id', 'fk_weight_score_distribution_id')
-                ->references('id')->on('score_distributions')
                 ->onUpdate('cascade')->onDelete('restrict');
         });
 
@@ -227,10 +216,11 @@ return new class extends Migration
 
         // Student Scores
         Schema::create('student_scores', function (Blueprint $table) {
-            $table->increments('id');
             $table->unsignedInteger('activity_id');
             $table->unsignedInteger('student_id');
-            $table->unique(['activity_id', 'student_id']);
+            $table->string('name', 255);
+            $table->unsignedTinyInteger('score')->default(0);
+            $table->primary(['activity_id', 'student_id', 'name']);
             $table->softDeletes();
             $table->timestamps();
 
@@ -242,20 +232,7 @@ return new class extends Migration
                 ->references('id')->on('users')
                 ->onUpdate('cascade')->onDelete('restrict');
         });
-
-        // Student Score Details
-        Schema::create('student_score_details', function (Blueprint $table) {
-            $table->unsignedInteger('score_id')->primary();
-            $table->string('name', 255);
-            $table->tinyInteger('score');
-            $table->softDeletes();
-            $table->timestamps();
-
-            $table->foreign('score_id', 'fk_student_score_id')
-                ->references('id')->on('student_scores')
-                ->onUpdate('cascade')->onDelete('restrict');
-        });
-        DB::statement('ALTER TABLE student_score_details ADD CONSTRAINT chk_student_score_details_score CHECK (score BETWEEN 0 AND 100)');
+        DB::statement('ALTER TABLE student_scores ADD CONSTRAINT chk_student_scores_score CHECK (score BETWEEN 0 AND 100)');
 
         // Announcements
         Schema::create('announcements', function (Blueprint $table) {
@@ -288,12 +265,10 @@ return new class extends Migration
     {
         // rGV: DROP VEN FROM 10KM HEIGHT
         Schema::dropIfExists('announcements');
-        Schema::dropIfExists('student_score_details');
         Schema::dropIfExists('student_scores');
         Schema::dropIfExists('activity_reports');
         Schema::dropIfExists('activity_presences');
         Schema::dropIfExists('activity_forms');
-        Schema::dropIfExists('score_distribution_weights');
         Schema::dropIfExists('score_distributions');
         Schema::dropIfExists('activities');
         Schema::dropIfExists('lesson_periods');

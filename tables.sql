@@ -160,20 +160,11 @@ CREATE TABLE IF NOT EXISTS activity_reports (
 
 DROP TABLE IF EXISTS score_distributions;
 CREATE TABLE IF NOT EXISTS score_distributions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    activity_id INT NOT NULL,
+    activity_id INT,
+    name VARCHAR(255),
+    weight INT NOT NULL DEFAULT 1,
+    PRIMARY KEY (activity_id, name),
     CONSTRAINT fk_score_distribution_activity_id FOREIGN KEY (activity_id) REFERENCES activities(id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    deleted TINYINT(1) NOT NULL DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
-DROP TABLE IF EXISTS score_distribution_weights;
-CREATE TABLE IF NOT EXISTS score_distribution_weights (
-    distribution_id INT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    weight INT NOT NULL,
-    CONSTRAINT fk_weight_score_distribution_id FOREIGN KEY (distribution_id) REFERENCES score_distributions(id) ON UPDATE CASCADE ON DELETE RESTRICT,
     deleted TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -181,23 +172,13 @@ CREATE TABLE IF NOT EXISTS score_distribution_weights (
 
 DROP TABLE IF EXISTS student_scores;
 CREATE TABLE IF NOT EXISTS student_scores (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    activity_id INT NOT NULL,
-    student_id INT NOT NULL,
-    UNIQUE (activity_id, student_id),
+    activity_id INT,
+    student_id INT,
+    name VARCHAR(255),
+    score TINYINT NOT NULL DEFAULT 0 CHECK (score BETWEEN 0 AND 100),
+    PRIMARY KEY (activity_id, student_id, name),
     CONSTRAINT fk_student_score_activity_id FOREIGN KEY (activity_id) REFERENCES activities(id) ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_student_score_student_id FOREIGN KEY (student_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    deleted TINYINT(1) NOT NULL DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
-DROP TABLE IF EXISTS student_score_details;
-CREATE TABLE IF NOT EXISTS student_score_details (
-    score_id INT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    score TINYINT NOT NULL CHECK (score BETWEEN 0 AND 100),
-    CONSTRAINT fk_student_score_id FOREIGN KEY (score_id) REFERENCES student_scores(id) ON UPDATE CASCADE ON DELETE RESTRICT,
     deleted TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

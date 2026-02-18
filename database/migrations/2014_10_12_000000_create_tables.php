@@ -9,20 +9,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Users
-        Schema::create('users', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('identifier')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
-            $table->enum('role', ['STUDENT', 'TEACHER', 'VP', 'ADMIN']);
-            $table->softDeletes();
-            $table->timestamps();
-        });
-
         // Majors
         Schema::create('majors', function (Blueprint $table) {
             $table->increments('id');
@@ -72,6 +58,25 @@ return new class extends Migration
 
             $table->foreign('grade_id', 'fk_class_id_grade')
                 ->references('id')->on('grades')
+                ->onUpdate('cascade')->onDelete('restrict');
+        });
+
+        // Users
+        Schema::create('users', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->string('identifier')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->rememberToken();
+            $table->enum('role', ['STUDENT', 'TEACHER', 'VP', 'ADMIN']);
+            $table->unsignedInteger('class_id')->nullable();
+            $table->softDeletes();
+            $table->timestamps();
+
+            $table->foreign('class_id', 'fk_student_class')
+                ->references('id')->on('classes')
                 ->onUpdate('cascade')->onDelete('restrict');
         });
 
@@ -150,6 +155,23 @@ return new class extends Migration
 
             $table->foreign('class_id', 'fk_activity_class_id')
                 ->references('id')->on('classes')
+                ->onUpdate('cascade')->onDelete('restrict');
+        });
+
+        // Activity Students (Pivot)
+        Schema::create('activity_students', function (Blueprint $table) {
+            $table->unsignedInteger('student_id');
+            $table->unsignedInteger('activity_id');
+            $table->primary(['student_id', 'activity_id']);
+            $table->softDeletes();
+            $table->timestamps();
+
+            $table->foreign('student_id', 'fk_activity_students_student_id')
+                ->references('id')->on('users')
+                ->onUpdate('cascade')->onDelete('restrict');
+
+            $table->foreign('activity_id', 'fk_activity_students_class_id')
+                ->references('id')->on('activities')
                 ->onUpdate('cascade')->onDelete('restrict');
         });
 
@@ -270,15 +292,16 @@ return new class extends Migration
         Schema::dropIfExists('activity_presences');
         Schema::dropIfExists('activity_forms');
         Schema::dropIfExists('score_distributions');
+        Schema::dropIfExists('activity_students');
         Schema::dropIfExists('activities');
         Schema::dropIfExists('lesson_periods');
         Schema::dropIfExists('academic_semesters');
         Schema::dropIfExists('grades_subjects');
         Schema::dropIfExists('majors_subjects');
+        Schema::dropIfExists('users');
         Schema::dropIfExists('classes');
         Schema::dropIfExists('subjects');
         Schema::dropIfExists('grades');
         Schema::dropIfExists('majors');
-        Schema::dropIfExists('users');
     }
 };

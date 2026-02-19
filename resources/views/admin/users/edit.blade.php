@@ -49,18 +49,21 @@
                                 </select>
                                 <x-input-error :messages="$errors->get('role')" class="mt-2" />
                             </div>
-                            <div>
-                                <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
-                                <input type="password" name="password" id="password" required 
-                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
-                                <x-input-error :messages="$errors->get('password')" class="mt-2" />
-                            </div>
-                            <div>
-                                <label for="password_confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label>
-                                <input type="password" name="password_confirmation" id="password_confirmation" required 
-                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
-                                <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-                            </div>
+                            @if ($user->role == 'STUDENT' || $user->role == 'TEACHER')
+                                <div>
+                                    <label for="class_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Class</label>
+                                    <select name="class_id" id="class_id" 
+                                            class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
+                                        <option value="">Select Class</option>
+                                        @foreach ($classes as $class)
+                                            <option value="{{ $class->id }}" {{ old('class_id', $user->class_id) == $class->id ? 'selected' : '' }}>
+                                                {{ $class->name }} - ({{ $class->grade->id }} {{ $class->major->name }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <x-input-error :messages="$errors->get('class_id')" class="mt-2" />
+                                </div>
+                            @endif
                         </div>
                         <div class="flex items-center justify-end mt-6">
                             <a href="{{ route('users.index') }}" class="mr-4 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">Cancel</a>

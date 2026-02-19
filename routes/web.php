@@ -2,14 +2,9 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\StudentController;
-use App\Models\User;
-use App\Models\SchoolClass;
-use App\Models\Major;
-use App\Models\Grade;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\MajorController;
+use App\Http\Controllers\SchoolClassController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,7 +22,7 @@ Route::get('/', function () {
     return view('auth/login');
 });
 
-Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -36,14 +31,14 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::resource('users', \App\Http\Controllers\UserController::class);
-    Route::resource('majors', \App\Http\Controllers\MajorController::class);
-    Route::resource('classes', \App\Http\Controllers\SchoolClassController::class);
+    Route::resource('users', UserController::class);
+    Route::resource('majors', MajorController::class);
+    Route::resource('classes', SchoolClassController::class);
 });
 
-Route::get('/my-class', [StudentController::class, 'show'])
+Route::get('/my-class', [UserController::class, 'showClasses'])
     ->middleware('auth')
-    ->name('student.classes.show');
+    ->name('class.show');
 
 Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
 Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');

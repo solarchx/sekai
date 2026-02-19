@@ -38,9 +38,9 @@
                     </div>
                     @endif
                     {{-- Student Specific Links --}}
-                    @if (auth()->user()->role === 'STUDENT')
+                    @if (auth()->user()->role === 'STUDENT' || auth()->user()->role === 'TEACHER')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('student.classes.show', auth()->user()->class_id)" :active="request()->routeIs('student.classes.show')" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 active:text-gray-900 dark:active:text-white">
+                        <x-nav-link :href="route('class.show')" :active="request()->routeIs('student.classes.show')" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 active:text-gray-900 dark:active:text-white">
                             {{ __('My Class') }}
                         </x-nav-link>
                     </div>

@@ -23,7 +23,7 @@
                                 <div class="ml-4">
                                     <h5 class="text-lg font-medium text-gray-900 dark:text-gray-100">My Classes</h5>
                                     <p class="text-gray-600 dark:text-gray-400">Manage your assigned classes</p>
-                                    <a href="#" class="mt-2 inline-block text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View Classes →</a>
+                                    <a href="{{ route('class.show') }}" class="mt-2 inline-block text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View Classes →</a>
                                 </div>
                             </div>
                         </div>

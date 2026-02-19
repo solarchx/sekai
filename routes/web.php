@@ -2,6 +2,11 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\StudentController;
+use App\Models\User;
+use App\Models\SchoolClass;
+use App\Models\Major;
+use App\Models\Grade;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +40,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('majors', \App\Http\Controllers\MajorController::class);
     Route::resource('classes', \App\Http\Controllers\SchoolClassController::class);
 });
+
+Route::get('/my-class', [StudentController::class, 'show'])
+    ->middleware('auth')
+    ->name('student.classes.show');
+
 Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
 Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
 

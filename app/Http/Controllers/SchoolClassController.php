@@ -48,11 +48,11 @@ class SchoolClassController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+        public function show(SchoolClass $class)
     {
-        //
+        $class->load('name', 'major', 'grade');
+        return view('student.classes.show', compact('class'));
     }
-
     /**
      * Show the form for editing the specified resource.
      */

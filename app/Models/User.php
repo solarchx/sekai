@@ -2,52 +2,67 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
+    protected $table = 'users';
+
     protected $fillable = [
         'name',
         'email',
         'identifier',
-        'role',
-        'deleted',
         'password',
+        'role',
         'class_id',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'role' => 'string',
     ];
 
     public function class()
     {
-        return $this->belongsTo(SchoolClass::class);
+        return $this->belongsTo(SchoolClass::class, 'class_id');
+    }
+
+    public function taughtActivities()
+    {
+        return $this->hasMany(Activity::class, 'teacher_id');
+    }
+
+    public function activitiesAsStudent()
+    {
+        return $this->belongsToMany(Activity::class, 'activity_students', 'student_id', 'activity_id')
+                    ->withTimestamps()
+                    ->withPivot('deleted_at');
+    }
+
+    public function sentAnnouncements()
+    {
+        return $this->hasMany(Announcement::class, 'sender_id');
+    }
+
+    public function activityPresences()
+    {
+        return $this->hasMany(ActivityPresence::class, 'student_id');
+    }
+
+    public function studentScores()
+    {
+        return $this->hasMany(StudentScore::class, 'student_id');
     }
 }

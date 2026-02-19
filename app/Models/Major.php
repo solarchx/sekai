@@ -4,12 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Major extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'deleted'];
+    protected $table = 'majors';
+
+    protected $fillable = [
+        'name',
+    ];
 
     public function classes()
     {
@@ -18,6 +23,8 @@ class Major extends Model
 
     public function subjects()
     {
-        return $this->belongsToMany(Subject::class, 'majors_subjects');
+        return $this->belongsToMany(Subject::class, 'majors_subjects')
+                    ->withTimestamps()
+                    ->withPivot('deleted_at');
     }
 }

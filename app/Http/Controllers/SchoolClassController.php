@@ -63,15 +63,22 @@ class SchoolClassController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             $errorMessage = "You are not assigned to any class.";
         }
+        $homeroomTeacher = null;
+        try {
+            $homeroomTeacher = User::where('class_id', $class->id)->where('role', '!=', 'STUDENT')->firstOrFail();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            $homeroomTeacher = null;
+        }
 
         $lessonTaught = Auth::user()->taughtActivities;
-        return view('class.show', compact('class', 'lessonTaught', 'errorMessage'));
+        return view('class.show', compact('class', 'lessonTaught', 'errorMessage', 'homeroomTeacher'));
     }
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(SchoolClass $class)
     {
+        $users = User::where('role', '!=', 'STUDENT')->get();
         $majors = Major::all();
         $grades = Grade::all();
         $homeroomTeacher = null;
@@ -80,7 +87,7 @@ class SchoolClassController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             $homeroomTeacher = null;
         }        
-        return view('admin.classes.edit', compact('class', 'majors', 'grades'));
+        return view('admin.classes.edit', compact('class', 'majors', 'grades', 'users', 'homeroomTeacher'));
     }
 
     /**

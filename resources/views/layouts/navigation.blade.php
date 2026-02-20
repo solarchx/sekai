@@ -18,6 +18,11 @@
                     <x-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.edit')" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 active:text-gray-900 dark:active:text-white">
                         {{ __('Profile') }}
                     </x-nav-link>
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link :href="route('class.show')" :active="request()->routeIs('student.classes.show')" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 active:text-gray-900 dark:active:text-white">
+                            {{ __('My Class') }}
+                        </x-nav-link>
+                    </div>
                 </div>
                     {{-- Admin Specific Links --}}
                     @if(auth()->user()->role === 'ADMIN')
@@ -34,14 +39,6 @@
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link :href="route('classes.index')" :active="request()->routeIs('classes.*')" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 active:text-gray-900 dark:active:text-white">
                             {{ __('Classes') }}
-                        </x-nav-link>
-                    </div>
-                    @endif
-                    {{-- Student Specific Links --}}
-                    @if (auth()->user()->role === 'STUDENT' || auth()->user()->role === 'TEACHER')
-                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('class.show')" :active="request()->routeIs('student.classes.show')" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 active:text-gray-900 dark:active:text-white">
-                            {{ __('My Class') }}
                         </x-nav-link>
                     </div>
                     @endif

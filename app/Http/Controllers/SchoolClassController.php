@@ -38,6 +38,7 @@ class SchoolClassController extends Controller
             'major_id' => 'required|exists:majors,id',
             'grade_id' => 'required',
             'capacity' => 'required|integer|min:1|max:100',
+            'teacher_id' => 'nullable|exists:users,id',
         ]);
 
         SchoolClass::create($validated);
@@ -50,7 +51,7 @@ class SchoolClassController extends Controller
      */
         public function show(SchoolClass $class)
     {
-        $class->load('name', 'major', 'grade');
+        $class->load('name', 'major', 'grade', 'teacher');
         return view('student.classes.show', compact('class'));
     }
     /**
@@ -71,8 +72,9 @@ class SchoolClassController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'major_id' => 'required|exists:majors,id',
-            'grade_id' => 'required|',
+            'grade_id' => 'required|exists:grades,id',
             'capacity' => 'required|integer|min:1|max:100',
+            'teacher_id' => 'nullable|exists:users,id',
         ]);
 
         $class->update($validated);

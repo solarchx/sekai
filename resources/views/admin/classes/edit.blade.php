@@ -111,7 +111,7 @@
                             {{-- this shit --}}
                                 <option value="">Select a teacher</option>
                                 @foreach($users as $user)
-                                    <option value="{{ $user->id }}" @selected(old('class_id', $user->class_id) == $user->id)>
+                                    <option value="{{ $user->id }}" @selected(old('class_id', $user->class_id) == $homeroomTeacher->class_id)>
                                         {{ $user->name }}
                                     </option>
                                 @endforeach

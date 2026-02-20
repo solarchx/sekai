@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\SchoolClass;
 
 class UserController extends Controller
@@ -100,22 +99,5 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $user->delete();
         return redirect()->route('users.index');
-    }
-
-    public function showClasses(SchoolClass $class)
-    {
-        // old implementation, passing class id instead of user id
-        //  $class->load('major', 'grade');
-        //  return view('student.classes.show', compact('class'));
-        $errorMessage = null;
-        $class = null;
-        try {
-            $class = Auth::user()->class()->with(['major', 'grade'])->firstOrFail();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            $errorMessage = "You are not assigned to any class.";
-        }
-
-        $lessonTaught = Auth::user()->taughtActivities;
-        return view('class.show', compact('class', 'lessonTaught', 'errorMessage'));
     }
 }

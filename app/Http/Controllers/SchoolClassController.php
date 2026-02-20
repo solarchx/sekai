@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\SchoolClass;
 use App\Models\Major;
 use App\Models\Grade;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SchoolClassController extends Controller
 {
@@ -49,10 +51,21 @@ class SchoolClassController extends Controller
     /**
      * Display the specified resource.
      */
-        public function show(SchoolClass $class)
+    public function show(SchoolClass $class)
     {
-        $class->load('name', 'major', 'grade', 'teacher');
-        return view('student.classes.show', compact('class'));
+        // old implementation, passing class id instead of user id
+        //  $class->load('major', 'grade');
+        //  return view('student.classes.show', compact('class'));
+        $errorMessage = null;
+        $class = null;
+        try {
+            $class = Auth::user()->class()->with(['major', 'grade'])->firstOrFail();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            $errorMessage = "You are not assigned to any class.";
+        }
+
+        $lessonTaught = Auth::user()->taughtActivities;
+        return view('class.show', compact('class', 'lessonTaught', 'errorMessage'));
     }
     /**
      * Show the form for editing the specified resource.
@@ -61,6 +74,12 @@ class SchoolClassController extends Controller
     {
         $majors = Major::all();
         $grades = Grade::all();
+        $homeroomTeacher = null;
+        try {
+            $homeroomTeacher = User::where('class_id', $class->id)->where('role', '!=', 'STUDENT')->firstOrFail();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            $homeroomTeacher = null;
+        }        
         return view('admin.classes.edit', compact('class', 'majors', 'grades'));
     }
 
@@ -74,10 +93,18 @@ class SchoolClassController extends Controller
             'major_id' => 'required|exists:majors,id',
             'grade_id' => 'required|exists:grades,id',
             'capacity' => 'required|integer|min:1|max:100',
-            'teacher_id' => 'nullable|exists:users,id',
         ]);
 
         $class->update($validated);
+
+        $validated = $request->validate([
+            'teacher_id' => 'nullable|exists:users,id',
+        ]);
+        
+        if (isset($validated['teacher_id'])) {
+            User::where('class_id', $class->id)->where('role', '!=', 'STUDENT')->update(['class_id' => null]);
+            User::where('id', $validated['teacher_id'])->update(['class_id' => $class->id]);
+        }
 
         return redirect()->route('classes.index')->with('success', 'Class updated successfully.');
     }

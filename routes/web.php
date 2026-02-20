@@ -36,7 +36,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('classes', SchoolClassController::class);
 });
 
-Route::get('/my-class', [UserController::class, 'showClasses'])
+Route::get('/my-class', [SchoolClassController::class, 'show'])
     ->middleware('auth')
     ->name('class.show');
 

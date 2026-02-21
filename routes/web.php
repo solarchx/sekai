@@ -5,6 +5,16 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\MajorController;
 use App\Http\Controllers\SchoolClassController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\GradeController;
+use App\Http\Controllers\AcademicSemesterController;
+use App\Http\Controllers\LessonPeriodController;
+use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\ActivityFormController;
+use App\Http\Controllers\ActivityPresenceController;
+use App\Http\Controllers\ActivityReportController;
+use App\Http\Controllers\ScoreDistributionController;
+use App\Http\Controllers\StudentScoreController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -34,6 +44,16 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('users', UserController::class);
     Route::resource('majors', MajorController::class);
     Route::resource('classes', SchoolClassController::class);
+    Route::resource('subjects', SubjectController::class);
+    Route::resource('grades', GradeController::class);
+    Route::resource('semesters', AcademicSemesterController::class);
+    Route::resource('periods', LessonPeriodController::class);
+    Route::resource('activities', ActivityController::class);
+    Route::resource('activity-forms', ActivityFormController::class);
+    Route::resource('activity-presences', ActivityPresenceController::class);
+    Route::resource('activity-reports', ActivityReportController::class);
+    Route::resource('score-distributions', ScoreDistributionController::class);
+    Route::resource('student-scores', StudentScoreController::class);
 });
 
 Route::get('/my-class', [SchoolClassController::class, 'show'])

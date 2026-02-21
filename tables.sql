@@ -126,7 +126,9 @@ DROP TABLE IF EXISTS activity_students;
 CREATE TABLE IF NOT EXISTS class_students (
     student_id INT NOT NULL,
     activity_id INT NOT NULL,
+    student_order INT NOT NULL,
     PRIMARY KEY (student_id, activity_id),
+    UNIQUE (activity_id, student_order),
     CONSTRAINT fk_activity_students_student_id FOREIGN KEY (student_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_activity_students_class_id FOREIGN KEY (activity_id) REFERENCES activities(id) ON UPDATE CASCADE ON DELETE RESTRICT,
     deleted TINYINT(1) NOT NULL DEFAULT 0,

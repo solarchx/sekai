@@ -39,6 +39,18 @@ class Activity extends Model
         return $this->belongsTo(SchoolClass::class, 'class_id');
     }
 
+    public function students()
+    {
+        return $this->belongsToMany(User::class, 'activity_students', 'activity_id', 'student_id')
+                    ->withTimestamps()
+                    ->withPivot('student_order');
+    }
+
+    public function activityForms()
+    {
+        return $this->hasMany(ActivityForm::class, 'activity_id');
+    }
+
     public function forms()
     {
         return $this->hasMany(ActivityForm::class, 'activity_id');
@@ -49,16 +61,31 @@ class Activity extends Model
         return $this->hasMany(ScoreDistribution::class, 'activity_id');
     }
 
-    public function students()
-    {
-        return $this->belongsToMany(User::class, 'activity_students', 'activity_id', 'student_id')
-                    ->withTimestamps()
-                    ->withPivot('deleted_at');
-    }
-
     public function studentScores()
     {
         return $this->hasMany(StudentScore::class, 'activity_id');
+    }
+
+    /**
+     * Check if teacher has overlapping activities
+     */
+    public function hasTeacherOverlap(): bool
+    {
+        $conflictingActivities = Activity::where('teacher_id', $this->teacher_id)
+            ->where('id', '!=', $this->id)
+            ->whereHas('period', function ($query) {
+                $query->where('semester_id', $this->period->semester_id)
+                    ->where('weekday', $this->period->weekday)
+                    ->where(function ($q) {
+                        $thisStart = $this->period->time_begin;
+                        $thisEnd = $this->period->time_end;
+                        $q->where('time_end', '>', $thisStart)
+                          ->where('time_begin', '<', $thisEnd);
+                    });
+            })
+            ->exists();
+
+        return $conflictingActivities;
     }
 
     public function announcements()

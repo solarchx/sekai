@@ -162,7 +162,9 @@ return new class extends Migration
         Schema::create('activity_students', function (Blueprint $table) {
             $table->unsignedInteger('student_id');
             $table->unsignedInteger('activity_id');
+            $table->unsignedInteger('student_order');
             $table->primary(['student_id', 'activity_id']);
+            $table->unique(['activity_id', 'student_order']);
             $table->softDeletes();
             $table->timestamps();
 

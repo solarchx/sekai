@@ -69,9 +69,10 @@ class SchoolClassController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             $homeroomTeacher = null;
         }
+        $students = User::where('class_id', $class->id)->where('role', 'STUDENT')->get();
 
         $lessonTaught = Auth::user()->taughtActivities;
-        return view('class.show', compact('class', 'lessonTaught', 'errorMessage', 'homeroomTeacher'));
+        return view('class.show', compact('class', 'lessonTaught', 'errorMessage', 'homeroomTeacher', 'students'));
     }
     /**
      * Show the form for editing the specified resource.

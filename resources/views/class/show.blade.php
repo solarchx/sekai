@@ -26,9 +26,9 @@
                 </div>
                 <div class="max-w-xl">
                     @if (!$errorMessage && Auth::user()->role == 'STUDENT')
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Classmates:</h3>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mt-6">Classmates:</h3>
                         <ul class="list-disc list-inside mt-1 text-sm text-gray-600 dark:text-gray-400">
-                            @foreach ($class->students as $student)
+                            @foreach ($students as $student)
                                 <li>{{ $student->name }}</li>
                             @endforeach
                         </ul>

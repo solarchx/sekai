@@ -23,34 +23,34 @@
                             {{ __('My Class') }}
                         </x-nav-link>
                     </div>
-                </div>
                     {{-- Admin Specific Links --}}
                     @if(auth()->user()->role === 'ADMIN')
-                    <div class="hidden space-x-8  sm:-my-px sm:ms-10 sm:flex">
-                    <x-dropdown align="center" width="48">
-                        <x-slot name="trigger">
-                            <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
-                                Admin
-                                <div class="ms-1">
-                                    <i class="bi bi-chevron-down text-sm"></i>
-                                </div>
-                            </button>
-                        </x-slot>
+                    <div class="hidden space-x-8  sm:-my-px sm:ms-10 sm:flex self-center">
+                        <x-dropdown>
+                            <x-slot name="trigger">
+                                <button class="inline-flex border border-transparent text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
+                                    Admin
+                                    <div class="ms-1">
+                                        <i class="bi bi-chevron-down text-sm"></i>
+                                    </div>
+                                </button>
+                            </x-slot>
 
-                        <x-slot name="content">
-                            <x-dropdown-link :href="route('users.index')">
-                                {{ __('Users') }}
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('majors.index')">
-                                {{ __('Majors') }}
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('classes.index')">
-                                {{ __('Classes') }}
-                            </x-dropdown-link>
-                        </x-slot>
-                    </x-dropdown>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('users.index')">
+                                    {{ __('Users') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('majors.index')">
+                                    {{ __('Majors') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('classes.index')">
+                                    {{ __('Classes') }}
+                                </x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
                     </div>
                     @endif
+                </div>
             </div>
 
             <!-- Settings Dropdown -->

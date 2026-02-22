@@ -110,11 +110,19 @@
                             >
                             {{-- this shit --}}
                                 <option value="">Select a teacher</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user->id }}" @selected(old('class_id', $user->class_id) == $homeroomTeacher->class_id)>
-                                        {{ $user->name }}
-                                    </option>
-                                @endforeach
+                                @if (!$errorMessage)
+                                    @foreach($users as $user)
+                                        <option value="{{ $user->id }}" @selected(old('class_id', $user->class_id) == $homeroomTeacher->class_id)>
+                                            {{ $user->name }}
+                                        </option>
+                                    @endforeach
+                                @else
+                                    @foreach($users as $user)
+                                        <option value="{{ $user->id }}">
+                                            {{ $user->name }}
+                                        </option>
+                                    @endforeach
+                                @endif
                             </select>
                             @error('teacher_id')
                                 <span class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</span>

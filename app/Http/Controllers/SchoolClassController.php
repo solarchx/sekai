@@ -6,6 +6,7 @@ use App\Models\SchoolClass;
 use App\Models\Major;
 use App\Models\Grade;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -56,23 +57,29 @@ class SchoolClassController extends Controller
         // old implementation, passing class id instead of user id
         //  $class->load('major', 'grade');
         //  return view('student.classes.show', compact('class'));
-        $errorMessage = null;
+        $errorMessage1 = null;
+        $errorMessage2 = null;
+        $errorMessage3 = null;
         $class = null;
         try {
             $class = Auth::user()->class()->with(['major', 'grade'])->firstOrFail();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            $errorMessage = "You are not assigned to any class.";
+        } catch (Exception $e) {
+            $errorMessage1 = "You are not assigned to any class.";
         }
         $homeroomTeacher = null;
         try {
             $homeroomTeacher = User::where('class_id', $class->id)->where('role', '!=', 'STUDENT')->firstOrFail();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            $homeroomTeacher = null;
+        } catch (Exception $e) {
+            $errorMessage2 = "You are not assigned to any class.";
         }
-        $students = User::where('class_id', $class->id)->where('role', 'STUDENT')->get();
-
+        $students = null;
+        try {
+            $students = User::where('class_id', $class->id)->where('role', 'STUDENT')->get();
+        } catch (Exception $e) {
+            $errorMessage3 = "There are no student in this class.";
+        }
         $lessonTaught = Auth::user()->taughtActivities;
-        return view('class.show', compact('class', 'lessonTaught', 'errorMessage', 'homeroomTeacher', 'students'));
+        return view('class.show', compact('class', 'lessonTaught', 'errorMessage1', 'errorMessage2', 'errorMessage3', 'homeroomTeacher', 'students'));
     }
     /**
      * Show the form for editing the specified resource.
@@ -83,12 +90,13 @@ class SchoolClassController extends Controller
         $majors = Major::all();
         $grades = Grade::all();
         $homeroomTeacher = null;
+        $errorMessage = null;
         try {
             $homeroomTeacher = User::where('class_id', $class->id)->where('role', '!=', 'STUDENT')->firstOrFail();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            $homeroomTeacher = null;
+        } catch (Exception $e) {
+            $errorMessage = "This class does not have a homeroom teacher.";
         }        
-        return view('admin.classes.edit', compact('class', 'majors', 'grades', 'users', 'homeroomTeacher'));
+        return view('admin.classes.edit', compact('class', 'majors', 'grades', 'users', 'homeroomTeacher', 'errorMessage'));
     }
 
     /**

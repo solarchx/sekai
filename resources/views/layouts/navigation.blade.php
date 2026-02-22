@@ -19,7 +19,7 @@
                         {{ __('Profile') }}
                     </x-nav-link>
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('class.show')" :active="request()->routeIs('student.classes.show')" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 active:text-gray-900 dark:active:text-white">
+                        <x-nav-link :href="route('class.show')" :active="request()->routeIs('class.show')" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 active:text-gray-900 dark:active:text-white">
                             {{ __('My Class') }}
                         </x-nav-link>
                     </div>
@@ -79,7 +79,7 @@
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
-                <x-dark-mode-toggle class="me-2" />
+                <x-dark-mode-toggle/>
                 
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700 focus:text-gray-500 dark:focus:text-gray-400 transition duration-150 ease-in-out">
                     <i :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex bi bi-list text-xl"></i>
@@ -95,6 +95,20 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('class.show')" :active="request()->routeIs('class.show')">
+                {{ __('My Class') }}
+            </x-responsive-nav-link>
+            @if (auth()->user()->role === 'ADMIN')
+                <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                    {{ __('Users') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('majors.index')" :active="request()->routeIs('majors.*')">
+                    {{ __('Majors') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('classes.index')" :active="request()->routeIs('classes.*')">
+                    {{ __('Classes') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

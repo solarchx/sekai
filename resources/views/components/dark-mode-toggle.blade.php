@@ -14,7 +14,7 @@
         }
     "
     :class="{ 'bg-gray-200 dark:bg-gray-700': true }"
-    class="p-2 rounded-lg transition-colors duration-200 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 {{ $extraClasses }}"
+    class="rounded-lg p-1 flex items-center justify-center transition-colors duration-200 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 {{ $extraClasses }}"
     type="button"
     title="Toggle dark mode"
 >

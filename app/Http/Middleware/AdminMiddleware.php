@@ -16,7 +16,7 @@ class AdminMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         if (!auth()->check() || auth()->user()->role !== 'ADMIN') {
-            abort(403, 'Access denied. Admin only.');
+            return redirect()->route('wrongway');
         }
 
         return $next($request);

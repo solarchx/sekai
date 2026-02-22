@@ -62,5 +62,8 @@ Route::get('/my-class', [SchoolClassController::class, 'show'])
 
 Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
 Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+Route::get('/storylock', function () {
+    return view('wrongway');
+})->name('wrongway');
 
 require __DIR__.'/auth.php';

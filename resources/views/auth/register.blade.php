@@ -32,7 +32,10 @@
                         'Airi Momoi',
                         'Saturday Tasogare',
                         'Dawn Hisomeru',
-                        'Tsuki Tasogare'
+                        'Tsuki Tasogare',
+                        'Lucy Ivory',
+                        'Miki Arranoia',
+                        'Grzegorz Brzęczyszczykiewicz'
                     ];
 
                     const placeholderWeights = [
@@ -49,7 +52,10 @@
                         0.5,    // airi
                         0.5,    // saturday
                         0.125,  // dawn
-                        0.125   // tsuki
+                        0.125,  // tsuki
+                        0.125,  // lucy
+                        0.125,  // miki
+                        0.00001 // this guy
                     ];
 
                     const totalWeight = placeholderWeights.reduce((a, b) => a + b, 0);

@@ -32,7 +32,7 @@
     </audio>
     <script>
         let audio = document.getElementById('plaudite');
-        audio.volume = 0.11;
+        audio.volume = 0.12;
     </script>
     <!-- Left Lock -->
     <img src="{{ asset('img/storylock/lock_side_closed.png') }}"

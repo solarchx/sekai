@@ -137,7 +137,8 @@ return new class extends Migration
             $table->unsignedInteger('teacher_id');
             $table->unsignedInteger('period_id');
             $table->unsignedInteger('class_id');
-            $table->unique(['subject_id', 'teacher_id', 'period_id', 'class_id'], 'unique_activity');
+            $table->unique(['period_id', 'class_id'], 'unique_class_period');
+            $table->unique(['period_id', 'teacher_id'], 'unique_teacher_period');
             $table->softDeletes();
             $table->timestamps();
 
@@ -211,6 +212,7 @@ return new class extends Migration
             $table->unsignedInteger('form_id');
             $table->unsignedInteger('student_id');
             $table->tinyInteger('score');
+            $table->string('location', 255);
             $table->unique(['form_id', 'student_id']);
             $table->softDeletes();
             $table->timestamps();

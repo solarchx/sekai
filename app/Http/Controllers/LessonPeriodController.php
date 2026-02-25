@@ -230,23 +230,15 @@ class LessonPeriodController extends Controller
      */
     public function restore(LessonPeriod $period)
     {
-        try {
-            if (auth()->user()->role !== 'ADMIN') {
-                return redirect()->back()->withErrors('Unauthorized action.');
-            }
+        if (auth()->user()->role !== 'ADMIN') {
+            abort(403);
+        }
 
-            // Only restore parent periods
-            if ($period->parent_id !== null) {
-                return redirect()->route('periods.index')->withErrors('You can only restore parent periods directly.');
-            }
-
+        DB::transaction(function () use ($period) {
             $period->restore();
             $period->childPeriods()->restore();
+        });
 
-            return redirect()->route('periods.index')->with('success', 'Lesson period restored successfully (all 7 days restored).');
-        } catch (\Exception $e) {
-            Log::error('Error restoring period: ' . $e->getMessage());
-            return redirect()->back()->withErrors('Error restoring period: ' . $e->getMessage());
-        }
+        return redirect()->route('periods.index')->with('success', 'Period restored.');
     }
 }

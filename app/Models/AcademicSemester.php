@@ -25,4 +25,9 @@ class AcademicSemester extends Model
     {
         return $this->hasMany(LessonPeriod::class, 'semester_id');
     }
+
+    public function getFullNameAttribute(): string
+    {
+        return $this->academic_year . ' Semester ' . $this->semester;
+    }
 }

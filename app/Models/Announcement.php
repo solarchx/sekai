@@ -19,6 +19,7 @@ class Announcement extends Model
         'sender_id',
         'scope',
         'activity_id',
+        'class_id',
         'grade_id',
     ];
 

@@ -49,6 +49,8 @@ return new class extends Migration
             $table->unsignedInteger('major_id');
             $table->unsignedInteger('grade_id');
             $table->integer('capacity')->default(50);
+            $table->unsignedInteger('homeroom_teacher_id')->nullable();
+            $table->foreign('homeroom_teacher_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('restrict');
             $table->softDeletes();
             $table->timestamps();
 
@@ -121,6 +123,8 @@ return new class extends Migration
             $table->time('time_begin');
             $table->time('time_end');
             $table->unsignedInteger('semester_id');
+            $table->unsignedInteger('parent_id')->nullable();
+            $table->foreign('parent_id')->references('id')->on('lesson_periods')->onUpdate('cascade')->onDelete('cascade');
             $table->unique(['weekday', 'time_begin', 'time_end', 'semester_id'], 'unique_period_per_semester');
             $table->softDeletes();
             $table->timestamps();
@@ -270,6 +274,8 @@ return new class extends Migration
             $table->enum('scope', ['SPECIFIC-CLASS', 'CLASS-TAUGHT', 'SPECIFIC-GRADE', 'TEACHERS', 'PUBLIC']);
             $table->unsignedInteger('activity_id')->nullable();
             $table->unsignedInteger('grade_id')->nullable();
+            $table->unsignedInteger('class_id')->nullable();
+            $table->foreign('class_id')->references('id')->on('classes')->onUpdate('cascade')->onDelete('restrict');
             $table->softDeletes();
             $table->timestamps();
 

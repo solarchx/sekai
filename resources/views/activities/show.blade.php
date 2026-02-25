@@ -104,7 +104,7 @@
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 @forelse($activity->forms as $form)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $form->date->format('M d, Y') }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $form->activity_date->format('M d, Y') }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $form->activity->subject->name ?? 'N/A' }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                         <a href="{{ route('activity-forms.show', $form) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">
@@ -119,21 +119,38 @@
                                             </form>
                                         @elseif(!$form->presences()->where('student_id', auth()->id())->exists())
                                             @php
-                                                $now = \Carbon\Carbon::now();
-                                                $formTime = \Carbon\Carbon::createFromFormat('H:i', $form->activity->period->time_begin);
-                                                $submissionStart = $formTime->subMinutes(15);
-                                                $submissionEnd = $formTime->addMinutes(intval(explode(':', $form->activity->period->time_end)[0]) - intval(explode(':', $form->activity->period->time_begin)[0]) * 60 + intval(explode(':', $form->activity->period->time_end)[1]) - intval(explode(':', $form->activity->period->time_begin)[1]) + 15);
+                                                $period = $form->activity->period;
+                                                $start = \Carbon\Carbon::parse($period->time_begin);
+                                                $end = \Carbon\Carbon::parse($period->time_end);
+                                                $windowStart = $start->copy()->subMinutes(15);
+                                                $windowEnd = $end->copy()->addMinutes(15);
                                             @endphp
-                                            @if($now->between($submissionStart, $submissionEnd) && $now->format('Y-m-d') == $form->date->format('Y-m-d'))
+                                            @if($now->between($windowStart, $windowEnd) && $now->format('Y-m-d') == $form->activity_date->format('Y-m-d'))
                                                 <a href="{{ route('activity-presences.create', ['form_id' => $form->id]) }}" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">
                                                     Submit Presence
                                                 </a>
                                             @endif
-                                        @else
+                                        @elseif(auth()->user()->role === 'STUDENT')
                                             @php
-                                                $report = $form->reports()->where('student_id', auth()->id())->first();
+                                                $presence = $form->presences->firstWhere('student_id', auth()->id());
+                                                $report = $presence ? $presence->report : null;
                                             @endphp
-                                            @if($report)
+
+                                            @if(!$presence)
+                                                @php
+                                                    $now = \Carbon\Carbon::now();
+                                                    $period = $form->activity->period;
+                                                    $start = \Carbon\Carbon::parse($period->time_begin);
+                                                    $end = \Carbon\Carbon::parse($period->time_end);
+                                                    $windowStart = $start->copy()->subMinutes(15);
+                                                    $windowEnd = $end->copy()->addMinutes(15);
+                                                @endphp
+                                                @if($now->between($windowStart, $windowEnd) && $now->toDateString() == $form->activity_date->toDateString())
+                                                    <a href="{{ route('activity-presences.create', ['form_id' => $form->id]) }}" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">
+                                                        Submit Presence
+                                                    </a>
+                                                @endif
+                                            @elseif($report)
                                                 <a href="{{ route('activity-reports.edit', $report) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">Edit Report</a>
                                                 <form action="{{ route('activity-reports.destroy', $report) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?');">
                                                     @csrf

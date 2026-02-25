@@ -255,25 +255,22 @@ class UserController extends Controller
      */
     private function autoEnrollStudentInActivities(User $user)
     {
-        try {
-            if (!$user->class_id) {
-                return;
+        if (!$user->class_id || $user->role !== 'STUDENT') {
+            return;
+        }
+
+        $activities = $user->schoolClass->activities()->whereNull('deleted_at')->get();
+
+        foreach ($activities as $activity) {
+            if ($user->activities()->where('activity_id', $activity->id)->exists()) {
+                continue;
             }
 
-            // Get all activities for the student's class
-            $activities = $user->schoolClass->activities()
-                ->where('deleted_at', null)
-                ->get();
+            $maxOrder = DB::table('activity_students')
+                ->where('activity_id', $activity->id)
+                ->max('student_order') ?? 0;
 
-            // Attach student to all activities
-            foreach ($activities as $activity) {
-                if (!$user->activities()->where('activity_id', $activity->id)->exists()) {
-                    $user->activities()->attach($activity->id);
-                }
-            }
-        } catch (\Exception $e) {
-            Log::error('Error auto-enrolling student: ' . $e->getMessage());
-            // Don't throw - this is a secondary operation
+            $user->activities()->attach($activity->id, ['student_order' => $maxOrder + 1]);
         }
     }
 }

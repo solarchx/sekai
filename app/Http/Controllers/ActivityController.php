@@ -7,6 +7,7 @@ use App\Models\Subject;
 use App\Models\User;
 use App\Models\LessonPeriod;
 use App\Models\SchoolClass;
+use App\Models\ActivityStudent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -154,7 +155,11 @@ class ActivityController extends Controller
     public function show(Activity $activity)
     {
         try {
-            $activity->load('subject', 'teacher', 'period', 'class', 'forms');
+            $activity->load(['forms' => function ($q) {
+                $q->with(['activity.period', 'presences' => function ($q) {
+                    $q->where('student_id', auth()->id())->with('report');
+                }]);
+            }]);
             return view('activities.show', compact('activity'));
         } catch (\Exception $e) {
             Log::error('Error loading activity details: ' . $e->getMessage());
@@ -273,23 +278,18 @@ class ActivityController extends Controller
 
     public function destroy(Activity $activity)
     {
-        try {
-            DB::beginTransaction();
+        DB::transaction(function () use ($activity) {
+            // Soft delete pivot records
+            ActivityStudent::where('activity_id', $activity->id)->delete();
 
-            // Delete all presences and forms associated with this activity
-            $activity->presences()->delete();
+            // Delete forms and presences
             $activity->forms()->delete();
+            $activity->presences()->delete();
 
             $activity->delete();
+        });
 
-            DB::commit();
-
-            return redirect()->route('activities.index')->with('success', 'Activity deleted successfully (all associated presences and forms removed).');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error deleting activity: ' . $e->getMessage());
-            return redirect()->back()->withErrors('Error deleting activity: ' . $e->getMessage());
-        }
+        return redirect()->route('activities.index')->with('success', 'Activity deleted.');
     }
 
     /**
@@ -297,17 +297,16 @@ class ActivityController extends Controller
      */
     public function restore(Activity $activity)
     {
-        try {
-            if (auth()->user()->role !== 'ADMIN') {
-                return redirect()->back()->withErrors('Unauthorized action.');
-            }
-
-            $activity->restore();
-
-            return redirect()->route('activities.index')->with('success', 'Activity restored successfully.');
-        } catch (\Exception $e) {
-            Log::error('Error restoring activity: ' . $e->getMessage());
-            return redirect()->back()->withErrors('Error restoring activity: ' . $e->getMessage());
+        if (auth()->user()->role !== 'ADMIN') {
+            abort(403);
         }
+
+        DB::transaction(function () use ($activity) {
+            $activity->restore();
+            ActivityStudent::where('activity_id', $activity->id)->restore();
+            // Also restore forms/presences if needed (they are cascaded via foreign keys)
+        });
+
+        return redirect()->route('activities.index')->with('success', 'Activity restored.');
     }
 }

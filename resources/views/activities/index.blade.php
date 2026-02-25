@@ -14,7 +14,18 @@
                     <h3 class="text-2xl font-bold">Activity Management</h3>
                     <p class="mt-2">Manage class activities and lessons.</p>
                 </div>
+
                 <div class="p-6">
+                    @if(auth()->user()->role === 'ADMIN')
+                        <div class="mb-4 flex items-center">
+                            <form method="GET" action="{{ route('activities.index') }}">
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" name="show_deleted" value="1" {{ request('show_deleted') ? 'checked' : '' }} onchange="this.form.submit()">
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Show deleted records</span>
+                                </label>
+                            </form>
+                        </div>
+                    @endif
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Activities List</h4>
                         <a href="{{ route('activities.create') }}" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
@@ -45,12 +56,22 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $activity->class->name ?? 'N/A' }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $activity->period->weekday_name }} {{ $activity->period->time_begin }} - {{ $activity->period->time_end }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button onclick="window.location.href='{{ route('activities.edit', $activity) }}'" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Edit</button>
-                                        <form action="{{ route('activities.destroy', $activity) }}" method="POST" class="inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors" onclick="return confirm('Are you sure?')">Delete</button>
-                                        </form>
+                                        @if($activity->trashed())
+                                            @if(auth()->user()->role === 'ADMIN')
+                                                <form action="{{ route('activities.restore', $activity) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Restore</button>
+                                                </form>
+                                            @endif
+                                        @else
+                                            <button onclick="window.location.href='{{ route('activities.edit', $activity) }}'" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Edit</button>
+                                            <form action="{{ route('activities.destroy', $activity) }}" method="POST" class="inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors" onclick="return confirm('Are you sure?')">Delete</button>
+                                            </form>
+                                        @endif
                                     </td>
                                 </tr>
                                 @empty

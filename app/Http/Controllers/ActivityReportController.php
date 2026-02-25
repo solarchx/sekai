@@ -16,27 +16,13 @@ class ActivityReportController extends Controller
      */
     public function index(Request $request)
     {
-        try {
-            // Only admins can view all reports
-            if (auth()->user()->role !== 'ADMIN') {
-                return redirect()->route('dashboard')->withErrors('You do not have permission to view all reports.');
-            }
-
-            $showDeleted = $request->has('show_deleted');
-            
-            $query = ActivityReport::with('presence.form.activity.subject', 'presence.student');
-            
-            if ($showDeleted) {
-                $reports = $query->onlyTrashed()->paginate(100);
-            } else {
-                $reports = $query->paginate(100);
-            }
-            
-            return view('activity-reports.index', compact('reports', 'showDeleted'));
-        } catch (\Exception $e) {
-            Log::error('Error loading reports: ' . $e->getMessage());
-            return redirect()->back()->withErrors('Error loading reports: ' . $e->getMessage());
+        if (auth()->user()->role !== 'ADMIN') {
+            abort(403);
         }
+        $reports = ActivityReport::with('presence.form.activity.subject')
+                    ->withTrashed($request->has('show_deleted'))
+                    ->paginate(100);
+        return view('activity-reports.index', compact('reports'));
     }
 
     /**
@@ -68,56 +54,27 @@ class ActivityReportController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            $validated = $request->validate([
-                'presence_id' => 'required|exists:activity_presences,id',
-                'teacher_rating' => 'required|integer|between:1,5',
-                'feedback' => 'nullable|string|max:500',
-            ], [
-                'presence_id.required' => 'Activity presence is required.',
-                'presence_id.exists' => 'Selected presence does not exist.',
-                'teacher_rating.required' => 'Teacher rating is required.',
-                'teacher_rating.integer' => 'Teacher rating must be a number.',
-                'teacher_rating.between' => 'Teacher rating must be between 1 and 5.',
-                'feedback.max' => 'Feedback must not exceed 500 characters.',
-            ]);
+        $validated = $request->validate([
+            'presence_id' => 'required|exists:activity_presences,id',
+            'score'       => 'required|integer|between:0,3',
+            'topic'       => 'required|string|max:255',
+            'details'     => 'required|string',
+        ]);
 
-            $presence = ActivityPresence::with('form.activity', 'student')->find($validated['presence_id']);
-
-            // Verify the presence belongs to the authenticated student
-            if ($presence->student_id !== auth()->id()) {
-                return back()->withErrors('You can only report on your own presences.')->withInput();
-            }
-
-            // Check if a report already exists for this presence
-            $exists = ActivityReport::where('presence_id', $validated['presence_id'])
-                ->where('deleted_at', null)
-                ->exists();
-
-            if ($exists) {
-                return back()->withErrors(['presence_id' => 'You have already submitted a report for this activity.'])->withInput();
-            }
-
-            DB::beginTransaction();
-
-            // Create report WITHOUT storing student_id to maintain anonymity
-            ActivityReport::create([
-                'presence_id' => $validated['presence_id'],
-                'teacher_rating' => $validated['teacher_rating'],
-                'feedback' => $validated['feedback'] ?? null,
-                // Note: No student_id field - maintains anonymity
-            ]);
-
-            DB::commit();
-
-            return redirect()->route('dashboard')->with('success', 'Thank you! Your anonymous feedback has been submitted.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return back()->withErrors($e->errors())->withInput();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error creating report: ' . $e->getMessage());
-            return redirect()->back()->withErrors('Error submitting report: ' . $e->getMessage());
+        $presence = ActivityPresence::find($validated['presence_id']);
+        if ($presence->student_id !== auth()->id()) {
+            return back()->withErrors('You can only report on your own presences.');
         }
+
+        if (ActivityReport::where('presence_id', $validated['presence_id'])->exists()) {
+            return back()->withErrors('You have already submitted a report for this activity.');
+        }
+
+        DB::transaction(function () use ($validated) {
+            ActivityReport::create($validated);
+        });
+
+        return redirect()->route('dashboard')->with('success', 'Report submitted.');
     }
 
     /**
@@ -125,7 +82,10 @@ class ActivityReportController extends Controller
      */
     public function edit(ActivityReport $activityReport)
     {
-        return redirect()->route('dashboard')->withErrors('You cannot edit submitted reports.');
+        if ($activityReport->presence->student_id !== auth()->id()) {
+            abort(403);
+        }
+        return view('activity-reports.edit', compact('activityReport'));
     }
 
     /**
@@ -133,7 +93,18 @@ class ActivityReportController extends Controller
      */
     public function update(Request $request, ActivityReport $activityReport)
     {
-        return redirect()->route('dashboard')->withErrors('You cannot edit submitted reports.');
+        if ($activityReport->presence->student_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'score'   => 'required|integer|between:0,3',
+            'topic'   => 'required|string|max:255',
+            'details' => 'required|string',
+        ]);
+
+        $activityReport->update($validated);
+        return redirect()->route('dashboard')->with('success', 'Report updated.');
     }
 
     /**
@@ -141,24 +112,12 @@ class ActivityReportController extends Controller
      */
     public function destroy(ActivityReport $activityReport)
     {
-        try {
-            // Only admin can delete reports
-            if (auth()->user()->role !== 'ADMIN') {
-                return redirect()->back()->withErrors('You do not have permission to delete reports.');
-            }
-
-            DB::beginTransaction();
-
-            $activityReport->delete();
-
-            DB::commit();
-
-            return redirect()->route('activity-reports.index')->with('success', 'Report deleted successfully.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error deleting report: ' . $e->getMessage());
-            return redirect()->back()->withErrors('Error deleting report: ' . $e->getMessage());
+        // Student can delete own, admin can delete any
+        if ($activityReport->presence->student_id !== auth()->id() && auth()->user()->role !== 'ADMIN') {
+            abort(403);
         }
+        $activityReport->delete();
+        return redirect()->back()->with('success', 'Report deleted.');
     }
 
     /**

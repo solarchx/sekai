@@ -25,30 +25,86 @@
                     </div>
                     {{-- Admin Specific Links --}}
                     @if(auth()->user()->role === 'ADMIN')
-                    <div class="hidden space-x-8  sm:-my-px sm:ms-10 sm:flex self-center">
-                        <x-dropdown>
-                            <x-slot name="trigger">
-                                <button class="inline-flex border border-transparent text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
-                                    Admin
-                                    <div class="ms-1">
-                                        <i class="bi bi-chevron-down text-sm"></i>
-                                    </div>
-                                </button>
-                            </x-slot>
+                        <div class="hidden space-x-8  sm:-my-px sm:ms-10 sm:flex self-center">
+                            <x-dropdown>
+                                <x-slot name="trigger">
+                                    <button class="inline-flex border border-transparent text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
+                                        Admin
+                                        <div class="ms-1">
+                                            <i class="bi bi-chevron-down text-sm"></i>
+                                        </div>
+                                    </button>
+                                </x-slot>
 
-                            <x-slot name="content">
-                                <x-dropdown-link :href="route('users.index')">
-                                    {{ __('Users') }}
-                                </x-dropdown-link>
-                                <x-dropdown-link :href="route('majors.index')">
-                                    {{ __('Majors') }}
-                                </x-dropdown-link>
-                                <x-dropdown-link :href="route('classes.index')">
-                                    {{ __('Classes') }}
-                                </x-dropdown-link>
-                            </x-slot>
-                        </x-dropdown>
-                    </div>
+                                <x-slot name="content">
+                                    <x-dropdown-link :href="route('users.index')">
+                                        {{ __('Users') }}
+                                    </x-dropdown-link>
+                                    <x-dropdown-link :href="route('majors.index')">
+                                        {{ __('Majors') }}
+                                    </x-dropdown-link>
+                                    <x-dropdown-link :href="route('classes.index')">
+                                        {{ __('Classes') }}
+                                    </x-dropdown-link>
+                                    <x-dropdown-link :href="route('subjects.index')">
+                                        {{ __('Subjects') }}
+                                    </x-dropdown-link>
+                                    <x-dropdown-link :href="route('grades.index')">
+                                        {{ __('Grades') }}
+                                    </x-dropdown-link>
+                                    <x-dropdown-link :href="route('periods.index')">
+                                        {{ __('Periods') }}
+                                    </x-dropdown-link>
+                                    <x-dropdown-link :href="route('semesters.index')">
+                                        {{ __('Semesters') }}
+                                    </x-dropdown-link>
+                                </x-slot>
+                            </x-dropdown>
+                        </div>
+                        @if (auth()->user()->role === 'VP' || auth()->user()->role === 'ADMIN')
+                            <div class="hidden space-x-8  sm:-my-px sm:ms-10 sm:flex self-center">
+                                <x-dropdown>
+                                    <x-slot name="trigger">
+                                        <button class="inline-flex border border-transparent text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
+                                            VP
+                                            <div class="ms-1">
+                                                <i class="bi bi-chevron-down text-sm"></i>
+                                            </div>
+                                        </button>
+                                    </x-slot>
+
+                                    <x-slot name="content">
+                                        <x-dropdown-link :href="route('activities.index')">
+                                            {{ __('Activities') }}
+                                        </x-dropdown-link>
+                                    </x-slot>
+                                </x-dropdown>
+                            </div>
+                            @if (auth()->user()->role === 'TEACHER' || auth()->user()->role === 'VP' || auth()->user()->role === 'ADMIN')
+                                <div class="hidden space-x-8  sm:-my-px sm:ms-10 sm:flex self-center">
+                                    <x-dropdown>
+                                        <x-slot name="trigger">
+                                            <button class="inline-flex border border-transparent text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
+                                                Teacher
+                                                <div class="ms-1">
+                                                    <i class="bi bi-chevron-down text-sm"></i>
+                                                </div>
+                                            </button>
+                                        </x-slot>
+
+                                        <x-slot name="content">
+                                            <x-dropdown-link :href="route('activity-forms.index')">
+                                                {{ __('Activity Forms') }}
+                                            </x-dropdown-link>
+                                            <x-dropdown-link :href="route('activity-presences.index')">
+                                                {{ __('Activity Presences') }}
+                                            </x-dropdown-link>
+                                            
+                                        </x-slot>
+                                    </x-dropdown>
+                                
+                            @endif
+                        @endif
                     @endif
                 </div>
             </div>

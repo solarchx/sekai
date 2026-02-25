@@ -9,16 +9,32 @@ use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class SchoolClassController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $classes = SchoolClass::with('major', 'grade')->get();
-        return view('admin.classes.index', compact('classes'));
+        try {
+            $showDeleted = $request->has('show_deleted') && auth()->user()->role === 'ADMIN';
+            
+            $query = SchoolClass::with('major', 'grade', 'homeroomTeacher');
+            
+            if ($showDeleted) {
+                $classes = $query->onlyTrashed()->paginate(100);
+            } else {
+                $classes = $query->paginate(100);
+            }
+            
+            return view('admin.classes.index', compact('classes', 'showDeleted'));
+        } catch (\Exception $e) {
+            Log::error('Error loading classes: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error loading classes: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -26,9 +42,20 @@ class SchoolClassController extends Controller
      */
     public function create()
     {
-        $majors = Major::all();
-        $grades = Grade::all();
-        return view('admin.classes.create', compact('majors', 'grades'));
+        try {
+            $majors = Major::all();
+            $grades = Grade::all();
+            $teachers = User::where('role', '!=', 'STUDENT')->get();
+            
+            if ($majors->isEmpty() || $grades->isEmpty()) {
+                return redirect()->route('classes.index')->withErrors('Missing required data. Ensure majors and grades exist.');
+            }
+            
+            return view('admin.classes.create', compact('majors', 'grades', 'teachers'));
+        } catch (\Exception $e) {
+            Log::error('Error loading create form: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error loading form: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -36,67 +63,173 @@ class SchoolClassController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'major_id' => 'required|exists:majors,id',
-            'grade_id' => 'required',
-            'capacity' => 'required|integer|min:1|max:100',
-            'teacher_id' => 'nullable|exists:users,id',
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'major_id' => 'required|exists:majors,id',
+                'grade_id' => 'required|exists:grades,id',
+                'capacity' => 'required|integer|min:1|max:100',
+                'homeroom_teacher_id' => 'nullable|exists:users,id',
+            ], [
+                'name.required' => 'Class name is required.',
+                'major_id.required' => 'Major is required.',
+                'major_id.exists' => 'Selected major does not exist.',
+                'grade_id.required' => 'Grade is required.',
+                'grade_id.exists' => 'Selected grade does not exist.',
+                'capacity.required' => 'Capacity is required.',
+                'capacity.integer' => 'Capacity must be a number.',
+                'capacity.min' => 'Capacity must be at least 1.',
+                'capacity.max' => 'Capacity cannot exceed 100.',
+                'homeroom_teacher_id.exists' => 'Selected teacher does not exist.',
+            ]);
 
-        SchoolClass::create($validated);
+            // Validate homeroom teacher is not a student
+            if (isset($validated['homeroom_teacher_id'])) {
+                $teacher = User::find($validated['homeroom_teacher_id']);
+                if ($teacher->role === 'STUDENT') {
+                    return back()->withErrors(['homeroom_teacher_id' => 'Homeroom teacher cannot be a student.'])->withInput();
+                }
+            }
 
-        return redirect()->route('classes.index')->with('success', 'Class created successfully.');
+            DB::beginTransaction();
+
+            SchoolClass::create($validated);
+
+            DB::commit();
+
+            return redirect()->route('classes.index')->with('success', 'Class created successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error creating class: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error creating class: ' . $e->getMessage());
+        }
     }
 
     /**
-     * Display the specified resource.
+     * Display "My Class" page for students.
      */
     public function show(SchoolClass $class)
     {
-        // old implementation, passing class id instead of user id
-        //  $class->load('major', 'grade');
-        //  return view('student.classes.show', compact('class'));
-        $errorMessage1 = null;
-        $errorMessage2 = null;
-        $errorMessage3 = null;
-        $class = null;
         try {
-            $class = Auth::user()->class()->with(['major', 'grade'])->firstOrFail();
+            $userClass = Auth::user()->schoolClass()->with(['major', 'grade'])->first();
+            
+            if (!$userClass) {
+                return redirect()->route('dashboard')->withErrors('You are not assigned to any class.');
+            }
+
+            $homeroomTeacher = null;
+            if ($userClass->homeroom_teacher_id) {
+                $homeroomTeacher = User::find($userClass->homeroom_teacher_id);
+            }
+
+            $students = $userClass->students()
+                ->where('role', 'STUDENT')
+                ->where('deleted_at', null)
+                ->orderBy('name')
+                ->get();
+
+            // Get activities for the class
+            $activities = $userClass->activities()
+                ->with('teacher', 'subject', 'period')
+                ->where('deleted_at', null)
+                ->get();
+
+            return view('class.show', compact('userClass', 'homeroomTeacher', 'students', 'activities'));
         } catch (Exception $e) {
-            $errorMessage1 = "You are not assigned to any class.";
+            Log::error('Error loading my class: ' . $e->getMessage());
+            return redirect()->route('dashboard')->withErrors('Error loading class: ' . $e->getMessage());
         }
-        $homeroomTeacher = null;
-        try {
-            $homeroomTeacher = User::where('class_id', $class->id)->where('role', '!=', 'STUDENT')->firstOrFail();
-        } catch (Exception $e) {
-            $errorMessage2 = "You are not assigned to any class.";
-        }
-        $students = null;
-        try {
-            $students = User::where('class_id', $class->id)->where('role', 'STUDENT')->get();
-        } catch (Exception $e) {
-            $errorMessage3 = "There are no student in this class.";
-        }
-        $lessonTaught = Auth::user()->taughtActivities;
-        return view('class.show', compact('class', 'lessonTaught', 'errorMessage1', 'errorMessage2', 'errorMessage3', 'homeroomTeacher', 'students'));
     }
+
+    /**
+     * Show student order management page.
+     */
+    public function studentOrder(SchoolClass $class)
+    {
+        try {
+            if (auth()->user()->role !== 'ADMIN' && auth()->user()->role !== 'VP') {
+                return redirect()->back()->withErrors('You do not have permission to reorder students.');
+            }
+
+            $students = $class->students()
+                ->where('role', 'STUDENT')
+                ->where('deleted_at', null)
+                ->orderBy('student_order')
+                ->get();
+
+            return view('admin.classes.student-order', compact('class', 'students'));
+        } catch (\Exception $e) {
+            Log::error('Error loading student order: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error loading student order: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update student order for a class.
+     */
+    public function updateStudentOrder(Request $request, SchoolClass $class)
+    {
+        try {
+            if (auth()->user()->role !== 'ADMIN' && auth()->user()->role !== 'VP') {
+                return back()->withErrors('You do not have permission to reorder students.');
+            }
+
+            $validated = $request->validate([
+                'student_orders' => 'required|array',
+                'student_orders.*' => 'required|integer|min:1',
+            ], [
+                'student_orders.required' => 'Student orders are required.',
+                'student_orders.*.required' => 'Each student must have an order number.',
+                'student_orders.*.integer' => 'Order numbers must be integers.',
+                'student_orders.*.min' => 'Order numbers must be at least 1.',
+            ]);
+
+            DB::beginTransaction();
+
+            // Update student order in activity_students pivot table
+            foreach ($validated['student_orders'] as $studentId => $order) {
+                $student = User::find($studentId);
+                if ($student && $student->class_id === $class->id && $student->role === 'STUDENT') {
+                    // Update all activities for this student in this class
+                    DB::table('activity_students')
+                        ->join('activities', 'activity_students.activity_id', '=', 'activities.id')
+                        ->where('activity_students.student_id', $studentId)
+                        ->where('activities.class_id', $class->id)
+                        ->update(['activity_students.student_order' => $order]);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Student order updated successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors());
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating student order: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error updating order: ' . $e->getMessage());
+        }
+    }
+
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(SchoolClass $class)
     {
-        $users = User::where('role', '!=', 'STUDENT')->get();
-        $majors = Major::all();
-        $grades = Grade::all();
-        $homeroomTeacher = null;
-        $errorMessage = null;
         try {
-            $homeroomTeacher = User::where('class_id', $class->id)->where('role', '!=', 'STUDENT')->firstOrFail();
-        } catch (Exception $e) {
-            $errorMessage = "This class does not have a homeroom teacher.";
-        }        
-        return view('admin.classes.edit', compact('class', 'majors', 'grades', 'users', 'homeroomTeacher', 'errorMessage'));
+            $majors = Major::all();
+            $grades = Grade::all();
+            $teachers = User::where('role', '!=', 'STUDENT')
+                ->where('deleted_at', null)
+                ->get();
+
+            return view('admin.classes.edit', compact('class', 'majors', 'grades', 'teachers'));
+        } catch (\Exception $e) {
+            Log::error('Error loading edit form: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error loading form: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -104,25 +237,57 @@ class SchoolClassController extends Controller
      */
     public function update(Request $request, SchoolClass $class)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'major_id' => 'required|exists:majors,id',
-            'grade_id' => 'required|exists:grades,id',
-            'capacity' => 'required|integer|min:1|max:100',
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'major_id' => 'required|exists:majors,id',
+                'grade_id' => 'required|exists:grades,id',
+                'capacity' => 'required|integer|min:1|max:100',
+                'homeroom_teacher_id' => 'nullable|exists:users,id',
+            ], [
+                'name.required' => 'Class name is required.',
+                'major_id.required' => 'Major is required.',
+                'major_id.exists' => 'Selected major does not exist.',
+                'grade_id.required' => 'Grade is required.',
+                'grade_id.exists' => 'Selected grade does not exist.',
+                'capacity.required' => 'Capacity is required.',
+                'capacity.integer' => 'Capacity must be a number.',
+                'capacity.min' => 'Capacity must be at least 1.',
+                'capacity.max' => 'Capacity cannot exceed 100.',
+                'homeroom_teacher_id.exists' => 'Selected teacher does not exist.',
+            ]);
 
-        $class->update($validated);
+            // Validate homeroom teacher is not a student
+            if (isset($validated['homeroom_teacher_id'])) {
+                $teacher = User::find($validated['homeroom_teacher_id']);
+                if ($teacher->role === 'STUDENT') {
+                    return back()->withErrors(['homeroom_teacher_id' => 'Homeroom teacher cannot be a student.'])->withInput();
+                }
+            }
 
-        $validated = $request->validate([
-            'teacher_id' => 'nullable|exists:users,id',
-        ]);
-        
-        if (isset($validated['teacher_id'])) {
-            User::where('class_id', $class->id)->where('role', '!=', 'STUDENT')->update(['class_id' => null]);
-            User::where('id', $validated['teacher_id'])->update(['class_id' => $class->id]);
+            // Check if capacity reduction would violate current enrollment
+            $currentStudentCount = $class->students()
+                ->where('role', 'STUDENT')
+                ->count();
+
+            if ($validated['capacity'] < $currentStudentCount) {
+                return back()->withErrors(['capacity' => "Class currently has {$currentStudentCount} students. Capacity cannot be less than this."])->withInput();
+            }
+
+            DB::beginTransaction();
+
+            $class->update($validated);
+
+            DB::commit();
+
+            return redirect()->route('classes.index')->with('success', 'Class updated successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating class: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error updating class: ' . $e->getMessage());
         }
-
-        return redirect()->route('classes.index')->with('success', 'Class updated successfully.');
     }
 
     /**
@@ -130,8 +295,40 @@ class SchoolClassController extends Controller
      */
     public function destroy(SchoolClass $class)
     {
-        $class->delete();
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('classes.index')->with('success', 'Class deleted successfully.');
+            // Remove all students from the class (soft delete their associations)
+            $class->students()->update(['class_id' => null]);
+
+            $class->delete();
+
+            DB::commit();
+
+            return redirect()->route('classes.index')->with('success', 'Class deleted successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error deleting class: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error deleting class: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Restore a soft-deleted class (admin only).
+     */
+    public function restore(SchoolClass $class)
+    {
+        try {
+            if (auth()->user()->role !== 'ADMIN') {
+                return redirect()->back()->withErrors('Unauthorized action.');
+            }
+
+            $class->restore();
+
+            return redirect()->route('classes.index')->with('success', 'Class restored successfully.');
+        } catch (\Exception $e) {
+            Log::error('Error restoring class: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error restoring class: ' . $e->getMessage());
+        }
     }
 }

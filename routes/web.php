@@ -44,31 +44,53 @@ Route::middleware('auth')->group(function () {
 // Admin-only routes
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('users', UserController::class);
+    Route::post('/users/{user}/restore', [UserController::class, 'restore'])->name('users.restore');
+    
     Route::resource('majors', MajorController::class);
+    Route::post('/majors/{major}/restore', [MajorController::class, 'restore'])->name('majors.restore');
+    
     Route::resource('classes', SchoolClassController::class);
+    Route::post('/classes/{class}/restore', [SchoolClassController::class, 'restore'])->name('classes.restore');
+    Route::get('/classes/{class}/student-order', [SchoolClassController::class, 'studentOrder'])->name('classes.student-order');
+    Route::put('/classes/{class}/student-order', [SchoolClassController::class, 'updateStudentOrder'])->name('classes.update-student-order');
+    
     Route::resource('subjects', SubjectController::class);
+    Route::post('/subjects/{subject}/restore', [SubjectController::class, 'restore'])->name('subjects.restore');
+    
     Route::resource('grades', GradeController::class);
+    Route::post('/grades/{grade}/restore', [GradeController::class, 'restore'])->name('grades.restore');
+    
     Route::resource('semesters', AcademicSemesterController::class);
+    Route::post('/semesters/{semester}/restore', [AcademicSemesterController::class, 'restore'])->name('semesters.restore');
+    
     Route::resource('periods', LessonPeriodController::class);
+    Route::post('/periods/{period}/restore', [LessonPeriodController::class, 'restore'])->name('periods.restore');
 });
 
 // VP and above routes
 Route::middleware(['auth', 'vp'])->group(function () {
     Route::resource('activities', ActivityController::class);
+    Route::post('/activities/{activity}/restore', [ActivityController::class, 'restore'])->name('activities.restore');
 });
 
 // Teacher and above routes
 Route::middleware(['auth', 'teacher'])->group(function () {
     Route::resource('activity-forms', ActivityFormController::class);
+    Route::post('/activity-forms/{activityForm}/restore', [ActivityFormController::class, 'restore'])->name('activity-forms.restore');
     Route::resource('activity-presences', ActivityPresenceController::class);
+    Route::post('/activity-presences/{activityPresence}/restore', [ActivityPresenceController::class, 'restore'])->name('activity-presences.restore');
     Route::resource('score-distributions', ScoreDistributionController::class);
+    Route::post('/score-distributions/{scoreDistribution}/restore', [ScoreDistributionController::class, 'restore'])->name('score-distributions.restore');
     Route::resource('student-scores', StudentScoreController::class);
+    Route::post('/student-scores/{studentScore}/restore', [StudentScoreController::class, 'restore'])->name('student-scores.restore');
 });
 
 // Student and above routes
 Route::middleware(['auth'])->group(function () {
     Route::resource('activity-reports', ActivityReportController::class);
+    Route::post('/activity-reports/{activityReport}/restore', [ActivityReportController::class, 'restore'])->name('activity-reports.restore');
     Route::resource('announcements', AnnouncementController::class);
+    Route::post('/announcements/{announcement}/restore', [AnnouncementController::class, 'restore'])->name('announcements.restore');
 });
 
 Route::get('/my-class', [SchoolClassController::class, 'show'])

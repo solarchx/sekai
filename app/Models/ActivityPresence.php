@@ -16,6 +16,7 @@ class ActivityPresence extends Model
         'form_id',
         'student_id',
         'score',
+        'location',
     ];
 
     protected $casts = [

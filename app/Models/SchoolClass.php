@@ -17,6 +17,7 @@ class SchoolClass extends Model
         'major_id',
         'grade_id',
         'capacity',
+        'homeroom_teacher_id',
     ];
 
     protected $casts = [
@@ -41,5 +42,20 @@ class SchoolClass extends Model
     public function activities()
     {
         return $this->hasMany(Activity::class, 'class_id');
+    }
+
+    public function homeroomTeacher()
+    {
+        return $this->belongsTo(User::class, 'homeroom_teacher_id');
+    }
+
+    public function isAtCapacity(): bool
+    {
+        return $this->students()->where('role', 'STUDENT')->count() >= $this->capacity;
+    }
+
+    public function availableSeats(): int
+    {
+        return max(0, $this->capacity - $this->students()->where('role', 'STUDENT')->count());
     }
 }

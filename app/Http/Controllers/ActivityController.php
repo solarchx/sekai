@@ -8,126 +8,306 @@ use App\Models\User;
 use App\Models\LessonPeriod;
 use App\Models\SchoolClass;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ActivityController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $activities = Activity::with('subject', 'teacher', 'period', 'class')->paginate(100);
-        return view('activities.index', compact('activities'));
+        try {
+            $showDeleted = $request->has('show_deleted') && auth()->user()->role === 'ADMIN';
+            
+            $query = Activity::with('subject', 'teacher', 'period', 'class');
+            
+            if ($showDeleted) {
+                $activities = $query->onlyTrashed()->paginate(100);
+            } else {
+                $activities = $query->paginate(100);
+            }
+            
+            return view('activities.index', compact('activities', 'showDeleted'));
+        } catch (\Exception $e) {
+            Log::error('Error loading activities: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error loading activities: ' . $e->getMessage());
+        }
     }
 
     public function create()
     {
-        $subjects = Subject::all();
-        $teachers = User::where('role', '!=', 'STUDENT')->get();
-        $periods = LessonPeriod::with('semester')->get();
-        $classes = SchoolClass::all();
-        return view('activities.create', compact('subjects', 'teachers', 'periods', 'classes'));
+        try {
+            $subjects = Subject::all();
+            $teachers = User::where('role', '!=', 'STUDENT')->get();
+            $periods = LessonPeriod::whereNull('parent_id')->with('semester')->get(); // Only show parent periods
+            $classes = SchoolClass::all();
+            
+            if ($subjects->isEmpty() || $teachers->isEmpty() || $periods->isEmpty() || $classes->isEmpty()) {
+                return redirect()->route('activities.index')->withErrors('Missing required data. Ensure subjects, teachers, periods, and classes exist.');
+            }
+            
+            return view('activities.create', compact('subjects', 'teachers', 'periods', 'classes'));
+        } catch (\Exception $e) {
+            Log::error('Error loading activity create form: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error loading form: ' . $e->getMessage());
+        }
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'subject_id' => 'required|exists:subjects,id',
-            'teacher_id' => 'required|exists:users,id',
-            'period_id' => 'required|exists:lesson_periods,id',
-            'class_id' => 'required|exists:classes,id',
-        ]);
+        try {
+            $validated = $request->validate([
+                'subject_id' => 'required|exists:subjects,id',
+                'teacher_id' => 'required|exists:users,id',
+                'period_id' => 'required|exists:lesson_periods,id',
+                'class_id' => 'required|exists:classes,id',
+            ], [
+                'subject_id.required' => 'Subject is required.',
+                'subject_id.exists' => 'Selected subject does not exist.',
+                'teacher_id.required' => 'Teacher is required.',
+                'teacher_id.exists' => 'Selected teacher does not exist.',
+                'period_id.required' => 'Lesson period is required.',
+                'period_id.exists' => 'Selected period does not exist.',
+                'class_id.required' => 'Class is required.',
+                'class_id.exists' => 'Selected class does not exist.',
+            ]);
 
-        // Check for teacher overlap
-        $conflictingActivities = Activity::where('teacher_id', $validated['teacher_id'])
-            ->whereHas('period', function ($query) use ($validated) {
-                $period = LessonPeriod::find($validated['period_id']);
-                $query->where('semester_id', $period->semester_id)
-                    ->where('weekday', $period->weekday)
-                    ->where(function ($q) use ($period) {
-                        $q->whereRaw("TIME(time_end) > ?", [$period->time_begin])
-                          ->whereRaw("TIME(time_begin) < ?", [$period->time_end]);
-                    });
-            })
-            ->exists();
+            $period = LessonPeriod::find($validated['period_id']);
+            $teacher = User::find($validated['teacher_id']);
 
-        if ($conflictingActivities) {
-            return back()->withErrors(['teacher_id' => 'Teacher has overlapping activities.']);
+            // Validate teacher role
+            if (!in_array($teacher->role, ['TEACHER', 'VP', 'ADMIN'])) {
+                return back()->withErrors(['teacher_id' => 'Selected user must be a teacher, VP, or admin.'])->withInput();
+            }
+
+            // Check for teacher schedule conflicts (all 7 days)
+            $teacherConflict = Activity::where('teacher_id', $validated['teacher_id'])
+                ->whereHas('period', function ($query) use ($period) {
+                    $query->where('semester_id', $period->semester_id)
+                        ->where(function ($q) use ($period) {
+                            $q->whereRaw("TIME(time_end) > ?", [$period->time_begin])
+                              ->whereRaw("TIME(time_begin) < ?", [$period->time_end]);
+                        });
+                })
+                ->where('deleted_at', null)
+                ->exists();
+
+            if ($teacherConflict) {
+                return back()->withErrors(['teacher_id' => 'Teacher has overlapping activities on this time slot.'])->withInput();
+            }
+
+            // Check for class schedule conflicts
+            $classConflict = Activity::where('class_id', $validated['class_id'])
+                ->whereHas('period', function ($query) use ($period) {
+                    $query->where('semester_id', $period->semester_id)
+                        ->where(function ($q) use ($period) {
+                            $q->whereRaw("TIME(time_end) > ?", [$period->time_begin])
+                              ->whereRaw("TIME(time_begin) < ?", [$period->time_end]);
+                        });
+                })
+                ->where('deleted_at', null)
+                ->exists();
+
+            if ($classConflict) {
+                return back()->withErrors(['class_id' => 'Class has overlapping activities on this time slot.'])->withInput();
+            }
+
+            // Check for duplicate activity
+            $duplicate = Activity::where('subject_id', $validated['subject_id'])
+                ->where('teacher_id', $validated['teacher_id'])
+                ->where('period_id', $validated['period_id'])
+                ->where('class_id', $validated['class_id'])
+                ->where('deleted_at', null)
+                ->exists();
+
+            if ($duplicate) {
+                return back()->withErrors(['subject_id' => 'This activity combination already exists.'])->withInput();
+            }
+
+            DB::beginTransaction();
+
+            $activity = Activity::create($validated);
+
+            // Assign activity to all students in the class with initial ordering
+            $students = SchoolClass::find($validated['class_id'])
+                ->students()
+                ->where('role', 'STUDENT')
+                ->where('deleted_at', null)
+                ->orderBy('name')
+                ->pluck('users.id');
+
+            foreach ($students as $index => $studentId) {
+                $activity->students()->attach($studentId, ['student_order' => $index + 1]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('activities.index')->with('success', 'Activity created successfully and enrolled to all class students.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error creating activity: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error creating activity: ' . $e->getMessage());
         }
+    }
 
-        // Check for duplicate activity
-        $duplicate = Activity::where('subject_id', $validated['subject_id'])
-            ->where('teacher_id', $validated['teacher_id'])
-            ->where('period_id', $validated['period_id'])
-            ->where('class_id', $validated['class_id'])
-            ->exists();
-
-        if ($duplicate) {
-            return back()->withErrors(['subject_id' => 'This activity combination already exists.']);
+    public function show(Activity $activity)
+    {
+        try {
+            $activity->load('subject', 'teacher', 'period', 'class', 'forms');
+            return view('activities.show', compact('activity'));
+        } catch (\Exception $e) {
+            Log::error('Error loading activity details: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error loading activity details: ' . $e->getMessage());
         }
-
-        $activity = Activity::create($validated);
-
-        // Assign activity to all students in the class
-        $students = SchoolClass::find($validated['class_id'])->students()->where('role', 'STUDENT')->pluck('id');
-        foreach ($students as $index => $studentId) {
-            $activity->students()->attach($studentId, ['student_order' => $index + 1]);
-        }
-
-        return redirect()->route('activities.index')->with('success', 'Activity created successfully.');
     }
 
     public function edit(Activity $activity)
     {
-        $subjects = Subject::all();
-        $teachers = User::where('role', '!=', 'STUDENT')->get();
-        $periods = LessonPeriod::with('semester')->get();
-        $classes = SchoolClass::all();
-        return view('activities.edit', compact('activity', 'subjects', 'teachers', 'periods', 'classes'));
+        try {
+            $subjects = Subject::all();
+            $teachers = User::where('role', '!=', 'STUDENT')->get();
+            $periods = LessonPeriod::whereNull('parent_id')->with('semester')->get();
+            $classes = SchoolClass::all();
+            
+            return view('activities.edit', compact('activity', 'subjects', 'teachers', 'periods', 'classes'));
+        } catch (\Exception $e) {
+            Log::error('Error loading activity edit form: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error loading form: ' . $e->getMessage());
+        }
     }
 
     public function update(Request $request, Activity $activity)
     {
-        $validated = $request->validate([
-            'subject_id' => 'required|exists:subjects,id',
-            'teacher_id' => 'required|exists:users,id',
-            'period_id' => 'required|exists:lesson_periods,id',
-            'class_id' => 'required|exists:classes,id',
-        ]);
+        try {
+            $validated = $request->validate([
+                'subject_id' => 'required|exists:subjects,id',
+                'teacher_id' => 'required|exists:users,id',
+                'period_id' => 'required|exists:lesson_periods,id',
+                'class_id' => 'required|exists:classes,id',
+            ], [
+                'subject_id.required' => 'Subject is required.',
+                'subject_id.exists' => 'Selected subject does not exist.',
+                'teacher_id.required' => 'Teacher is required.',
+                'teacher_id.exists' => 'Selected teacher does not exist.',
+                'period_id.required' => 'Lesson period is required.',
+                'period_id.exists' => 'Selected period does not exist.',
+                'class_id.required' => 'Class is required.',
+                'class_id.exists' => 'Selected class does not exist.',
+            ]);
 
-        // Check for teacher overlap (excluding current activity)
-        $conflictingActivities = Activity::where('teacher_id', $validated['teacher_id'])
-            ->where('id', '!=', $activity->id)
-            ->whereHas('period', function ($query) use ($validated) {
-                $period = LessonPeriod::find($validated['period_id']);
-                $query->where('semester_id', $period->semester_id)
-                    ->where('weekday', $period->weekday)
-                    ->where(function ($q) use ($period) {
-                        $q->whereRaw("TIME(time_end) > ?", [$period->time_begin])
-                          ->whereRaw("TIME(time_begin) < ?", [$period->time_end]);
-                    });
-            })
-            ->exists();
+            $period = LessonPeriod::find($validated['period_id']);
+            $teacher = User::find($validated['teacher_id']);
 
-        if ($conflictingActivities) {
-            return back()->withErrors(['teacher_id' => 'Teacher has overlapping activities.']);
-        }
-
-        $activity->update($validated);
-
-        // If class changed, update students
-        if ($activity->wasChanged('class_id')) {
-            $activity->students()->detach();
-            $students = SchoolClass::find($validated['class_id'])->students()->where('role', 'STUDENT')->pluck('id');
-            foreach ($students as $index => $studentId) {
-                $activity->students()->attach($studentId, ['student_order' => $index + 1]);
+            // Validate teacher role
+            if (!in_array($teacher->role, ['TEACHER', 'VP', 'ADMIN'])) {
+                return back()->withErrors(['teacher_id' => 'Selected user must be a teacher, VP, or admin.'])->withInput();
             }
-        }
 
-        return redirect()->route('activities.index')->with('success', 'Activity updated successfully.');
+            // Check for teacher conflicts (excluding current activity)
+            $teacherConflict = Activity::where('teacher_id', $validated['teacher_id'])
+                ->where('id', '!=', $activity->id)
+                ->whereHas('period', function ($query) use ($period) {
+                    $query->where('semester_id', $period->semester_id)
+                        ->where(function ($q) use ($period) {
+                            $q->whereRaw("TIME(time_end) > ?", [$period->time_begin])
+                              ->whereRaw("TIME(time_begin) < ?", [$period->time_end]);
+                        });
+                })
+                ->where('deleted_at', null)
+                ->exists();
+
+            if ($teacherConflict) {
+                return back()->withErrors(['teacher_id' => 'Teacher has overlapping activities on this time slot.'])->withInput();
+            }
+
+            // Check for class conflicts (excluding current activity)
+            $classConflict = Activity::where('class_id', $validated['class_id'])
+                ->where('id', '!=', $activity->id)
+                ->whereHas('period', function ($query) use ($period) {
+                    $query->where('semester_id', $period->semester_id)
+                        ->where(function ($q) use ($period) {
+                            $q->whereRaw("TIME(time_end) > ?", [$period->time_begin])
+                              ->whereRaw("TIME(time_begin) < ?", [$period->time_end]);
+                        });
+                })
+                ->where('deleted_at', null)
+                ->exists();
+
+            if ($classConflict) {
+                return back()->withErrors(['class_id' => 'Class has overlapping activities on this time slot.'])->withInput();
+            }
+
+            DB::beginTransaction();
+
+            $classChanged = $activity->class_id !== $validated['class_id'];
+            $activity->update($validated);
+
+            // If class changed, update student enrollments
+            if ($classChanged) {
+                $activity->students()->detach();
+                
+                $students = SchoolClass::find($validated['class_id'])
+                    ->students()
+                    ->where('role', 'STUDENT')
+                    ->where('deleted_at', null)
+                    ->orderBy('name')
+                    ->pluck('users.id');
+
+                foreach ($students as $index => $studentId) {
+                    $activity->students()->attach($studentId, ['student_order' => $index + 1]);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('activities.index')->with('success', 'Activity updated successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating activity: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error updating activity: ' . $e->getMessage());
+        }
     }
 
     public function destroy(Activity $activity)
     {
-        $activity->delete();
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('activities.index')->with('success', 'Activity deleted successfully.');
+            // Delete all presences and forms associated with this activity
+            $activity->presences()->delete();
+            $activity->forms()->delete();
+
+            $activity->delete();
+
+            DB::commit();
+
+            return redirect()->route('activities.index')->with('success', 'Activity deleted successfully (all associated presences and forms removed).');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error deleting activity: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error deleting activity: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Restore a soft-deleted activity (admin only).
+     */
+    public function restore(Activity $activity)
+    {
+        try {
+            if (auth()->user()->role !== 'ADMIN') {
+                return redirect()->back()->withErrors('Unauthorized action.');
+            }
+
+            $activity->restore();
+
+            return redirect()->route('activities.index')->with('success', 'Activity restored successfully.');
+        } catch (\Exception $e) {
+            Log::error('Error restoring activity: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error restoring activity: ' . $e->getMessage());
+        }
     }
 }

@@ -5,86 +5,248 @@ namespace App\Http\Controllers;
 use App\Models\LessonPeriod;
 use App\Models\AcademicSemester;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class LessonPeriodController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $periods = LessonPeriod::with('semester')->paginate(100);
-        return view('periods.index', compact('periods'));
+        try {
+            $semesters = AcademicSemester::all();
+            $selectedSemesterId = $request->query('semester_id');
+            $parentPeriods = collect();
+            $periods = collect();
+
+            if ($selectedSemesterId) {
+                // Get parent periods for selected semester
+                $parentPeriods = LessonPeriod::with('semester')
+                    ->where('semester_id', $selectedSemesterId)
+                    ->whereNull('parent_id')
+                    ->get();
+                
+                // Get all child periods for this semester
+                $periods = LessonPeriod::where('semester_id', $selectedSemesterId)->get();
+            }
+
+            return view('periods.schedule-sheet', compact('semesters', 'selectedSemesterId', 'parentPeriods', 'periods'));
+        } catch (\Exception $e) {
+            Log::error('Error loading periods: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error loading periods: ' . $e->getMessage());
+        }
     }
 
     public function create()
     {
-        $semesters = AcademicSemester::all();
-        return view('periods.create', compact('semesters'));
+        try {
+            $semesters = AcademicSemester::all();
+            if ($semesters->isEmpty()) {
+                return redirect()->route('periods.index')->withErrors('No academic semesters available. Create one first.');
+            }
+            return view('periods.create', compact('semesters'));
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors('Error loading create form: ' . $e->getMessage());
+        }
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'weekday' => 'required|integer|between:0,6',
-            'time_begin' => 'required|date_format:H:i',
-            'time_end' => 'required|date_format:H:i|after:time_begin',
-            'semester_id' => 'required|exists:academic_semesters,id',
-        ]);
+        try {
+            $validated = $request->validate([
+                'time_begin' => 'required|date_format:H:i',
+                'time_end' => 'required|date_format:H:i|after:time_begin',
+                'semester_id' => 'required|exists:academic_semesters,id',
+            ], [
+                'time_begin.required' => 'Start time is required.',
+                'time_begin.date_format' => 'Start time must be in HH:MM format.',
+                'time_end.required' => 'End time is required.',
+                'time_end.date_format' => 'End time must be in HH:MM format.',
+                'time_end.after' => 'End time must be after start time.',
+                'semester_id.required' => 'Academic semester is required.',
+                'semester_id.exists' => 'Selected semester does not exist.',
+            ]);
 
-        // Check for overlapping periods
-        $overlapping = LessonPeriod::where('weekday', $validated['weekday'])
-            ->where('semester_id', $validated['semester_id'])
-            ->where(function ($query) use ($validated) {
-                $query->whereRaw("TIME(time_end) > ?", [$validated['time_begin']])
-                      ->whereRaw("TIME(time_begin) < ?", [$validated['time_end']]);
-            })
-            ->exists();
+            // Start database transaction for ACID compliance
+            DB::beginTransaction();
 
-        if ($overlapping) {
-            return back()->withErrors(['time_begin' => 'This period overlaps with an existing period.']);
+            // Create parent period that groups all 7 day periods
+            $parentPeriod = LessonPeriod::create([
+                'weekday' => 0, // Dummy value for parent
+                'time_begin' => $validated['time_begin'],
+                'time_end' => $validated['time_end'],
+                'semester_id' => $validated['semester_id'],
+                'parent_id' => null, // This is the parent
+            ]);
+
+            // Create 7 child periods (one for each day of the week: Monday 0 to Sunday 6)
+            for ($day = 0; $day <= 6; $day++) {
+                // Check for overlapping periods on this specific day
+                $overlapping = LessonPeriod::where('weekday', $day)
+                    ->where('semester_id', $validated['semester_id'])
+                    ->whereNull('parent_id') // Only check against parent periods
+                    ->where(function ($query) use ($validated) {
+                        $query->whereRaw("TIME(time_end) > ?", [$validated['time_begin']])
+                              ->whereRaw("TIME(time_begin) < ?", [$validated['time_end']]);
+                    })
+                    ->exists();
+
+                if ($overlapping) {
+                    DB::rollBack();
+                    return back()->withErrors(['time_begin' => "This time overlaps with an existing period on day {$day}."]);
+                }
+
+                // Create child period for this day
+                LessonPeriod::create([
+                    'weekday' => $day,
+                    'time_begin' => $validated['time_begin'],
+                    'time_end' => $validated['time_end'],
+                    'semester_id' => $validated['semester_id'],
+                    'parent_id' => $parentPeriod->id,
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('periods.index')->with('success', 'Lesson period created successfully for all 7 days.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors('Error creating period: ' . $e->getMessage());
         }
-
-        LessonPeriod::create($validated);
-
-        return redirect()->route('periods.index')->with('success', 'Period created successfully.');
     }
 
     public function edit(LessonPeriod $period)
     {
-        $semesters = AcademicSemester::all();
-        return view('periods.edit', compact('period', 'semesters'));
+        try {
+            // Only allow editing parent periods
+            if ($period->parent_id !== null) {
+                return redirect()->route('periods.index')->withErrors('You can only edit parent periods directly.');
+            }
+
+            $semesters = AcademicSemester::all();
+            return view('periods.edit', compact('period', 'semesters'));
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors('Error loading edit form: ' . $e->getMessage());
+        }
     }
 
     public function update(Request $request, LessonPeriod $period)
     {
-        $validated = $request->validate([
-            'weekday' => 'required|integer|between:0,6',
-            'time_begin' => 'required|date_format:H:i',
-            'time_end' => 'required|date_format:H:i|after:time_begin',
-            'semester_id' => 'required|exists:academic_semesters,id',
-        ]);
+        try {
+            // Only allow editing parent periods
+            if ($period->parent_id !== null) {
+                return redirect()->route('periods.index')->withErrors('You can only edit parent periods directly.');
+            }
 
-        // Check for overlapping periods (excluding current period)
-        $overlapping = LessonPeriod::where('weekday', $validated['weekday'])
-            ->where('semester_id', $validated['semester_id'])
-            ->where('id', '!=', $period->id)
-            ->where(function ($query) use ($validated) {
-                $query->whereRaw("TIME(time_end) > ?", [$validated['time_begin']])
-                      ->whereRaw("TIME(time_begin) < ?", [$validated['time_end']]);
-            })
-            ->exists();
+            $validated = $request->validate([
+                'time_begin' => 'required|date_format:H:i',
+                'time_end' => 'required|date_format:H:i|after:time_begin',
+                'semester_id' => 'required|exists:academic_semesters,id',
+            ], [
+                'time_begin.required' => 'Start time is required.',
+                'time_begin.date_format' => 'Start time must be in HH:MM format.',
+                'time_end.required' => 'End time is required.',
+                'time_end.date_format' => 'End time must be in HH:MM format.',
+                'time_end.after' => 'End time must be after start time.',
+                'semester_id.required' => 'Academic semester is required.',
+                'semester_id.exists' => 'Selected semester does not exist.',
+            ]);
 
-        if ($overlapping) {
-            return back()->withErrors(['time_begin' => 'This period overlaps with an existing period.']);
+            DB::beginTransaction();
+
+            // Update all child periods (7 days)
+            $childPeriods = $period->childPeriods;
+
+            foreach ($childPeriods as $child) {
+                // Check for overlapping periods (excluding current child period)
+                $overlapping = LessonPeriod::where('weekday', $child->weekday)
+                    ->where('semester_id', $validated['semester_id'])
+                    ->where('id', '!=', $child->id)
+                    ->whereNull('parent_id')
+                    ->where(function ($query) use ($validated) {
+                        $query->whereRaw("TIME(time_end) > ?", [$validated['time_begin']])
+                              ->whereRaw("TIME(time_begin) < ?", [$validated['time_end']]);
+                    })
+                    ->exists();
+
+                if ($overlapping) {
+                    DB::rollBack();
+                    return back()->withErrors(['time_begin' => "This time overlaps with an existing period on day {$child->weekday}."]);
+                }
+
+                $child->update([
+                    'time_begin' => $validated['time_begin'],
+                    'time_end' => $validated['time_end'],
+                    'semester_id' => $validated['semester_id'],
+                ]);
+            }
+
+            // Update parent period
+            $period->update([
+                'time_begin' => $validated['time_begin'],
+                'time_end' => $validated['time_end'],
+                'semester_id' => $validated['semester_id'],
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('periods.index')->with('success', 'Lesson period updated successfully for all 7 days.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors('Error updating period: ' . $e->getMessage());
         }
-
-        $period->update($validated);
-
-        return redirect()->route('periods.index')->with('success', 'Period updated successfully.');
     }
 
     public function destroy(LessonPeriod $period)
     {
-        $period->delete();
+        try {
+            // Only allow deleting parent periods
+            if ($period->parent_id !== null) {
+                return redirect()->route('periods.index')->withErrors('You can only delete parent periods directly.');
+            }
 
-        return redirect()->route('periods.index')->with('success', 'Period deleted successfully.');
+            DB::beginTransaction();
+
+            // Delete all child periods first
+            $period->childPeriods()->delete();
+
+            // Delete parent period
+            $period->delete();
+
+            DB::commit();
+
+            return redirect()->route('periods.index')->with('success', 'Lesson period deleted successfully (all 7 days removed).');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors('Error deleting period: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Restore a soft-deleted period (admin only).
+     */
+    public function restore(LessonPeriod $period)
+    {
+        try {
+            if (auth()->user()->role !== 'ADMIN') {
+                return redirect()->back()->withErrors('Unauthorized action.');
+            }
+
+            // Only restore parent periods
+            if ($period->parent_id !== null) {
+                return redirect()->route('periods.index')->withErrors('You can only restore parent periods directly.');
+            }
+
+            $period->restore();
+            $period->childPeriods()->restore();
+
+            return redirect()->route('periods.index')->with('success', 'Lesson period restored successfully (all 7 days restored).');
+        } catch (\Exception $e) {
+            Log::error('Error restoring period: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error restoring period: ' . $e->getMessage());
+        }
     }
 }

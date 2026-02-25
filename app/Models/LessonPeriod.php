@@ -17,6 +17,7 @@ class LessonPeriod extends Model
         'time_begin',
         'time_end',
         'semester_id',
+        'parent_id',
     ];
 
     protected $casts = [
@@ -41,6 +42,16 @@ class LessonPeriod extends Model
     public function activities()
     {
         return $this->hasMany(Activity::class, 'period_id');
+    }
+
+    public function parentPeriod()
+    {
+        return $this->belongsTo(LessonPeriod::class, 'parent_id');
+    }
+
+    public function childPeriods()
+    {
+        return $this->hasMany(LessonPeriod::class, 'parent_id');
     }
 
     public function getWeekdayNameAttribute()

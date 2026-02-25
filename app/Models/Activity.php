@@ -56,6 +56,11 @@ class Activity extends Model
         return $this->hasMany(ActivityForm::class, 'activity_id');
     }
 
+    public function presences()
+    {
+        return $this->hasMany(ActivityPresence::class, 'activity_id');
+    }
+
     public function scoreDistributions()
     {
         return $this->hasMany(ScoreDistribution::class, 'activity_id');

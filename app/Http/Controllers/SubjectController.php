@@ -4,13 +4,29 @@ namespace App\Http\Controllers;
 
 use App\Models\Subject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class SubjectController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $subjects = Subject::paginate(100);
-        return view('subjects.index', compact('subjects'));
+        try {
+            $showDeleted = $request->has('show_deleted') && auth()->user()->role === 'ADMIN';
+            
+            $query = Subject::query();
+            
+            if ($showDeleted) {
+                $subjects = $query->onlyTrashed()->paginate(100);
+            } else {
+                $subjects = $query->paginate(100);
+            }
+            
+            return view('subjects.index', compact('subjects', 'showDeleted'));
+        } catch (\Exception $e) {
+            Log::error('Error loading subjects: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error loading subjects: ' . $e->getMessage());
+        }
     }
 
     public function create()
@@ -20,13 +36,28 @@ class SubjectController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:subjects,name',
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255|unique:subjects,name',
+            ], [
+                'name.required' => 'Subject name is required.',
+                'name.unique' => 'This subject name already exists.',
+            ]);
 
-        Subject::create($validated);
+            DB::beginTransaction();
 
-        return redirect()->route('subjects.index')->with('success', 'Subject created successfully.');
+            Subject::create($validated);
+
+            DB::commit();
+
+            return redirect()->route('subjects.index')->with('success', 'Subject created successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error creating subject: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error creating subject: ' . $e->getMessage());
+        }
     }
 
     public function edit(Subject $subject)
@@ -36,35 +67,60 @@ class SubjectController extends Controller
 
     public function update(Request $request, Subject $subject)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:subjects,name,' . $subject->id,
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255|unique:subjects,name,' . $subject->id,
+            ], [
+                'name.required' => 'Subject name is required.',
+                'name.unique' => 'This subject name already exists.',
+            ]);
 
-        $subject->update($validated);
+            DB::beginTransaction();
 
-        return redirect()->route('subjects.index')->with('success', 'Subject updated successfully.');
+            $subject->update($validated);
+
+            DB::commit();
+
+            return redirect()->route('subjects.index')->with('success', 'Subject updated successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating subject: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error updating subject: ' . $e->getMessage());
+        }
     }
 
     public function destroy(Subject $subject)
     {
-        $subject->delete();
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('subjects.index')->with('success', 'Subject deleted successfully.');
+            $subject->delete();
+
+            DB::commit();
+
+            return redirect()->route('subjects.index')->with('success', 'Subject deleted successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error deleting subject: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error deleting subject: ' . $e->getMessage());
+        }
     }
 
-    public function restore($id)
+    public function restore(Subject $subject)
     {
-        $subject = Subject::withTrashed()->findOrFail($id);
-        $subject->restore();
+        try {
+            if (auth()->user()->role !== 'ADMIN') {
+                return redirect()->back()->withErrors('Unauthorized action.');
+            }
 
-        return redirect()->route('subjects.index')->with('success', 'Subject restored successfully.');
-    }
+            $subject->restore();
 
-    public function forceDelete($id)
-    {
-        $subject = Subject::withTrashed()->findOrFail($id);
-        $subject->forceDelete();
-
-        return redirect()->route('subjects.index')->with('success', 'Subject permanently deleted.');
+            return redirect()->route('subjects.index')->with('success', 'Subject restored successfully.');
+        } catch (\Exception $e) {
+            Log::error('Error restoring subject: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error restoring subject: ' . $e->getMessage());
+        }
     }
 }

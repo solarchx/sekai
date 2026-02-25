@@ -57,6 +57,11 @@
                             </tbody>
                         </table>
                     </div>
+                    
+                    <!-- Pagination -->
+                    <div class="mt-6">
+                        {{ $forms->links() }}
+                    </div>
                 </div>
             </div>
         </div>

@@ -10,7 +10,7 @@ class ActivityFormController extends Controller
 {
     public function index()
     {
-        $forms = ActivityForm::with('activity.subject', 'activity.teacher', 'activity.class')->get();
+        $forms = ActivityForm::with('activity.subject', 'activity.teacher', 'activity.class')->paginate(100);
         return view('activity-forms.index', compact('forms'));
     }
 

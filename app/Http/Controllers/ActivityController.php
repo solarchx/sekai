@@ -13,7 +13,7 @@ class ActivityController extends Controller
 {
     public function index()
     {
-        $activities = Activity::with('subject', 'teacher', 'period', 'class')->get();
+        $activities = Activity::with('subject', 'teacher', 'period', 'class')->paginate(100);
         return view('activities.index', compact('activities'));
     }
 

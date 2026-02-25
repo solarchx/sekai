@@ -10,7 +10,7 @@ class ScoreDistributionController extends Controller
 {
     public function index()
     {
-        $distributions = ScoreDistribution::with('activity.subject', 'activity.teacher', 'activity.class')->get();
+        $distributions = ScoreDistribution::with('activity.subject', 'activity.teacher', 'activity.class')->paginate(100);
         return view('score-distributions.index', compact('distributions'));
     }
 

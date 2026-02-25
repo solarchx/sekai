@@ -10,7 +10,7 @@ class ActivityReportController extends Controller
 {
     public function index()
     {
-        $reports = ActivityReport::with('presence.student', 'presence.form.activity.subject')->get();
+        $reports = ActivityReport::with('presence.student', 'presence.form.activity.subject')->paginate(100);
         return view('activity-reports.index', compact('reports'));
     }
 

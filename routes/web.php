@@ -15,6 +15,7 @@ use App\Http\Controllers\ActivityPresenceController;
 use App\Http\Controllers\ActivityReportController;
 use App\Http\Controllers\ScoreDistributionController;
 use App\Http\Controllers\StudentScoreController;
+use App\Http\Controllers\AnnouncementController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -40,6 +41,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Admin-only routes
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('users', UserController::class);
     Route::resource('majors', MajorController::class);
@@ -48,12 +50,25 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('grades', GradeController::class);
     Route::resource('semesters', AcademicSemesterController::class);
     Route::resource('periods', LessonPeriodController::class);
+});
+
+// VP and above routes
+Route::middleware(['auth', 'vp'])->group(function () {
     Route::resource('activities', ActivityController::class);
+});
+
+// Teacher and above routes
+Route::middleware(['auth', 'teacher'])->group(function () {
     Route::resource('activity-forms', ActivityFormController::class);
     Route::resource('activity-presences', ActivityPresenceController::class);
-    Route::resource('activity-reports', ActivityReportController::class);
     Route::resource('score-distributions', ScoreDistributionController::class);
     Route::resource('student-scores', StudentScoreController::class);
+});
+
+// Student and above routes
+Route::middleware(['auth'])->group(function () {
+    Route::resource('activity-reports', ActivityReportController::class);
+    Route::resource('announcements', AnnouncementController::class);
 });
 
 Route::get('/my-class', [SchoolClassController::class, 'show'])

@@ -53,6 +53,11 @@
                             </tbody>
                         </table>
                     </div>
+                    
+                    <!-- Pagination -->
+                    <div class="mt-6">
+                        {{ $grades->links() }}
+                    </div>
                 </div>
             </div>
         </div>

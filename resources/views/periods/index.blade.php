@@ -61,6 +61,11 @@
                             </tbody>
                         </table>
                     </div>
+                    
+                    <!-- Pagination -->
+                    <div class="mt-6">
+                        {{ $periods->links() }}
+                    </div>
                 </div>
             </div>
         </div>

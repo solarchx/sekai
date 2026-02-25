@@ -21,19 +21,19 @@
                         <div class="grid grid-cols-1 gap-6">
                             <div>
                                 <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name</label>
-                                <input type="text" name="name" id="name" value="{{ old('name') }}" required 
+                                <input type="text" name="name" id="name" value="{{ old('name') }}" placeholder="e.g., Tanjiro Kamado" required 
                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
                                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
                             </div>
                             <div>
                                 <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
-                                <input type="email" name="email" id="email" value="{{ old('email') }}" required 
+                                <input type="email" name="email" id="email" value="{{ old('email') }}" placeholder="e.g., tanjiro@school.edu" required 
                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
                                 <x-input-error :messages="$errors->get('email')" class="mt-2" />
                             </div>
                             <div>
                                 <label for="identifier" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Identifier</label>
-                                <input type="text" name="identifier" id="identifier" value="{{ old('identifier') }}" required 
+                                <input type="text" name="identifier" id="identifier" value="{{ old('identifier') }}" placeholder="e.g., TAN001" required 
                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
                                 <x-input-error :messages="$errors->get('identifier')" class="mt-2" />
                             </div>

@@ -9,7 +9,7 @@ class SubjectController extends Controller
 {
     public function index()
     {
-        $subjects = Subject::all();
+        $subjects = Subject::paginate(100);
         return view('subjects.index', compact('subjects'));
     }
 
@@ -50,5 +50,21 @@ class SubjectController extends Controller
         $subject->delete();
 
         return redirect()->route('subjects.index')->with('success', 'Subject deleted successfully.');
+    }
+
+    public function restore($id)
+    {
+        $subject = Subject::withTrashed()->findOrFail($id);
+        $subject->restore();
+
+        return redirect()->route('subjects.index')->with('success', 'Subject restored successfully.');
+    }
+
+    public function forceDelete($id)
+    {
+        $subject = Subject::withTrashed()->findOrFail($id);
+        $subject->forceDelete();
+
+        return redirect()->route('subjects.index')->with('success', 'Subject permanently deleted.');
     }
 }

@@ -11,7 +11,7 @@ class StudentScoreController extends Controller
 {
     public function index()
     {
-        $scores = StudentScore::with('activity.subject', 'activity.teacher', 'activity.class', 'student')->get();
+        $scores = StudentScore::with('activity.subject', 'activity.teacher', 'activity.class', 'student')->paginate(100);
         return view('student-scores.index', compact('scores'));
     }
 

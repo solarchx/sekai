@@ -59,6 +59,11 @@
                             </tbody>
                         </table>
                     </div>
+                    
+                    <!-- Pagination -->
+                    <div class="mt-6">
+                        {{ $presences->links() }}
+                    </div>
                 </div>
             </div>
         </div>

@@ -10,7 +10,7 @@ class LessonPeriodController extends Controller
 {
     public function index()
     {
-        $periods = LessonPeriod::with('semester')->get();
+        $periods = LessonPeriod::with('semester')->paginate(100);
         return view('periods.index', compact('periods'));
     }
 

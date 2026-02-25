@@ -16,7 +16,13 @@
                 </div>
                 <div class="p-6">
                     <div class="flex justify-between items-center mb-6">
-                        <h4 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Subjects List</h4>
+                        <div>
+                            <h4 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Subjects List</h4>
+                            <label class="text-sm text-gray-600 dark:text-gray-400 mt-2 flex items-center">
+                                <input type="checkbox" id="showDeleted" onchange="toggleDeleted()" class="mr-2">
+                                Show Deleted
+                            </label>
+                        </div>
                         <a href="{{ route('subjects.create') }}" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
                             <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -54,6 +60,11 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="mt-6">
+                        {{ $subjects->links() }}
                     </div>
                 </div>
             </div>

@@ -11,7 +11,7 @@ class ActivityPresenceController extends Controller
 {
     public function index()
     {
-        $presences = ActivityPresence::with('form.activity.subject', 'student')->get();
+        $presences = ActivityPresence::with('form', 'student')->paginate(100);
         return view('activity-presences.index', compact('presences'));
     }
 

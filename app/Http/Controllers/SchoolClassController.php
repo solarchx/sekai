@@ -113,7 +113,7 @@ class SchoolClassController extends Controller
     public function show(SchoolClass $class)
     {
         try {
-            $userClass = Auth::user()->schoolClass()->with(['major', 'grade'])->first();
+            $userClass = Auth::user()->class()->with(['major', 'grade'])->first();
             
             if (!$userClass) {
                 return redirect()->route('dashboard')->withErrors('You are not assigned to any class.');

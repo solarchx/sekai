@@ -49,8 +49,6 @@ return new class extends Migration
             $table->unsignedInteger('major_id');
             $table->unsignedInteger('grade_id');
             $table->integer('capacity')->default(50);
-            $table->unsignedInteger('homeroom_teacher_id')->nullable();
-            $table->foreign('homeroom_teacher_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('restrict');
             $table->softDeletes();
             $table->timestamps();
 
@@ -80,6 +78,12 @@ return new class extends Migration
             $table->foreign('class_id', 'fk_student_class')
                 ->references('id')->on('classes')
                 ->onUpdate('cascade')->onDelete('restrict');
+        });
+
+        // Classes (again)
+        Schema::table('classes', function (Blueprint $table) {
+            $table->unsignedInteger('homeroom_teacher_id')->nullable();
+            $table->foreign('homeroom_teacher_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('restrict');
         });
 
         // Majors Subjects (Pivot)

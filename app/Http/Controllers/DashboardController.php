@@ -7,6 +7,8 @@ use Illuminate\View\View;
 use App\Models\User;
 use App\Models\SchoolClass;
 use App\Models\Activity;
+use App\Models\AcademicSemester;
+use App\Models\LessonPeriod;
 
 class DashboardController extends Controller
 {

@@ -27,13 +27,18 @@
                     @endif
 
                     <div class="flex justify-between items-center mb-6">
-                        <h4 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Presences List</h4>
-                        <a href="{{ route('activity-presences.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                            Add Presence
-                        </a>
+                        <h4 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Presences List
+                            ({{ $presences->total() }})</h4>
+                        @if(!$showDeleted)
+                            <a href="{{ route('activity-presences.create') }}"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
+                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                Add Presence
+                            </a>
+                        @endif
                     </div>
 
                     <div class="overflow-x-auto">
@@ -91,10 +96,16 @@
                             </tbody>
                         </table>
                     </div>
-                    
+
                     <!-- Pagination -->
-                    <div class="mt-6">
-                        {{ $presences->links() }}
+                    <div class="mt-6 flex justify-between items-center">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                            Showing {{ $presences->firstItem() }} to {{ $presences->lastItem() }} of
+                            {{ $presences->total() }} results
+                        </div>
+                        <div class="flex gap-2">
+                            {{ $presences->links() }}
+                        </div>
                     </div>
                 </div>
             </div>

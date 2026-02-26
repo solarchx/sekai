@@ -16,76 +16,119 @@
                 </div>
 
                 <div class="p-6">
-                    @if(auth()->user()->role === 'ADMIN')
-                        <div class="mb-4 flex items-center">
-                            <form method="GET" action="{{ route('activities.index') }}">
-                                <label class="inline-flex items-center">
-                                    <input type="checkbox" name="show_deleted" value="1" {{ request('show_deleted') ? 'checked' : '' }} onchange="this.form.submit()">
-                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Show deleted records</span>
-                                </label>
-                            </form>
-                        </div>
-                    @endif
+                    <x-soft-delete-filter />
                     <div class="flex justify-between items-center mb-6">
-                        <h4 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Activities List</h4>
-                        <a href="{{ route('activities.create') }}" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                            Add Activity
-                        </a>
+                        <h4 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Activities List
+                            ({{ $activities->total() }})</h4>
+                        @if(!$showDeleted)
+                            <a href="{{ route('activities.create') }}"
+                                class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
+                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                Add Activity
+                            </a>
+                        @endif
                     </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-white dark:bg-gray-800">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Subject</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Teacher</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Class</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Period</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        ID</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Subject</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Teacher</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Class</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Period</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Status</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 @forelse($activities as $activity)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{{ $activity->id }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $activity->subject->name ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $activity->teacher->name ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $activity->class->name ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $activity->period->weekday_name }} {{ $activity->period->time_begin }} - {{ $activity->period->time_end }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        @if($activity->trashed())
-                                            @if(auth()->user()->role === 'ADMIN')
-                                                <form action="{{ route('activities.restore', $activity) }}" method="POST" class="inline">
+                                    <tr
+                                        class="hover:bg-gray-50 dark:hover:bg-gray-700 {{ $activity->deleted_at ? 'bg-red-50 dark:bg-red-900' : '' }}">
+                                        <td
+                                            class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                            {{ $activity->id }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                            {{ $activity->subject->name ?? 'N/A' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                            {{ $activity->teacher->name ?? 'N/A' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                            {{ $activity->class->name ?? 'N/A' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                            {{ $activity->period->weekday_name }} {{ $activity->period->time_begin }} -
+                                            {{ $activity->period->time_end }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if($activity->deleted_at)
+                                                <span
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">DELETED</span>
+                                            @else
+                                                <span
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">ACTIVE</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                            @if($activity->deleted_at)
+                                                <form action="{{ route('activities.restore', $activity) }}" method="POST"
+                                                    class="inline">
                                                     @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Restore</button>
+                                                    <button type="submit"
+                                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
+                                                        title="Restore">
+                                                        <i class="bi bi-arrow-counterclockwise"></i> Restore
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <button
+                                                    onclick="window.location.href='{{ route('activities.edit', $activity) }}'"
+                                                    class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
+                                                    title="Edit">Edit</button>
+                                                <form action="{{ route('activities.destroy', $activity) }}" method="POST"
+                                                    class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
+                                                        title="Delete" onclick="return confirm('Are you sure?')">Delete</button>
                                                 </form>
                                             @endif
-                                        @else
-                                            <button onclick="window.location.href='{{ route('activities.edit', $activity) }}'" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Edit</button>
-                                            <form action="{{ route('activities.destroy', $activity) }}" method="POST" class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors" onclick="return confirm('Are you sure?')">Delete</button>
-                                            </form>
-                                        @endif
-                                    </td>
-                                </tr>
+                                        </td>
+                                    </tr>
                                 @empty
-                                <tr>
-                                    <td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No activities found</td>
-                                </tr>
+                                    <tr>
+                                        <td colspan="7" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No
+                                            activities found</td>
+                                    </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
-                    
+
                     <!-- Pagination -->
-                    <div class="mt-6">
-                        {{ $activities->links() }}
+                    <div class="mt-6 flex justify-between items-center">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                            Showing {{ $activities->firstItem() }} to {{ $activities->lastItem() }} of
+                            {{ $activities->total() }} results
+                        </div>
+                        <div class="flex gap-2">
+                            {{ $activities->links() }}
+                        </div>
                     </div>
                 </div>
             </div>

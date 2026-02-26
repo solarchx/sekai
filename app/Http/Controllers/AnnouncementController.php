@@ -13,10 +13,20 @@ use Illuminate\Support\Facades\Log;
 
 class AnnouncementController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
             $user = Auth::user();
+            
+            // Get announcements visible to the user based on scope
+            $query = Announcement::query();
+            
+            // For ADMIN users, allow viewing soft-deleted announcements
+            $showDeleted = $request->has('show_deleted') && $user->role === 'ADMIN';
+            if ($showDeleted) {
+                $query = $query->onlyTrashed();
+            }
+            
             $query = Announcement::with('sender', 'activity', 'grade');
 
             if ($user->role === 'STUDENT') {
@@ -89,6 +99,12 @@ class AnnouncementController extends Controller
                       });
                 });
             }
+            
+            $announcements = $query->with('sender', 'class', 'grade')
+                                   ->latest()
+                                   ->paginate(100);
+            
+            return view('announcements.index', compact('announcements', 'showDeleted'));
 
             $announcements = $query->latest()->paginate(100);
 

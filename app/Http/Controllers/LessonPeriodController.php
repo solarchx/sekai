@@ -88,6 +88,7 @@ class LessonPeriodController extends Controller
 
             // Create 7 child periods (one for each day of the week: Monday 0 to Sunday 6)
             for ($day = 1; $day <= 6; $day++) {
+            for ($day = 1; $day <= 6; $day++) {
                 // Check for overlapping periods on this specific day
                 $overlapping = LessonPeriod::where('weekday', $day)
                     ->where('semester_id', $validated['semester_id'])

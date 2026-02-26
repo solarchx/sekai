@@ -19,10 +19,16 @@ class ActivityReportController extends Controller
         if (auth()->user()->role !== 'ADMIN') {
             abort(403);
         }
-        $reports = ActivityReport::with('presence.form.activity.subject')
-                    ->withTrashed($request->has('show_deleted'))
-                    ->paginate(100);
-        return view('activity-reports.index', compact('reports'));
+        
+        $query = ActivityReport::with('presence.form.activity.subject');
+        
+        $showDeleted = $request->has('show_deleted') && auth()->user()->role === 'ADMIN';
+        if ($showDeleted) {
+            $query = $query->onlyTrashed();
+        }
+        
+        $reports = $query->paginate(100);
+        return view('activity-reports.index', compact('reports', 'showDeleted'));
     }
 
     /**

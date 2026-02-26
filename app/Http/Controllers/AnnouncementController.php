@@ -13,13 +13,19 @@ use Illuminate\Support\Facades\Log;
 
 class AnnouncementController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
             $user = Auth::user();
             
             // Get announcements visible to the user based on scope
             $query = Announcement::query();
+            
+            // For ADMIN users, allow viewing soft-deleted announcements
+            $showDeleted = $request->has('show_deleted') && $user->role === 'ADMIN';
+            if ($showDeleted) {
+                $query = $query->onlyTrashed();
+            }
             
             if ($user->role === 'STUDENT') {
                 $query->where(function ($q) use ($user) {
@@ -90,7 +96,7 @@ class AnnouncementController extends Controller
                                    ->latest()
                                    ->paginate(100);
             
-            return view('announcements.index', compact('announcements'));
+            return view('announcements.index', compact('announcements', 'showDeleted'));
         } catch (\Exception $e) {
             Log::error('Error loading announcements: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error loading announcements: ' . $e->getMessage());

@@ -25,8 +25,12 @@ class LessonPeriodController extends Controller
                     ->whereNull('parent_id')
                     ->get();
                 
-                // Get all child periods for this semester
-                $periods = LessonPeriod::where('semester_id', $selectedSemesterId)->get();
+                // Get all child periods for this semester with their activities
+                $periods = LessonPeriod::with(['activities' => function($q) {
+                    $q->with('subject', 'teacher', 'class')->where('deleted_at', null);
+                }])
+                    ->where('semester_id', $selectedSemesterId)
+                    ->get();
             }
 
             return view('periods.schedule-sheet', compact('semesters', 'selectedSemesterId', 'parentPeriods', 'periods'));
@@ -79,7 +83,7 @@ class LessonPeriodController extends Controller
             ]);
 
             // Create 7 child periods (one for each day of the week: Monday 0 to Sunday 6)
-            for ($day = 0; $day <= 6; $day++) {
+            for ($day = 1; $day <= 6; $day++) {
                 // Check for overlapping periods on this specific day
                 $overlapping = LessonPeriod::where('weekday', $day)
                     ->where('semester_id', $validated['semester_id'])

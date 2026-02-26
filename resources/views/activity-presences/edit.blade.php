@@ -20,7 +20,9 @@
                             <select name="form_id" id="form_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('form_id') is-invalid @enderror" required>
                                 <option value="">Select Form</option>
                                 @foreach($forms as $form)
-                                    <option value="{{ $form->id }}" {{ old('form_id', $activityPresence->form_id) == $form->id ? 'selected' : '' }}>{{ $form->activity->subject->name }} - {{ $form->activity_date }}</option>
+                                    <option value="{{ $form->id }}" {{ old('form_id', $activityPresence->form_id) == $form->id ? 'selected' : '' }}>
+                                        {{ $form->activity->subject->name }} - {{ $form->activity_date }} ({{ $form->activity->class->name }})
+                                    </option>
                                 @endforeach
                             </select>
                             @error('form_id')
@@ -32,13 +34,16 @@
                             <label for="student_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Student</label>
                             <select name="student_id" id="student_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('student_id') is-invalid @enderror" required>
                                 <option value="">Select Student</option>
-                                @foreach($forms as $form)
-                                    @if($form->id == old('form_id', $activityPresence->form_id))
-                                        @foreach($form->activity->students as $student)
-                                            <option value="{{ $student->id }}" {{ old('student_id', $activityPresence->student_id) == $student->id ? 'selected' : '' }}>{{ $student->name }}</option>
-                                        @endforeach
-                                    @endif
-                                @endforeach
+                                @php
+                                    $currentForm = $forms->firstWhere('id', old('form_id', $activityPresence->form_id));
+                                @endphp
+                                @if($currentForm && $currentForm->activity->students)
+                                    @foreach($currentForm->activity->students as $student)
+                                        <option value="{{ $student->id }}" {{ old('student_id', $activityPresence->student_id) == $student->id ? 'selected' : '' }}>
+                                            {{ $student->name }}
+                                        </option>
+                                    @endforeach
+                                @endif
                             </select>
                             @error('student_id')
                                 <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -46,9 +51,34 @@
                         </div>
 
                         <div class="mb-6">
-                            <label for="score" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Score (0-100)</label>
-                            <input type="number" name="score" id="score" min="0" max="100" value="{{ old('score', $activityPresence->score) }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('score') is-invalid @enderror" required>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Attendance Status</label>
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <input type="radio" name="score" id="score_0" value="0" {{ old('score', $activityPresence->score) == '0' ? 'checked' : '' }} class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" required>
+                                    <label for="score_0" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">0 - Absent</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="radio" name="score" id="score_1" value="1" {{ old('score', $activityPresence->score) == '1' ? 'checked' : '' }} class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
+                                    <label for="score_1" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">1 - Permitted Leave</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="radio" name="score" id="score_2" value="2" {{ old('score', $activityPresence->score) == '2' ? 'checked' : '' }} class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
+                                    <label for="score_2" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">2 - Sick Leave</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="radio" name="score" id="score_3" value="3" {{ old('score', $activityPresence->score) == '3' ? 'checked' : '' }} class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
+                                    <label for="score_3" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">3 - Present</label>
+                                </div>
+                            </div>
                             @error('score')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="mb-6">
+                            <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Location (GPS)</label>
+                            <input type="text" name="location" id="location" value="{{ old('location', $activityPresence->location) }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('location') is-invalid @enderror" required placeholder="e.g., -6.2088, 106.8456">
+                            @error('location')
                                 <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
@@ -62,29 +92,4 @@
             </div>
         </div>
     </div>
-
-    <script>
-        document.getElementById('form_id').addEventListener('change', function() {
-            const formId = this.value;
-            const studentSelect = document.getElementById('student_id');
-            studentSelect.innerHTML = '<option value="">Select Student</option>';
-            
-            if (!formId) return;
-
-            const forms = @json($forms);
-            const selectedForm = forms.find(f => f.id == formId);
-            
-            if (selectedForm && selectedForm.activity.students) {
-                selectedForm.activity.students.forEach(student => {
-                    const option = document.createElement('option');
-                    option.value = student.id;
-                    option.textContent = student.name;
-                    if (student.id == @json($activityPresence->student_id)) {
-                        option.selected = true;
-                    }
-                    studentSelect.appendChild(option);
-                });
-            }
-        });
-    </script>
 </x-app-layout>

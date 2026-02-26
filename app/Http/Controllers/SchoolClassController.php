@@ -156,7 +156,8 @@ class SchoolClassController extends Controller
             $students = $class->students()
                 ->where('role', 'STUDENT')
                 ->where('deleted_at', null)
-                ->orderBy('student_order')
+                ->withPivot('student_order')
+                ->orderBy('pivot_student_order')
                 ->get();
 
             return view('admin.classes.student-order', compact('class', 'students'));

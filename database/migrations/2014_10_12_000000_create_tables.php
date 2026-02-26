@@ -274,8 +274,6 @@ return new class extends Migration
             $table->enum('scope', ['SPECIFIC-CLASS', 'CLASS-TAUGHT', 'SPECIFIC-GRADE', 'TEACHERS', 'PUBLIC']);
             $table->unsignedInteger('activity_id')->nullable();
             $table->unsignedInteger('grade_id')->nullable();
-            $table->unsignedInteger('class_id')->nullable();
-            $table->foreign('class_id')->references('id')->on('classes')->onUpdate('cascade')->onDelete('restrict');
             $table->softDeletes();
             $table->timestamps();
 

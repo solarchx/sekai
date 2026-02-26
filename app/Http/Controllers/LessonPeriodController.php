@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LessonPeriod;
 use App\Models\AcademicSemester;
+use App\Models\Activity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -17,19 +18,26 @@ class LessonPeriodController extends Controller
             $selectedSemesterId = $request->query('semester_id');
             $parentPeriods = collect();
             $periods = collect();
+            $activities = collect();
 
             if ($selectedSemesterId) {
-                // Get parent periods for selected semester
+                // Parent periods (time slots)
                 $parentPeriods = LessonPeriod::with('semester')
                     ->where('semester_id', $selectedSemesterId)
                     ->whereNull('parent_id')
                     ->get();
-                
-                // Get all child periods for this semester
+
+                // All child periods for this semester
                 $periods = LessonPeriod::where('semester_id', $selectedSemesterId)->get();
+
+                // Activities belonging to these child periods
+                $activities = Activity::whereIn('period_id', $periods->pluck('id'))
+                    ->with(['subject', 'teacher', 'class'])
+                    ->get()
+                    ->groupBy('period_id');
             }
 
-            return view('periods.schedule-sheet', compact('semesters', 'selectedSemesterId', 'parentPeriods', 'periods'));
+            return view('periods.schedule-sheet', compact('semesters', 'selectedSemesterId', 'parentPeriods', 'periods', 'activities'));
         } catch (\Exception $e) {
             Log::error('Error loading periods: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error loading periods: ' . $e->getMessage());
@@ -79,7 +87,7 @@ class LessonPeriodController extends Controller
             ]);
 
             // Create 7 child periods (one for each day of the week: Monday 0 to Sunday 6)
-            for ($day = 0; $day <= 6; $day++) {
+            for ($day = 1; $day <= 6; $day++) {
                 // Check for overlapping periods on this specific day
                 $overlapping = LessonPeriod::where('weekday', $day)
                     ->where('semester_id', $validated['semester_id'])

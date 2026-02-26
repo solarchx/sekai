@@ -17,28 +17,28 @@ class AnnouncementController extends Controller
     {
         try {
             $user = Auth::user();
-            
-            // Get announcements visible to the user based on scope
-            $query = Announcement::query();
-            
+            $query = Announcement::with('sender', 'activity', 'grade');
+
             if ($user->role === 'STUDENT') {
                 $query->where(function ($q) use ($user) {
-                    // PUBLIC: Everyone sees
-                    $q->where('scope', 'PUBLIC');
-                })
-                ->orWhere(function ($q) use ($user) {
-                    // SPECIFIC-CLASS: Students in the specific class
-                    if ($user->class_id) {
-                        $q->where('scope', 'SPECIFIC-CLASS')
-                          ->where('class_id', $user->class_id);
-                    }
-                })
-                ->orWhere(function ($q) use ($user) {
-                    // SPECIFIC-GRADE: Students in the specific grade
-                    if ($user->class_id && $user->class->grade_id) {
-                        $q->where('scope', 'SPECIFIC-GRADE')
-                          ->where('grade_id', $user->class->grade_id);
-                    }
+                    // PUBLIC
+                    $q->where('scope', 'PUBLIC')
+                      // SPECIFIC-CLASS: if student has a class, check activity's class
+                      ->orWhere(function ($sub) use ($user) {
+                          if ($user->class_id) {
+                              $sub->where('scope', 'SPECIFIC-CLASS')
+                                  ->whereHas('activity', function ($act) use ($user) {
+                                      $act->where('class_id', $user->class_id);
+                                  });
+                          }
+                      })
+                      // SPECIFIC-GRADE: if student has a grade, check grade
+                      ->orWhere(function ($sub) use ($user) {
+                          if ($user->class_id && $user->class->grade_id) {
+                              $sub->where('scope', 'SPECIFIC-GRADE')
+                                  ->where('grade_id', $user->class->grade_id);
+                          }
+                      });
                 });
             } else {
                 // Teachers and above
@@ -55,41 +55,43 @@ class AnnouncementController extends Controller
 
                 $query->where(function ($q) use ($user, $allClasses, $allGrades) {
                     $q->where('scope', 'PUBLIC')
-                    ->orWhere('scope', 'TEACHERS')
-                    ->orWhere(function ($nested) use ($allClasses) {
-                        $nested->where('scope', 'SPECIFIC-CLASS')
-                                ->whereIn('class_id', $allClasses);
-                    })
-                    ->orWhere(function ($nested) use ($allGrades) {
-                        $nested->where('scope', 'SPECIFIC-GRADE')
-                                ->whereIn('grade_id', $allGrades);
-                    })
-                    // CLASS-TAUGHT: show if sender is the current user? Actually it should be shown to all users in classes taught by the sender.
-                    // But the sender is known. We need to show it to users who are in any class taught by the sender.
-                    // This is more complex; we might need a subquery.
-                    // For simplicity, we can treat CLASS-TAUGHT as visible to anyone who shares a class with the sender's taught classes.
-                    // This can be done with a whereExists.
-                    ->orWhere(function ($nested) use ($user) {
-                        $nested->where('scope', 'CLASS-TAUGHT')
-                                ->whereExists(function ($sub) use ($user) {
-                                    $sub->select(DB::raw(1))
-                                        ->from('activities')
-                                        ->whereColumn('activities.teacher_id', 'announcements.sender_id')
-                                        ->whereIn('activities.class_id', function ($q) use ($user) {
-                                            $q->select('class_id')
+                      ->orWhere('scope', 'TEACHERS')
+                      // SPECIFIC-CLASS: show if activity's class is in user's classes
+                      ->orWhere(function ($sub) use ($allClasses) {
+                          if ($allClasses->isNotEmpty()) {
+                              $sub->where('scope', 'SPECIFIC-CLASS')
+                                  ->whereHas('activity', function ($act) use ($allClasses) {
+                                      $act->whereIn('class_id', $allClasses);
+                                  });
+                          }
+                      })
+                      // CLASS-TAUGHT: show if user is in any class taught by sender
+                      ->orWhere(function ($sub) use ($user) {
+                          $sub->where('scope', 'CLASS-TAUGHT')
+                              ->whereExists(function ($exist) use ($user) {
+                                  $exist->select(DB::raw(1))
+                                      ->from('activities')
+                                      ->whereColumn('activities.teacher_id', 'announcements.sender_id')
+                                      ->whereIn('activities.class_id', function ($q) use ($user) {
+                                          $q->select('class_id')
                                             ->from('users')
                                             ->where('users.id', $user->id)
                                             ->whereNotNull('class_id');
-                                        });
-                                });
-                    });
+                                      });
+                              });
+                      })
+                      // SPECIFIC-GRADE
+                      ->orWhere(function ($sub) use ($allGrades) {
+                          if ($allGrades->isNotEmpty()) {
+                              $sub->where('scope', 'SPECIFIC-GRADE')
+                                  ->whereIn('grade_id', $allGrades);
+                          }
+                      });
                 });
             }
-            
-            $announcements = $query->with('sender', 'class', 'grade')
-                                   ->latest()
-                                   ->paginate(100);
-            
+
+            $announcements = $query->latest()->paginate(100);
+
             return view('announcements.index', compact('announcements'));
         } catch (\Exception $e) {
             Log::error('Error loading announcements: ' . $e->getMessage());
@@ -101,26 +103,18 @@ class AnnouncementController extends Controller
     {
         try {
             $user = Auth::user();
-            
-            // Get activities where user teaches
+
+            // Activities taught by the user
             $activities = Activity::where('teacher_id', $user->id)
                 ->with('class', 'subject')
                 ->get();
-            
-            // Get classes from those activities
-            $classes = Grade::all()->map(function ($grade) use ($activities) {
-                $classIds = $activities->pluck('class_id')->unique();
-                return $grade->classes()->whereIn('id', $classIds)->get();
-            })->flatten();
-            
-            // Get grades where user teaches
-            $teacherGrades = $activities
-                ->map(fn($a) => $a->class->grade_id)
-                ->unique();
-            $userGrades = $user->class_id && $user->class->grade_id ? $teacherGrades->push($user->class->grade_id)->unique() : $teacherGrades;
-            $grades = Grade::whereIn('id', $userGrades)->get();
-            
-            return view('announcements.create', compact('activities', 'classes', 'grades'));
+
+            // Grades that user teaches (via activities) or is homeroom for
+            $teacherGrades = $activities->map(fn($a) => $a->class->grade_id)->unique();
+            $homeroomedGrade = $user->class_id && $user->class->grade_id ? [$user->class->grade_id] : [];
+            $grades = Grade::whereIn('id', $teacherGrades->merge($homeroomedGrade)->unique())->get();
+
+            return view('announcements.create', compact('activities', 'grades'));
         } catch (\Exception $e) {
             Log::error('Error loading announcement create form: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error loading form: ' . $e->getMessage());
@@ -130,29 +124,36 @@ class AnnouncementController extends Controller
     public function store(Request $request)
     {
         try {
-            $rules = [
-                'title'    => 'required|max:255',
-                'subtitle' => 'required|max:255',
-                'content'  => 'required',
+            $validated = $request->validate([
+                'title'    => 'required|string|max:255',
+                'subtitle' => 'required|string|max:255',
+                'content'  => 'required|string',
                 'scope'    => 'required|in:SPECIFIC-CLASS,CLASS-TAUGHT,SPECIFIC-GRADE,TEACHERS,PUBLIC',
-                'grade_id' => 'nullable|exists:grades,id',
-                'class_id' => 'nullable|exists:classes,id',
-            ];
+                'activity_id' => 'nullable|exists:activities,id',
+                'grade_id'    => 'nullable|exists:grades,id',
+            ], [
+                'title.required'    => 'Title is required.',
+                'subtitle.required' => 'Subtitle is required.',
+                'content.required'  => 'Content is required.',
+                'scope.required'    => 'Scope is required.',
+                'scope.in'          => 'Invalid scope selected.',
+                'activity_id.exists' => 'Selected activity does not exist.',
+                'grade_id.exists'   => 'Selected grade does not exist.',
+            ]);
 
-            $validated = $request->validate($rules);
-
-            if ($validated['scope'] === 'SPECIFIC-CLASS' && empty($validated['class_id'])) {
-                return back()->withErrors(['class_id' => 'Class is required for SPECIFIC-CLASS scope.']);
+            // Validate scope requirements
+            if ($validated['scope'] === 'SPECIFIC-CLASS' && !$validated['activity_id']) {
+                return back()->withErrors(['activity_id' => 'Class (activity) is required for this scope.'])->withInput();
             }
-            if ($validated['scope'] === 'SPECIFIC-GRADE' && empty($validated['grade_id'])) {
-                return back()->withErrors(['grade_id' => 'Grade is required for SPECIFIC-GRADE scope.']);
+            if ($validated['scope'] === 'SPECIFIC-GRADE' && !$validated['grade_id']) {
+                return back()->withErrors(['grade_id' => 'Grade is required for this scope.'])->withInput();
             }
-
             // CLASS-TAUGHT should have no stored target
             if ($validated['scope'] === 'CLASS-TAUGHT') {
-                $validated['class_id'] = null;
+                $validated['activity_id'] = null;
                 $validated['grade_id'] = null;
             }
+
             DB::beginTransaction();
 
             $validated['sender_id'] = Auth::id();
@@ -178,27 +179,16 @@ class AnnouncementController extends Controller
             }
 
             $user = Auth::user();
-            
-            // Get classes where user teaches or is homeroom teacher
-            $taughtClasses = Activity::where('teacher_id', $user->id)
-                ->pluck('class_id')
-                ->unique();
-            $homeroomedClass = $user->class_id ? [$user->class_id] : [];
-            $userClasses = array_merge($taughtClasses->toArray(), $homeroomedClass);
-            $classes = DB::table('classes')
-                ->whereIn('id', $userClasses)
-                ->get();
-            
-            // Get grades where user teaches or is assigned
-            $teacherGrades = Activity::where('teacher_id', $user->id)
-                ->join('classes', 'activities.class_id', '=', 'classes.id')
-                ->pluck('classes.grade_id')
-                ->unique();
-            $homeroomedGrade = $user->class_id && $user->class->grade_id ? [$user->class->grade_id] : [];
-            $userGrades = $teacherGrades->merge($homeroomedGrade)->unique();
-            $grades = Grade::whereIn('id', $userGrades)->get();
 
-            return view('announcements.edit', compact('announcement', 'classes', 'grades'));
+            $activities = Activity::where('teacher_id', $user->id)
+                ->with('class', 'subject')
+                ->get();
+
+            $teacherGrades = $activities->map(fn($a) => $a->class->grade_id)->unique();
+            $homeroomedGrade = $user->class_id && $user->class->grade_id ? [$user->class->grade_id] : [];
+            $grades = Grade::whereIn('id', $teacherGrades->merge($homeroomedGrade)->unique())->get();
+
+            return view('announcements.edit', compact('announcement', 'activities', 'grades'));
         } catch (\Exception $e) {
             Log::error('Error loading announcement edit: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error loading form: ' . $e->getMessage());
@@ -213,13 +203,24 @@ class AnnouncementController extends Controller
             }
 
             $validated = $request->validate([
-                'title' => 'required|string|max:255',
+                'title'    => 'required|string|max:255',
                 'subtitle' => 'required|string|max:255',
-                'content' => 'required|string',
-                'scope' => 'required|in:SPECIFIC-CLASS,CLASS-TAUGHT,SPECIFIC-GRADE,TEACHERS,PUBLIC',
-                'class_id' => 'nullable|exists:classes,id',
-                'grade_id' => 'nullable|exists:grades,id',
+                'content'  => 'required|string',
+                'scope'    => 'required|in:SPECIFIC-CLASS,CLASS-TAUGHT,SPECIFIC-GRADE,TEACHERS,PUBLIC',
+                'activity_id' => 'nullable|exists:activities,id',
+                'grade_id'    => 'nullable|exists:grades,id',
             ]);
+
+            if ($validated['scope'] === 'SPECIFIC-CLASS' && !$validated['activity_id']) {
+                return back()->withErrors(['activity_id' => 'Class (activity) is required for this scope.'])->withInput();
+            }
+            if ($validated['scope'] === 'SPECIFIC-GRADE' && !$validated['grade_id']) {
+                return back()->withErrors(['grade_id' => 'Grade is required for this scope.'])->withInput();
+            }
+            if ($validated['scope'] === 'CLASS-TAUGHT') {
+                $validated['activity_id'] = null;
+                $validated['grade_id'] = null;
+            }
 
             DB::beginTransaction();
             $announcement->update($validated);
@@ -237,11 +238,19 @@ class AnnouncementController extends Controller
 
     public function destroy(Announcement $announcement)
     {
-        if (auth()->id() !== $announcement->sender_id && auth()->user()->role !== 'ADMIN') {
-            abort(403);
+        try {
+            // Teachers+ can only soft‑delete their own; admins can soft‑delete any
+            if (Auth::id() !== $announcement->sender_id && Auth::user()->role !== 'ADMIN') {
+                return redirect()->route('wrongway');
+            }
+
+            $announcement->delete();
+
+            return redirect()->route('announcements.index')->with('success', 'Announcement deleted successfully.');
+        } catch (\Exception $e) {
+            Log::error('Error deleting announcement: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error deleting announcement: ' . $e->getMessage());
         }
-        $announcement->delete(); // soft delete
-        return redirect()->route('announcements.index')->with('success', 'Announcement deleted.');
     }
 
     public function restore(Announcement $announcement)
@@ -251,16 +260,12 @@ class AnnouncementController extends Controller
                 return redirect()->route('wrongway');
             }
 
-            DB::beginTransaction();
             $announcement->restore();
-            DB::commit();
 
             return redirect()->back()->with('success', 'Announcement restored successfully.');
         } catch (\Exception $e) {
-            DB::rollBack();
             Log::error('Error restoring announcement: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error restoring announcement: ' . $e->getMessage());
         }
     }
 }
-

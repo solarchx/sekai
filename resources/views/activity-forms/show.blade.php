@@ -12,14 +12,14 @@
             <!-- Activity Form Information Card -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg mb-6">
                 <div class="p-6" style="background: linear-gradient(to right, #f59e0b, #f97316); color: white;">
-                    <h3 class="text-2xl font-bold">{{ $form->activity->subject->name ?? 'N/A' }} - {{ $form->date->format('M d, Y') }}</h3>
+                    <h3 class="text-2xl font-bold">{{ $form->activity->subject->name ?? 'N/A' }} - {{ \Carbon\Carbon::parse($form->activity_date)->format('M d, Y') }}</h3>
                     <p class="mt-2">{{ $form->activity->class->name ?? 'N/A' }} - Taught by {{ $form->activity->teacher->name ?? 'N/A' }}</p>
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
-                            <p class="mt-1 text-lg text-gray-900 dark:text-gray-100">{{ $form->date->format('l, M d, Y') }}</p>
+                            <p class="mt-1 text-lg text-gray-900 dark:text-gray-100">{{ \Carbon\Carbon::parse($form->activity_date)->format('l, M d, Y') }}</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Activity</label>
@@ -91,18 +91,20 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                @php
+                                    $statusLabels = [0 => 'Absent', 1 => 'Permitted Leave', 2 => 'Sick Leave', 3 => 'Present'];
+                                    $statusColors = [0 => 'red', 1 => 'yellow', 2 => 'orange', 3 => 'green'];
+                                @endphp
                                 @forelse($students as $student)
                                     @php
                                         $presence = $form->presences()->where('student_id', $student->id)->first();
-                                        $statusLabels = [0 => 'Absent', 1 => 'Permitted Leave', 2 => 'Sick Leave', 3 => 'Present'];
-                                        $statusColors = [0 => 'red', 1 => 'yellow', 2 => 'orange', 3 => 'green'];
                                     @endphp
                                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $student->name }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             @if($presence)
-                                                <span class="bg-{{ $statusColors[$presence->status] }}-100 dark:bg-{{ $statusColors[$presence->status] }}-900 text-{{ $statusColors[$presence->status] }}-800 dark:text-{{ $statusColors[$presence->status] }}-100 px-3 py-1 rounded-full text-xs font-semibold">
-                                                    {{ $statusLabels[$presence->status] }}
+                                                <span class="bg-{{ $statusColors[$presence->score] }}-100 dark:bg-{{ $statusColors[$presence->score] }}-900 text-{{ $statusColors[$presence->score] }}-800 dark:text-{{ $statusColors[$presence->score] }}-100 px-3 py-1 rounded-full text-xs font-semibold">
+                                                    {{ $statusLabels[$presence->score] }}
                                                 </span>
                                             @else
                                                 <span class="text-gray-400">No record</span>
@@ -122,11 +124,6 @@
                                                     </form>
                                                 @else
                                                     <a href="{{ route('activity-presences.create', ['form_id' => $form->id, 'student_id' => $student->id]) }}" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">Record</a>
-                                                @endif
-                                                @if(auth()->user()->role === 'ADMIN')
-                                                    <a href="{{ route('activity-presences.show', ['presence' => $presence->id ?? 'null']) }}" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">
-                                                        View Reports
-                                                    </a>
                                                 @endif
                                             @endif
                                         </td>

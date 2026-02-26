@@ -12,99 +12,70 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 active:text-gray-900 dark:active:text-white">
+                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.edit')" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 active:text-gray-900 dark:active:text-white">
-                        {{ __('Profile') }}
+                    <x-nav-link :href="route('class.show')" :active="request()->routeIs('class.show')">
+                        {{ __('My Class') }}
                     </x-nav-link>
-                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('class.show')" :active="request()->routeIs('class.show')" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 active:text-gray-900 dark:active:text-white">
-                            {{ __('My Class') }}
-                        </x-nav-link>
-                    </div>
-                    {{-- Admin Specific Links --}}
-                    @if(auth()->user()->role === 'ADMIN')
-                        <div class="hidden space-x-8  sm:-my-px sm:ms-10 sm:flex self-center">
-                            <x-dropdown>
-                                <x-slot name="trigger">
-                                    <button class="inline-flex border border-transparent text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
-                                        Admin
-                                        <div class="ms-1">
-                                            <i class="bi bi-chevron-down text-sm"></i>
-                                        </div>
-                                    </button>
-                                </x-slot>
+                    <x-nav-link :href="route('announcements.index')" :active="request()->routeIs('announcements.*')">
+                        {{ __('Announcements') }}
+                    </x-nav-link>
 
-                                <x-slot name="content">
-                                    <x-dropdown-link :href="route('users.index')">
-                                        {{ __('Users') }}
-                                    </x-dropdown-link>
-                                    <x-dropdown-link :href="route('majors.index')">
-                                        {{ __('Majors') }}
-                                    </x-dropdown-link>
-                                    <x-dropdown-link :href="route('classes.index')">
-                                        {{ __('Classes') }}
-                                    </x-dropdown-link>
-                                    <x-dropdown-link :href="route('subjects.index')">
-                                        {{ __('Subjects') }}
-                                    </x-dropdown-link>
-                                    <x-dropdown-link :href="route('grades.index')">
-                                        {{ __('Grades') }}
-                                    </x-dropdown-link>
-                                    <x-dropdown-link :href="route('periods.index')">
-                                        {{ __('Periods') }}
-                                    </x-dropdown-link>
-                                    <x-dropdown-link :href="route('semesters.index')">
-                                        {{ __('Semesters') }}
-                                    </x-dropdown-link>
-                                </x-slot>
-                            </x-dropdown>
-                        </div>
-                        @if (auth()->user()->role === 'VP' || auth()->user()->role === 'ADMIN')
-                            <div class="hidden space-x-8  sm:-my-px sm:ms-10 sm:flex self-center">
-                                <x-dropdown>
-                                    <x-slot name="trigger">
-                                        <button class="inline-flex border border-transparent text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
-                                            VP
-                                            <div class="ms-1">
-                                                <i class="bi bi-chevron-down text-sm"></i>
-                                            </div>
-                                        </button>
-                                    </x-slot>
+                    @php $user = auth()->user(); @endphp
 
-                                    <x-slot name="content">
-                                        <x-dropdown-link :href="route('activities.index')">
-                                            {{ __('Activities') }}
-                                        </x-dropdown-link>
-                                    </x-slot>
-                                </x-dropdown>
-                            </div>
-                            @if (auth()->user()->role === 'TEACHER' || auth()->user()->role === 'VP' || auth()->user()->role === 'ADMIN')
-                                <div class="hidden space-x-8  sm:-my-px sm:ms-10 sm:flex self-center">
-                                    <x-dropdown>
-                                        <x-slot name="trigger">
-                                            <button class="inline-flex border border-transparent text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
-                                                Teacher
-                                                <div class="ms-1">
-                                                    <i class="bi bi-chevron-down text-sm"></i>
-                                                </div>
-                                            </button>
-                                        </x-slot>
+                    {{-- Admin Dropdown --}}
+                    @if($user->role === 'ADMIN')
+                        <x-dropdown>
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
+                                    <span>Admin</span>
+                                    <i class="bi bi-chevron-down ms-1 text-sm"></i>
+                                </button>
+                            </x-slot>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('users.index')">{{ __('Users') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('majors.index')">{{ __('Majors') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('classes.index')">{{ __('Classes') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('subjects.index')">{{ __('Subjects') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('grades.index')">{{ __('Grades') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('periods.index')">{{ __('Periods') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('semesters.index')">{{ __('Semesters') }}</x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
+                    @endif
 
-                                        <x-slot name="content">
-                                            <x-dropdown-link :href="route('activity-forms.index')">
-                                                {{ __('Activity Forms') }}
-                                            </x-dropdown-link>
-                                            <x-dropdown-link :href="route('activity-presences.index')">
-                                                {{ __('Activity Presences') }}
-                                            </x-dropdown-link>
-                                            
-                                        </x-slot>
-                                    </x-dropdown>
-                                
-                            @endif
-                        @endif
+                    {{-- VP Dropdown --}}
+                    @if(in_array($user->role, ['VP', 'ADMIN']))
+                        <x-dropdown>
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
+                                    <span>VP</span>
+                                    <i class="bi bi-chevron-down ms-1 text-sm"></i>
+                                </button>
+                            </x-slot>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('activities.index')">{{ __('Activities') }}</x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
+                    @endif
+
+                    {{-- Teacher Dropdown --}}
+                    @if(in_array($user->role, ['TEACHER', 'VP', 'ADMIN']))
+                        <x-dropdown>
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
+                                    <span>Teacher</span>
+                                    <i class="bi bi-chevron-down ms-1 text-sm"></i>
+                                </button>
+                            </x-slot>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('activity-forms.index')">{{ __('Activity Forms') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('activity-presences.index')">{{ __('Activity Presences') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('score-distributions.index')">{{ __('Score Distributions') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('student-scores.index')">{{ __('Student Scores') }}</x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
                     @endif
                 </div>
             </div>
@@ -120,18 +91,16 @@
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
                             <div>{{ Auth::user()->name }}</div>
-                            <div class="ms-1">
-                                <i class="bi bi-chevron-down text-sm"></i>
-                            </div>
+                            <i class="bi bi-chevron-down ms-1 text-sm"></i>
                         </button>
                     </x-slot>
 
                     <x-slot name="content">
+                        <x-dropdown-link :href="route('profile.edit')">{{ __('Profile') }}</x-dropdown-link>
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-
                             <x-dropdown-link :href="route('logout')"
                                     onclick="event.preventDefault();
                                                 this.closest('form').submit();">
@@ -163,16 +132,40 @@
             <x-responsive-nav-link :href="route('class.show')" :active="request()->routeIs('class.show')">
                 {{ __('My Class') }}
             </x-responsive-nav-link>
-            @if (auth()->user()->role === 'ADMIN')
-                <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
-                    {{ __('Users') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('majors.index')" :active="request()->routeIs('majors.*')">
-                    {{ __('Majors') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('classes.index')" :active="request()->routeIs('classes.*')">
-                    {{ __('Classes') }}
-                </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('announcements.index')" :active="request()->routeIs('announcements.*')">
+                {{ __('Announcements') }}
+            </x-responsive-nav-link>
+
+            @php $user = auth()->user(); @endphp
+
+            @if($user->role === 'ADMIN')
+                <div class="pt-4 pb-2 border-t border-gray-200 dark:border-gray-700">
+                    <div class="px-4 text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">Admin</div>
+                </div>
+                <x-responsive-nav-link :href="route('users.index')">{{ __('Users') }}</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('majors.index')">{{ __('Majors') }}</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('classes.index')">{{ __('Classes') }}</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('subjects.index')">{{ __('Subjects') }}</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('grades.index')">{{ __('Grades') }}</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('periods.index')">{{ __('Periods') }}</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('semesters.index')">{{ __('Semesters') }}</x-responsive-nav-link>
+            @endif
+
+            @if(in_array($user->role, ['VP', 'ADMIN']))
+                <div class="pt-4 pb-2 border-t border-gray-200 dark:border-gray-700">
+                    <div class="px-4 text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">VP</div>
+                </div>
+                <x-responsive-nav-link :href="route('activities.index')">{{ __('Activities') }}</x-responsive-nav-link>
+            @endif
+
+            @if(in_array($user->role, ['TEACHER', 'VP', 'ADMIN']))
+                <div class="pt-4 pb-2 border-t border-gray-200 dark:border-gray-700">
+                    <div class="px-4 text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">Teacher</div>
+                </div>
+                <x-responsive-nav-link :href="route('activity-forms.index')">{{ __('Activity Forms') }}</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('activity-presences.index')">{{ __('Activity Presences') }}</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('score-distributions.index')">{{ __('Score Distributions') }}</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('student-scores.index')">{{ __('Student Scores') }}</x-responsive-nav-link>
             @endif
         </div>
 
@@ -184,14 +177,10 @@
             </div>
 
             <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('profile.edit')">{{ __('Profile') }}</x-responsive-nav-link>
 
-                <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-
                     <x-responsive-nav-link :href="route('logout')"
                             onclick="event.preventDefault();
                                         this.closest('form').submit();">

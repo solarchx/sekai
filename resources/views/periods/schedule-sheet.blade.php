@@ -29,43 +29,53 @@
                     </div>
 
                     <!-- Schedule Sheet Table -->
-                    @if($selectedSemesterId && $periods->count() > 0)
+                    @if($selectedSemesterId && $parentPeriods->count() > 0)
                         <div class="overflow-x-auto mb-6">
-                            <table class="min-w-full bg-white dark:bg-gray-800">
+                            <table class="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Period ID</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Monday</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tuesday</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Wednesday</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Thursday</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Friday</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Saturday</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Sunday</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border">Time</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border">Monday</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border">Tuesday</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border">Wednesday</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border">Thursday</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border">Friday</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border">Saturday</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border">Sunday</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    @forelse($parentPeriods as $parentPeriod)
+                                    @foreach($parentPeriods as $parentPeriod)
+                                        @php
+                                            $childPeriods = $periods->where('parent_id', $parentPeriod->id)->keyBy('weekday');
+                                        @endphp
                                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 border">
                                                 {{ $parentPeriod->time_begin }} - {{ $parentPeriod->time_end }}
                                             </td>
-                                            @php
-                                                $childPeriods = $periods->filter(fn($p) => $p->parent_id == $parentPeriod->id)->keyBy('weekday');
-                                            @endphp
                                             @for ($day = 0; $day < 7; $day++)
-                                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 border align-top">
                                                     @if(isset($childPeriods[$day]))
-                                                        <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 px-3 py-1 rounded-full text-xs font-semibold">
-                                                            ✓ Scheduled
-                                                        </span>
+                                                        @php
+                                                            $period = $childPeriods[$day];
+                                                            $periodActivities = $activities->get($period->id, collect());
+                                                        @endphp
+                                                        @forelse($periodActivities as $activity)
+                                                            <div class="mb-2 p-2 bg-blue-50 dark:bg-blue-900 rounded border border-blue-200 dark:border-blue-700">
+                                                                <div class="font-semibold">{{ $activity->subject->name }}</div>
+                                                                <div class="text-xs">Teacher: {{ $activity->teacher->name }}</div>
+                                                                <div class="text-xs">Class: {{ $activity->class->name }}</div>
+                                                            </div>
+                                                        @empty
+                                                            <span class="text-gray-400">—</span>
+                                                        @endforelse
                                                     @else
-                                                        <span class="text-gray-400">--</span>
+                                                        <span class="text-gray-400">—</span>
                                                     @endif
                                                 </td>
                                             @endfor
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium border space-x-2">
                                                 <a href="{{ route('periods.edit', $parentPeriod) }}" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">Edit</a>
                                                 <form action="{{ route('periods.destroy', $parentPeriod) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure? All 7 day periods will be deleted.');">
                                                     @csrf
@@ -74,11 +84,7 @@
                                                 </form>
                                             </td>
                                         </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="9" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No periods found for this academic time.</td>
-                                        </tr>
-                                    @endforelse
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>

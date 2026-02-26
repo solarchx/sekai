@@ -4,7 +4,6 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Edit Class') }}
             </h2>
-            {{-- <x-admin-tabs active="classes" /> --}}
         </div>
     </x-slot>
 
@@ -99,32 +98,25 @@
                                 <span class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</span>
                             @enderror
                         </div>
+
+                        {{-- Homeroom Teacher (optional) --}}
                         <div class="mb-6">
-                            <label for="teacher_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Homeroom Teacher
+                            <label for="homeroom_teacher_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Homeroom Teacher (optional)
                             </label>
                             <select 
-                                id="teacher_id"
-                                name="teacher_id"
-                                class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition @error('teacher_id') border-red-500 @enderror"
+                                id="homeroom_teacher_id"
+                                name="homeroom_teacher_id"
+                                class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition @error('homeroom_teacher_id') border-red-500 @enderror"
                             >
-                            {{-- this shit --}}
-                                <option value="">Select a teacher</option>
-                                @if (!$errorMessage)
-                                    @foreach($users as $user)
-                                        <option value="{{ $user->id }}" @selected(old('class_id', $user->class_id) == $homeroomTeacher->class_id)>
-                                            {{ $user->name }}
-                                        </option>
-                                    @endforeach
-                                @else
-                                    @foreach($users as $user)
-                                        <option value="{{ $user->id }}">
-                                            {{ $user->name }}
-                                        </option>
-                                    @endforeach
-                                @endif
+                                <option value="">-- No homeroom teacher --</option>
+                                @foreach($teachers as $teacher)
+                                    <option value="{{ $teacher->id }}" @selected(old('homeroom_teacher_id', $class->homeroom_teacher_id) == $teacher->id)>
+                                        {{ $teacher->name }}
+                                    </option>
+                                @endforeach
                             </select>
-                            @error('teacher_id')
+                            @error('homeroom_teacher_id')
                                 <span class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</span>
                             @enderror
                         </div>

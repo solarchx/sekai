@@ -4,7 +4,6 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Create Class') }}
             </h2>
-            {{-- <x-admin-tabs active="classes" /> --}}
         </div>
     </x-slot>
 
@@ -95,6 +94,28 @@
                                 required
                             />
                             @error('capacity')
+                                <span class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        {{-- Homeroom Teacher (optional) --}}
+                        <div class="mb-6">
+                            <label for="homeroom_teacher_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Homeroom Teacher (optional)
+                            </label>
+                            <select 
+                                id="homeroom_teacher_id"
+                                name="homeroom_teacher_id"
+                                class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition @error('homeroom_teacher_id') border-red-500 @enderror"
+                            >
+                                <option value="">-- No homeroom teacher --</option>
+                                @foreach($teachers as $teacher)
+                                    <option value="{{ $teacher->id }}" @selected(old('homeroom_teacher_id') == $teacher->id)>
+                                        {{ $teacher->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('homeroom_teacher_id')
                                 <span class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</span>
                             @enderror
                         </div>

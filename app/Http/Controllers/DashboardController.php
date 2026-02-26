@@ -42,13 +42,8 @@ class DashboardController extends Controller
             $activities = Activity::where('class_id', $user->class_id)
                 ->with(['subject', 'teacher', 'class', 'period.semester'])
                 ->get();
-        } elseif ($user->role === 'TEACHER') {
+        } else {
             $activities = Activity::where('teacher_id', $user->id)
-                ->with(['subject', 'teacher', 'class', 'period.semester'])
-                ->get();
-        } elseif (in_array($user->role, ['VP', 'ADMIN']) && $user->class_id) {
-            // If they have a class assigned, show that class's activities
-            $activities = Activity::where('class_id', $user->class_id)
                 ->with(['subject', 'teacher', 'class', 'period.semester'])
                 ->get();
         }

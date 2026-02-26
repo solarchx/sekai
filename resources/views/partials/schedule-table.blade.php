@@ -17,18 +17,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($schedule as $weekday => $timeSlots)
-                        @foreach($timeSlots as $timeSlot => $activities)
-                            @foreach($activities as $activity)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td class="px-4 py-2 border">{{ $activity->period->weekday_name }}</td>
-                                    <td class="px-4 py-2 border">{{ $activity->period->time_begin }} - {{ $activity->period->time_end }}</td>
-                                    <td class="px-4 py-2 border">{{ $activity->subject->name }}</td>
-                                    <td class="px-4 py-2 border">{{ $activity->teacher->name }}</td>
-                                    <td class="px-4 py-2 border">{{ $activity->class->name }}</td>
-                                    <td class="px-4 py-2 border">{{ $activity->period->semester->full_name }}</td>
-                                </tr>
-                            @endforeach
+                    @foreach($schedule as $weekday => $activities)
+                        @foreach($activities as $activity)
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-4 py-2 border">{{ $activity->period->weekday_name }}</td>
+                                <td class="px-4 py-2 border">{{ $activity->period->time_begin }} - {{ $activity->period->time_end }}</td>
+                                <td class="px-4 py-2 border">{{ $activity->subject->name }}</td>
+                                <td class="px-4 py-2 border">{{ $activity->teacher->name }}</td>
+                                <td class="px-4 py-2 border">{{ $activity->class->name }}</td>
+                                <td class="px-4 py-2 border">{{ $activity->period->semester->full_name }}</td>
+                            </tr>
                         @endforeach
                     @endforeach
                 </tbody>

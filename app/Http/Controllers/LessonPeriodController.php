@@ -21,10 +21,11 @@ class LessonPeriodController extends Controller
             $activities = collect();
 
             if ($selectedSemesterId) {
-                // Parent periods (time slots)
+                // Parent periods sorted by time_begin
                 $parentPeriods = LessonPeriod::with('semester')
                     ->where('semester_id', $selectedSemesterId)
                     ->whereNull('parent_id')
+                    ->orderBy('time_begin')               // <-- added
                     ->get();
 
                 // All child periods for this semester
@@ -61,63 +62,54 @@ class LessonPeriodController extends Controller
     {
         try {
             $validated = $request->validate([
-                'time_begin' => 'required|date_format:H:i',
-                'time_end' => 'required|date_format:H:i|after:time_begin',
+                'time_begin'  => 'required|date_format:H:i',
+                'time_end'    => 'required|date_format:H:i|after:time_begin',
                 'semester_id' => 'required|exists:academic_semesters,id',
-            ], [
-                'time_begin.required' => 'Start time is required.',
-                'time_begin.date_format' => 'Start time must be in HH:MM format.',
-                'time_end.required' => 'End time is required.',
-                'time_end.date_format' => 'End time must be in HH:MM format.',
-                'time_end.after' => 'End time must be after start time.',
-                'semester_id.required' => 'Academic semester is required.',
-                'semester_id.exists' => 'Selected semester does not exist.',
             ]);
 
-            // Start database transaction for ACID compliance
             DB::beginTransaction();
 
-            // Create parent period that groups all 7 day periods
-            $parentPeriod = LessonPeriod::create([
-                'weekday' => 0, // Dummy value for parent
-                'time_begin' => $validated['time_begin'],
-                'time_end' => $validated['time_end'],
-                'semester_id' => $validated['semester_id'],
-                'parent_id' => null, // This is the parent
-            ]);
+            $parentPeriod = null;
 
-            // Create 7 child periods (one for each day of the week: Monday 0 to Sunday 6)
-            for ($day = 1; $day <= 6; $day++) {
+            // Create child periods for each day (1–6)
+            for ($day = 0; $day <= 6; $day++) {
                 // Check for overlapping periods on this specific day
                 $overlapping = LessonPeriod::where('weekday', $day)
                     ->where('semester_id', $validated['semester_id'])
-                    ->whereNull('parent_id') // Only check against parent periods
+                    ->whereNull('parent_id')   // only parent periods represent time slots
                     ->where(function ($query) use ($validated) {
-                        $query->whereRaw("TIME(time_end) > ?", [$validated['time_begin']])
-                              ->whereRaw("TIME(time_begin) < ?", [$validated['time_end']]);
+                        $query->where('time_end', '>', $validated['time_begin'])
+                            ->where('time_begin', '<', $validated['time_end']);
                     })
                     ->exists();
 
                 if ($overlapping) {
                     DB::rollBack();
-                    return back()->withErrors(['time_begin' => "This time overlaps with an existing period on day {$day}."]);
+                    return back()->withErrors([
+                        'time_begin' => "The time range {$validated['time_begin']}–{$validated['time_end']} overlaps with an existing period on " . LessonPeriod::WEEKDAYS[$day] . "."
+                    ])->withInput();
                 }
 
                 // Create child period for this day
-                LessonPeriod::create([
-                    'weekday' => $day,
-                    'time_begin' => $validated['time_begin'],
-                    'time_end' => $validated['time_end'],
+                $currentPeriod = LessonPeriod::create([
+                    'weekday'     => $day,
+                    'time_begin'  => $validated['time_begin'],
+                    'time_end'    => $validated['time_end'],
                     'semester_id' => $validated['semester_id'],
-                    'parent_id' => $parentPeriod->id,
+                    'parent_id'   => $parentPeriod ? $parentPeriod->id : null,
                 ]);
+
+                if ($day == 0) {
+                    $parentPeriod = $currentPeriod;
+                }
             }
 
             DB::commit();
-
-            return redirect()->route('periods.index')->with('success', 'Lesson period created successfully for all 7 days.');
+            return redirect()->route('periods.index', ['semester_id' => $validated['semester_id']])
+                ->with('success', 'Lesson period created successfully for all 7 days.');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Error creating period: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error creating period: ' . $e->getMessage());
         }
     }
@@ -140,68 +132,56 @@ class LessonPeriodController extends Controller
     public function update(Request $request, LessonPeriod $period)
     {
         try {
-            // Only allow editing parent periods
+            // Only parent periods can be edited directly
             if ($period->parent_id !== null) {
                 return redirect()->route('periods.index')->withErrors('You can only edit parent periods directly.');
             }
 
             $validated = $request->validate([
-                'time_begin' => 'required|date_format:H:i',
-                'time_end' => 'required|date_format:H:i|after:time_begin',
+                'time_begin'  => 'required|date_format:H:i',
+                'time_end'    => 'required|date_format:H:i|after:time_begin',
                 'semester_id' => 'required|exists:academic_semesters,id',
-            ], [
-                'time_begin.required' => 'Start time is required.',
-                'time_begin.date_format' => 'Start time must be in HH:MM format.',
-                'time_end.required' => 'End time is required.',
-                'time_end.date_format' => 'End time must be in HH:MM format.',
-                'time_end.after' => 'End time must be after start time.',
-                'semester_id.required' => 'Academic semester is required.',
-                'semester_id.exists' => 'Selected semester does not exist.',
             ]);
 
             DB::beginTransaction();
 
-            // Update all child periods (7 days)
-            $childPeriods = $period->childPeriods;
+            // Check for overlapping parent periods in the same semester, excluding this one
+            $overlapping = LessonPeriod::where('semester_id', $validated['semester_id'])
+                ->whereNull('parent_id')
+                ->where('id', '!=', $period->id)
+                ->where(function ($query) use ($validated) {
+                    $query->where('time_end', '>', $validated['time_begin'])
+                        ->where('time_begin', '<', $validated['time_end']);
+                })
+                ->exists();
 
-            foreach ($childPeriods as $child) {
-                // Check for overlapping periods (excluding current child period)
-                $overlapping = LessonPeriod::where('weekday', $child->weekday)
-                    ->where('semester_id', $validated['semester_id'])
-                    ->where('id', '!=', $child->id)
-                    ->whereNull('parent_id')
-                    ->where(function ($query) use ($validated) {
-                        $query->whereRaw("TIME(time_end) > ?", [$validated['time_begin']])
-                              ->whereRaw("TIME(time_begin) < ?", [$validated['time_end']]);
-                    })
-                    ->exists();
-
-                if ($overlapping) {
-                    DB::rollBack();
-                    return back()->withErrors(['time_begin' => "This time overlaps with an existing period on day {$child->weekday}."]);
-                }
-
-                $child->update([
-                    'time_begin' => $validated['time_begin'],
-                    'time_end' => $validated['time_end'],
-                    'semester_id' => $validated['semester_id'],
-                ]);
+            if ($overlapping) {
+                DB::rollBack();
+                return back()->withErrors([
+                    'time_begin' => "The updated time range overlaps with an existing period."
+                ])->withInput();
             }
 
-            // Update parent period
+            // Update all child periods (one per weekday)
+            $period->childPeriods()->update([
+                'time_begin'  => $validated['time_begin'],
+                'time_end'    => $validated['time_end'],
+                'semester_id' => $validated['semester_id'],
+            ]);
+
+            // Update the parent period
             $period->update([
-                'time_begin' => $validated['time_begin'],
-                'time_end' => $validated['time_end'],
+                'time_begin'  => $validated['time_begin'],
+                'time_end'    => $validated['time_end'],
                 'semester_id' => $validated['semester_id'],
             ]);
 
             DB::commit();
-
-            return redirect()->route('periods.index')->with('success', 'Lesson period updated successfully for all 7 days.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return back()->withErrors($e->errors())->withInput();
+            return redirect()->route('periods.index', ['semester_id' => $validated['semester_id']])
+                ->with('success', 'Lesson period updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Error updating period: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error updating period: ' . $e->getMessage());
         }
     }

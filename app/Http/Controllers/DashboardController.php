@@ -7,8 +7,6 @@ use Illuminate\View\View;
 use App\Models\User;
 use App\Models\SchoolClass;
 use App\Models\Activity;
-use App\Models\AcademicSemester;
-use App\Models\LessonPeriod;
 
 class DashboardController extends Controller
 {
@@ -19,7 +17,7 @@ class DashboardController extends Controller
         $classes = SchoolClass::count();
         $activities = Activity::count();
 
-        // Get user's schedule
+        // Get user's schedule (empty for VP and Admin)
         $schedule = $this->getUserSchedule($user);
 
         return match ($user->role) {
@@ -36,24 +34,38 @@ class DashboardController extends Controller
      */
     private function getUserSchedule(User $user)
     {
+        // VP and Admin do not have a personal schedule on the dashboard
+        if (in_array($user->role, ['VP', 'ADMIN'])) {
+            return [];
+        }
+
         $activities = collect();
 
         if ($user->role === 'STUDENT' && $user->class_id) {
             $activities = Activity::where('class_id', $user->class_id)
                 ->with(['subject', 'teacher', 'class', 'period.semester'])
                 ->get();
-        } else {
+        } elseif ($user->role === 'TEACHER') {
             $activities = Activity::where('teacher_id', $user->id)
                 ->with(['subject', 'teacher', 'class', 'period.semester'])
                 ->get();
         }
 
-        // Group activities by weekday and time slot for easier display
+        // Group activities by weekday
         $schedule = [];
         foreach ($activities as $activity) {
             $weekday = $activity->period->weekday;
-            $timeSlot = $activity->period->time_begin . '-' . $activity->period->time_end;
-            $schedule[$weekday][$timeSlot][] = $activity;
+            $schedule[$weekday][] = $activity;
+        }
+
+        // Sort weekdays in ascending order (0 = Monday, 6 = Sunday)
+        ksort($schedule);
+
+        // Sort activities within each weekday by time_begin
+        foreach ($schedule as &$weekdayActivities) {
+            usort($weekdayActivities, function ($a, $b) {
+                return strcmp($a->period->time_begin, $b->period->time_begin);
+            });
         }
 
         return $schedule;

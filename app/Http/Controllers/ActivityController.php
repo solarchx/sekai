@@ -40,13 +40,23 @@ class ActivityController extends Controller
             $subjects = Subject::all();
             $teachers = User::where('role', '!=', 'STUDENT')->get();
             $periods = LessonPeriod::whereNull('parent_id')->with('semester')->get(); // Only show parent periods
-            $classes = SchoolClass::all();
+            $classes = SchoolClass::with('major', 'grade')->get();
+
+            // Build a mapping of class_id => allowed subject ids
+            $classSubjects = [];
+            foreach ($classes as $class) {
+                $subjectIds = Subject::whereHas('majors', fn($q) => $q->where('id', $class->major_id))
+                    ->whereHas('grades', fn($q) => $q->where('id', $class->grade_id))
+                    ->pluck('id')
+                    ->toArray();
+                $classSubjects[$class->id] = $subjectIds;
+            }
             
             if ($subjects->isEmpty() || $teachers->isEmpty() || $periods->isEmpty() || $classes->isEmpty()) {
                 return redirect()->route('activities.index')->withErrors('Missing required data. Ensure subjects, teachers, periods, and classes exist.');
             }
             
-            return view('activities.create', compact('subjects', 'teachers', 'periods', 'classes'));
+            return view('activities.create', compact('subjects', 'teachers', 'periods', 'classes', 'classSubjects'));
         } catch (\Exception $e) {
             Log::error('Error loading activity create form: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error loading form: ' . $e->getMessage());
@@ -59,17 +69,17 @@ class ActivityController extends Controller
             $validated = $request->validate([
                 'subject_id' => 'required|exists:subjects,id',
                 'teacher_id' => 'required|exists:users,id',
-                'period_id' => 'required|exists:lesson_periods,id',
-                'class_id' => 'required|exists:classes,id',
+                'period_id'  => 'required|exists:lesson_periods,id',
+                'class_id'   => 'required|exists:classes,id',
             ], [
                 'subject_id.required' => 'Subject is required.',
-                'subject_id.exists' => 'Selected subject does not exist.',
+                'subject_id.exists'   => 'Selected subject does not exist.',
                 'teacher_id.required' => 'Teacher is required.',
-                'teacher_id.exists' => 'Selected teacher does not exist.',
-                'period_id.required' => 'Lesson period is required.',
-                'period_id.exists' => 'Selected period does not exist.',
-                'class_id.required' => 'Class is required.',
-                'class_id.exists' => 'Selected class does not exist.',
+                'teacher_id.exists'   => 'Selected teacher does not exist.',
+                'period_id.required'  => 'Lesson period is required.',
+                'period_id.exists'    => 'Selected period does not exist.',
+                'class_id.required'   => 'Class is required.',
+                'class_id.exists'     => 'Selected class does not exist.',
             ]);
 
             $period = LessonPeriod::find($validated['period_id']);
@@ -80,13 +90,13 @@ class ActivityController extends Controller
                 return back()->withErrors(['teacher_id' => 'Selected user must be a teacher, VP, or admin.'])->withInput();
             }
 
-            // Check for teacher schedule conflicts (all 7 days)
+            // Check for teacher schedule conflicts
             $teacherConflict = Activity::where('teacher_id', $validated['teacher_id'])
                 ->whereHas('period', function ($query) use ($period) {
                     $query->where('semester_id', $period->semester_id)
                         ->where(function ($q) use ($period) {
-                            $q->whereRaw("TIME(time_end) > ?", [$period->time_begin])
-                              ->whereRaw("TIME(time_begin) < ?", [$period->time_end]);
+                            $q->where('time_end', '>', $period->time_begin)
+                              ->where('time_begin', '<', $period->time_end);
                         });
                 })
                 ->where('deleted_at', null)
@@ -101,8 +111,8 @@ class ActivityController extends Controller
                 ->whereHas('period', function ($query) use ($period) {
                     $query->where('semester_id', $period->semester_id)
                         ->where(function ($q) use ($period) {
-                            $q->whereRaw("TIME(time_end) > ?", [$period->time_begin])
-                              ->whereRaw("TIME(time_begin) < ?", [$period->time_end]);
+                            $q->where('time_end', '>', $period->time_begin)
+                              ->where('time_begin', '<', $period->time_end);
                         });
                 })
                 ->where('deleted_at', null)
@@ -128,16 +138,15 @@ class ActivityController extends Controller
 
             $activity = Activity::create($validated);
 
-            // Assign activity to all students in the class with initial ordering
+            // Assign activity to all students in the class
             $students = SchoolClass::find($validated['class_id'])
                 ->students()
                 ->where('role', 'STUDENT')
                 ->where('deleted_at', null)
-                ->orderBy('name')
                 ->pluck('users.id');
 
-            foreach ($students as $index => $studentId) {
-                $activity->students()->attach($studentId, ['student_order' => $index + 1]);
+            foreach ($students as $studentId) {
+                $activity->students()->attach($studentId);
             }
 
             DB::commit();
@@ -173,9 +182,19 @@ class ActivityController extends Controller
             $subjects = Subject::all();
             $teachers = User::where('role', '!=', 'STUDENT')->get();
             $periods = LessonPeriod::whereNull('parent_id')->with('semester')->get();
-            $classes = SchoolClass::all();
+            $classes = SchoolClass::with('major', 'grade')->all();
+
+            // Build classSubjects mapping
+            $classSubjects = [];
+            foreach ($classes as $class) {
+                $subjectIds = Subject::whereHas('majors', fn($q) => $q->where('id', $class->major_id))
+                    ->whereHas('grades', fn($q) => $q->where('id', $class->grade_id))
+                    ->pluck('id')
+                    ->toArray();
+                $classSubjects[$class->id] = $subjectIds;
+            }
             
-            return view('activities.edit', compact('activity', 'subjects', 'teachers', 'periods', 'classes'));
+            return view('activities.edit', compact('activity', 'subjects', 'teachers', 'periods', 'classes', 'classSubjects'));
         } catch (\Exception $e) {
             Log::error('Error loading activity edit form: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error loading form: ' . $e->getMessage());
@@ -188,17 +207,17 @@ class ActivityController extends Controller
             $validated = $request->validate([
                 'subject_id' => 'required|exists:subjects,id',
                 'teacher_id' => 'required|exists:users,id',
-                'period_id' => 'required|exists:lesson_periods,id',
-                'class_id' => 'required|exists:classes,id',
+                'period_id'  => 'required|exists:lesson_periods,id',
+                'class_id'   => 'required|exists:classes,id',
             ], [
                 'subject_id.required' => 'Subject is required.',
-                'subject_id.exists' => 'Selected subject does not exist.',
+                'subject_id.exists'   => 'Selected subject does not exist.',
                 'teacher_id.required' => 'Teacher is required.',
-                'teacher_id.exists' => 'Selected teacher does not exist.',
-                'period_id.required' => 'Lesson period is required.',
-                'period_id.exists' => 'Selected period does not exist.',
-                'class_id.required' => 'Class is required.',
-                'class_id.exists' => 'Selected class does not exist.',
+                'teacher_id.exists'   => 'Selected teacher does not exist.',
+                'period_id.required'  => 'Lesson period is required.',
+                'period_id.exists'    => 'Selected period does not exist.',
+                'class_id.required'   => 'Class is required.',
+                'class_id.exists'     => 'Selected class does not exist.',
             ]);
 
             $period = LessonPeriod::find($validated['period_id']);
@@ -215,8 +234,8 @@ class ActivityController extends Controller
                 ->whereHas('period', function ($query) use ($period) {
                     $query->where('semester_id', $period->semester_id)
                         ->where(function ($q) use ($period) {
-                            $q->whereRaw("TIME(time_end) > ?", [$period->time_begin])
-                              ->whereRaw("TIME(time_begin) < ?", [$period->time_end]);
+                            $q->where('time_end', '>', $period->time_begin)
+                              ->where('time_begin', '<', $period->time_end);
                         });
                 })
                 ->where('deleted_at', null)
@@ -232,8 +251,8 @@ class ActivityController extends Controller
                 ->whereHas('period', function ($query) use ($period) {
                     $query->where('semester_id', $period->semester_id)
                         ->where(function ($q) use ($period) {
-                            $q->whereRaw("TIME(time_end) > ?", [$period->time_begin])
-                              ->whereRaw("TIME(time_begin) < ?", [$period->time_end]);
+                            $q->where('time_end', '>', $period->time_begin)
+                              ->where('time_begin', '<', $period->time_end);
                         });
                 })
                 ->where('deleted_at', null)
@@ -256,11 +275,10 @@ class ActivityController extends Controller
                     ->students()
                     ->where('role', 'STUDENT')
                     ->where('deleted_at', null)
-                    ->orderBy('name')
                     ->pluck('users.id');
 
-                foreach ($students as $index => $studentId) {
-                    $activity->students()->attach($studentId, ['student_order' => $index + 1]);
+                foreach ($students as $studentId) {
+                    $activity->students()->attach($studentId);
                 }
             }
 
@@ -304,7 +322,6 @@ class ActivityController extends Controller
         DB::transaction(function () use ($activity) {
             $activity->restore();
             ActivityStudent::where('activity_id', $activity->id)->restore();
-            // Also restore forms/presences if needed (they are cascaded via foreign keys)
         });
 
         return redirect()->route('activities.index')->with('success', 'Activity restored.');

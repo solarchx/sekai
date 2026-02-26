@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Subject;
+use App\Models\Grade;
+use App\Models\Major;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -31,7 +33,9 @@ class SubjectController extends Controller
 
     public function create()
     {
-        return view('subjects.create');
+        $majors = Major::all();
+        $grades = Grade::all();
+        return view('subjects.create', compact('majors', 'grades'));
     }
 
     public function store(Request $request)
@@ -39,6 +43,10 @@ class SubjectController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:subjects,name',
+                'majors' => 'nullable|array',
+                'majors.*' => 'exists:majors,id',
+                'grades' => 'nullable|array',
+                'grades.*' => 'exists:grades,id',
             ], [
                 'name.required' => 'Subject name is required.',
                 'name.unique' => 'This subject name already exists.',
@@ -46,7 +54,15 @@ class SubjectController extends Controller
 
             DB::beginTransaction();
 
-            Subject::create($validated);
+            $subject = Subject::create(['name' => $validated['name']]);
+
+            // Attach selected majors and grades
+            if (!empty($validated['majors'])) {
+                $subject->majors()->sync($validated['majors']);
+            }
+            if (!empty($validated['grades'])) {
+                $subject->grades()->sync($validated['grades']);
+            }
 
             DB::commit();
 
@@ -62,7 +78,11 @@ class SubjectController extends Controller
 
     public function edit(Subject $subject)
     {
-        return view('subjects.edit', compact('subject'));
+        $majors = Major::all();
+        $grades = Grade::all();
+        // Load existing relationships for preselection
+        $subject->load('majors', 'grades');
+        return view('subjects.edit', compact('subject', 'majors', 'grades'));
     }
 
     public function update(Request $request, Subject $subject)
@@ -70,6 +90,10 @@ class SubjectController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:subjects,name,' . $subject->id,
+                'majors' => 'nullable|array',
+                'majors.*' => 'exists:majors,id',
+                'grades' => 'nullable|array',
+                'grades.*' => 'exists:grades,id',
             ], [
                 'name.required' => 'Subject name is required.',
                 'name.unique' => 'This subject name already exists.',
@@ -77,7 +101,11 @@ class SubjectController extends Controller
 
             DB::beginTransaction();
 
-            $subject->update($validated);
+            $subject->update(['name' => $validated['name']]);
+
+            // Sync majors and grades
+            $subject->majors()->sync($validated['majors'] ?? []);
+            $subject->grades()->sync($validated['grades'] ?? []);
 
             DB::commit();
 

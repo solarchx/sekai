@@ -72,6 +72,7 @@ return new class extends Migration
             $table->rememberToken();
             $table->enum('role', ['STUDENT', 'TEACHER', 'VP', 'ADMIN']);
             $table->unsignedInteger('class_id')->nullable();
+            $table->unsignedInteger('student_order')->nullable();
             $table->softDeletes();
             $table->timestamps();
 
@@ -171,9 +172,7 @@ return new class extends Migration
         Schema::create('activity_students', function (Blueprint $table) {
             $table->unsignedInteger('student_id');
             $table->unsignedInteger('activity_id');
-            $table->unsignedInteger('student_order');
             $table->primary(['student_id', 'activity_id']);
-            $table->unique(['activity_id', 'student_order']);
             $table->softDeletes();
             $table->timestamps();
 

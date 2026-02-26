@@ -19,7 +19,7 @@
                             <select name="subject_id" id="subject_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('subject_id') is-invalid @enderror" required>
                                 <option value="">Select Subject</option>
                                 @foreach($subjects as $subject)
-                                    <option value="{{ $subject->id }}" {{ old('subject_id') == $subject->id ? 'selected' : '' }}>{{ $subject->name }}</option>
+                                    <option value="{{ $subject->id }}" data-class-ids="{{ json_encode($classSubjects[$subject->id] ?? []) }}">{{ $subject->name }}</option>
                                 @endforeach
                             </select>
                             @error('subject_id')
@@ -75,4 +75,43 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const classSelect = document.getElementById('class_id');
+            const subjectSelect = document.getElementById('subject_id');
+            const allSubjects = Array.from(subjectSelect.options).slice(1); // exclude placeholder
+
+            function filterSubjects() {
+                const classId = classSelect.value;
+                if (!classId) {
+                    // No class selected -> hide all subjects
+                    allSubjects.forEach(opt => opt.style.display = 'none');
+                    subjectSelect.value = '';
+                    return;
+                }
+
+                // Get allowed subject IDs from the data attribute
+                const allowedSubjectIds = @json($classSubjects)[classId] || [];
+
+                allSubjects.forEach(opt => {
+                    const subjectId = opt.value;
+                    if (allowedSubjectIds.includes(parseInt(subjectId))) {
+                        opt.style.display = '';
+                    } else {
+                        opt.style.display = 'none';
+                    }
+                });
+
+                // If current selection is not allowed, clear it
+                if (subjectSelect.value && !allowedSubjectIds.includes(parseInt(subjectSelect.value))) {
+                    subjectSelect.value = '';
+                }
+            }
+
+            classSelect.addEventListener('change', filterSubjects);
+            // Initial filter on page load (in case old value is set)
+            filterSubjects();
+        });
+    </script>
 </x-app-layout>

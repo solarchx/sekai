@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SchoolClass;
 use App\Models\Major;
 use App\Models\Grade;
+use App\Models\Activity;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
@@ -144,74 +145,25 @@ class SchoolClassController extends Controller
     }
 
     /**
-     * Show student order management page.
-     */
-    public function studentOrder(SchoolClass $class)
-    {
-        try {
-            if (auth()->user()->role !== 'ADMIN' && auth()->user()->role !== 'VP') {
-                return redirect()->back()->withErrors('You do not have permission to reorder students.');
-            }
-
-            $students = $class->students()
-                ->where('role', 'STUDENT')
-                ->where('deleted_at', null)
-                ->withPivot('student_order')
-                ->orderBy('pivot_student_order')
-                ->get();
-
-            return view('admin.classes.student-order', compact('class', 'students'));
-        } catch (\Exception $e) {
-            Log::error('Error loading student order: ' . $e->getMessage());
-            return redirect()->back()->withErrors('Error loading student order: ' . $e->getMessage());
-        }
-    }
-
-    /**
      * Update student order for a class.
      */
     public function updateStudentOrder(Request $request, SchoolClass $class)
     {
-        try {
-            if (auth()->user()->role !== 'ADMIN' && auth()->user()->role !== 'VP') {
-                return back()->withErrors('You do not have permission to reorder students.');
-            }
+        $validated = $request->validate([
+            'student_orders' => 'required|array',
+            'student_orders.*' => 'required|integer|min:1',
+        ]);
 
-            $validated = $request->validate([
-                'student_orders' => 'required|array',
-                'student_orders.*' => 'required|integer|min:1',
-            ], [
-                'student_orders.required' => 'Student orders are required.',
-                'student_orders.*.required' => 'Each student must have an order number.',
-                'student_orders.*.integer' => 'Order numbers must be integers.',
-                'student_orders.*.min' => 'Order numbers must be at least 1.',
-            ]);
-
-            DB::beginTransaction();
-
-            // Update student order in activity_students pivot table
-            foreach ($validated['student_orders'] as $studentId => $order) {
-                $student = User::find($studentId);
-                if ($student && $student->class_id === $class->id && $student->role === 'STUDENT') {
-                    // Update all activities for this student in this class
-                    DB::table('activity_students')
-                        ->join('activities', 'activity_students.activity_id', '=', 'activities.id')
-                        ->where('activity_students.student_id', $studentId)
-                        ->where('activities.class_id', $class->id)
-                        ->update(['activity_students.student_order' => $order]);
-                }
-            }
-
-            DB::commit();
-
-            return redirect()->back()->with('success', 'Student order updated successfully.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return back()->withErrors($e->errors());
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error updating student order: ' . $e->getMessage());
-            return redirect()->back()->withErrors('Error updating order: ' . $e->getMessage());
+        DB::beginTransaction();
+        foreach ($validated['student_orders'] as $studentId => $order) {
+            User::where('id', $studentId)
+                ->where('class_id', $class->id)
+                ->where('role', 'STUDENT')
+                ->update(['student_order' => $order]);
         }
+        DB::commit();
+
+        return redirect()->back()->with('success', 'Student order updated.');
     }
 
     /**
@@ -330,6 +282,79 @@ class SchoolClassController extends Controller
         } catch (\Exception $e) {
             Log::error('Error restoring class: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error restoring class: ' . $e->getMessage());
+        }
+    }
+
+    public function studentOrder(SchoolClass $class)
+    {
+        $students = $class->students()
+            ->where('role', 'STUDENT')
+            ->where('deleted_at', null)
+            ->orderBy('student_order')
+            ->get(['id', 'name', 'identifier', 'student_order']);  // include student_order
+
+        return view('admin.classes.student-order', compact('class', 'students'));
+    }
+
+    public function myClasses()
+    {
+        try {
+            $user = auth()->user();
+            $homeroomClasses = collect();
+            $taughtActivities = collect();
+
+            if ($user->role === 'STUDENT') {
+                // Student: only their own class
+                if ($user->class_id) {
+                    $class = SchoolClass::with('major', 'grade')->find($user->class_id);
+                    if ($class) {
+                        $class->students = $class->students()
+                            ->where('role', 'STUDENT')
+                            ->where('deleted_at', null)
+                            ->orderBy('student_order')
+                            ->get(['id', 'name', 'identifier', 'student_order']);
+                        $class->homeroomTeacher = $class->homeroom_teacher_id ? User::find($class->homeroom_teacher_id) : null;
+                        $class->activities = $class->activities()
+                            ->with(['subject', 'teacher', 'period'])
+                            ->where('deleted_at', null)
+                            ->get();
+                        $homeroomClasses->push($class);
+                    }
+                }
+            } else {
+                // Teachers, VP, Admin: homeroom classes
+                $homeroomClasses = SchoolClass::with('major', 'grade')
+                    ->where('homeroom_teacher_id', $user->id)
+                    ->get()
+                    ->map(function ($class) {
+                        $class->homeroomTeacher = $class->homeroom_teacher_id ? User::find($class->homeroom_teacher_id) : null;
+                        // Load students and activities for modals
+                        $class->students = $class->students()
+                            ->where('role', 'STUDENT')
+                            ->where('deleted_at', null)
+                            ->orderBy('student_order')
+                            ->get(['id', 'name', 'identifier', 'student_order']);
+                        $class->activities = $class->activities()
+                            ->with(['subject', 'teacher', 'period'])
+                            ->where('deleted_at', null)
+                            ->get();
+                        return $class;
+                    });
+
+                // All activities taught by the user
+                $taughtActivities = Activity::with(['subject', 'teacher', 'class.major', 'class.grade', 'period'])
+                    ->where('teacher_id', $user->id)
+                    ->where('deleted_at', null)
+                    ->get()
+                    ->sortBy(function ($activity) {
+                        return $activity->class->name . ' ' . $activity->period->weekday . ' ' . $activity->period->time_begin;
+                    });
+            }
+
+            return view('class.show', compact('homeroomClasses', 'taughtActivities'));
+        } catch (\Exception $e) {
+            Log::error('Error loading my classes: ' . $e->getMessage());
+            return redirect()->route('dashboard')->withErrors('Error loading classes: ' . $e->getMessage());
         }
     }
 }

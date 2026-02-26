@@ -67,9 +67,8 @@
                                                         @endphp
                                                         @forelse($periodActivities as $activity)
                                                             <div class="mb-2 p-2 bg-blue-50 dark:bg-blue-900 rounded border border-blue-200 dark:border-blue-700">
-                                                                <div class="font-semibold">{{ $activity->subject->name }}</div>
-                                                                <div class="text-xs">Teacher: {{ $activity->teacher->name }}</div>
-                                                                <div class="text-xs">Class: {{ $activity->class->name }}</div>
+                                                                <div class="font-semibold">{{ $activity->class->name }}: {{ $activity->subject->name }}</div>
+                                                                <div class="text-xs">{{ $activity->teacher->name }}</div>
                                                             </div>
                                                         @empty
                                                             <span class="text-gray-400">—</span>
@@ -106,7 +105,7 @@
 
                     <!-- Create Button -->
                     <div class="mt-6">
-                        <a href="{{ route('periods.create') }}"
+                        <a href="{{ route('periods.create', ['semester_id' => $selectedSemesterId]) }}"
                             class="bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-lg shadow-md transition-colors inline-flex items-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

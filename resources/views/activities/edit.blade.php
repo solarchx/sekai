@@ -76,4 +76,40 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const classSelect = document.getElementById('class_id');
+            const subjectSelect = document.getElementById('subject_id');
+            const allSubjects = Array.from(subjectSelect.options).slice(1);
+
+            function filterSubjects() {
+                const classId = classSelect.value;
+                if (!classId) {
+                    allSubjects.forEach(opt => opt.style.display = 'none');
+                    subjectSelect.value = '';
+                    return;
+                }
+
+                const allowedSubjectIds = @json($classSubjects)[classId] || [];
+
+                allSubjects.forEach(opt => {
+                    const subjectId = opt.value;
+                    if (allowedSubjectIds.includes(parseInt(subjectId))) {
+                        opt.style.display = '';
+                    } else {
+                        opt.style.display = 'none';
+                    }
+                });
+
+                // If current selection is not allowed, clear it
+                if (subjectSelect.value && !allowedSubjectIds.includes(parseInt(subjectSelect.value))) {
+                    subjectSelect.value = '';
+                }
+            }
+
+            classSelect.addEventListener('change', filterSubjects);
+            filterSubjects(); // initial filter based on pre-selected class
+        });
+    </script>
 </x-app-layout>

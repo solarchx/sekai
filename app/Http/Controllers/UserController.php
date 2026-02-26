@@ -100,6 +100,7 @@ class UserController extends Controller
             // If student is assigned to a class, auto-enroll in class activities
             if ($validated['role'] === 'STUDENT' && isset($validated['class_id'])) {
                 $this->autoEnrollStudentInActivities($user);
+                $this->setStudentOrder($user);
             }
 
             DB::commit();
@@ -272,5 +273,19 @@ class UserController extends Controller
 
             $user->activities()->attach($activity->id, ['student_order' => $maxOrder + 1]);
         }
+    }
+
+    private function setStudentOrder(User $user)
+    {
+        if ($user->role !== 'STUDENT' || !$user->class_id) {
+            $user->student_order = null;
+            return;
+        }
+
+        $maxOrder = User::where('class_id', $user->class_id)
+            ->where('role', 'STUDENT')
+            ->max('student_order');
+
+        $user->student_order = $maxOrder ? $maxOrder + 1 : 1;
     }
 }

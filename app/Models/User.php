@@ -21,6 +21,7 @@ class User extends Authenticatable
         'password',
         'role',
         'class_id',
+        'student_order',
     ];
 
     protected $hidden = [
@@ -64,5 +65,10 @@ class User extends Authenticatable
     public function studentScores()
     {
         return $this->hasMany(StudentScore::class, 'student_id');
+    }
+
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('student_order');
     }
 }

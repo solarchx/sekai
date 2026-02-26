@@ -117,28 +117,15 @@
                                                 @method('DELETE')
                                                 <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs transition-colors">Delete</button>
                                             </form>
-                                        @elseif(!$form->presences()->where('student_id', auth()->id())->exists())
-                                            @php
-                                                $period = $form->activity->period;
-                                                $start = \Carbon\Carbon::parse($period->time_begin);
-                                                $end = \Carbon\Carbon::parse($period->time_end);
-                                                $windowStart = $start->copy()->subMinutes(15);
-                                                $windowEnd = $end->copy()->addMinutes(15);
-                                            @endphp
-                                            @if($now->between($windowStart, $windowEnd) && $now->format('Y-m-d') == $form->activity_date->format('Y-m-d'))
-                                                <a href="{{ route('activity-presences.create', ['form_id' => $form->id]) }}" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">
-                                                    Submit Presence
-                                                </a>
-                                            @endif
                                         @elseif(auth()->user()->role === 'STUDENT')
                                             @php
+                                                $now = \Carbon\Carbon::now();
                                                 $presence = $form->presences->firstWhere('student_id', auth()->id());
                                                 $report = $presence ? $presence->report : null;
                                             @endphp
 
                                             @if(!$presence)
                                                 @php
-                                                    $now = \Carbon\Carbon::now();
                                                     $period = $form->activity->period;
                                                     $start = \Carbon\Carbon::parse($period->time_begin);
                                                     $end = \Carbon\Carbon::parse($period->time_end);

@@ -108,7 +108,7 @@ class ActivityFormController extends Controller
         try {
             $activityForm->load('activity.subject', 'activity.teacher', 'activity.class', 'activity.period');
             $form = $activityForm;
-            $students = $activityForm->activity->class->students()
+            $students = $form->activity->class->students()
                 ->where('role', 'STUDENT')
                 ->where('deleted_at', null)
                 ->orderBy('student_order')

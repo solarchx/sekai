@@ -17,6 +17,5 @@ class ActivityStudent extends Pivot
     protected $fillable = [
         'student_id',
         'activity_id',
-        'student_order',
     ];
 }

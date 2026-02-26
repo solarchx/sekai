@@ -28,10 +28,7 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
-Route::get('/', function () {
-    return view('auth/login');
-});
+Route::get('/',  function () {return view('auth/login');})->middleware('guest');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -93,9 +90,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/announcements/{announcement}/restore', [AnnouncementController::class, 'restore'])->name('announcements.restore');
 });
 
-Route::get('/my-class', [SchoolClassController::class, 'show'])
-    ->middleware('auth')
-    ->name('class.show');
+Route::get('/my-class', [SchoolClassController::class, 'myClasses'])->middleware('auth')->name('class.show');
 
 Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
 Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');

@@ -44,9 +44,6 @@
                                         Name</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Status</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Actions</th>
                                 </tr>
                             </thead>
@@ -59,15 +56,6 @@
                                             {{ $subject->id }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                             {{ $subject->name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            @if($subject->deleted_at)
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">DELETED</span>
-                                            @else
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">ACTIVE</span>
-                                            @endif
-                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                             @if($subject->deleted_at)
                                                 <form action="{{ route('subjects.restore', $subject) }}" method="POST"
@@ -96,7 +84,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No
+                                        <td colspan="3" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No
                                             subjects found</td>
                                     </tr>
                                 @endforelse

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Activity;
 use Illuminate\Http\Request;
 use App\Models\SchoolClass;
 use Illuminate\Support\Facades\DB;
@@ -10,9 +11,6 @@ use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         try {
@@ -33,9 +31,6 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         try {
@@ -51,36 +46,19 @@ class UserController extends Controller
     {
         try {
             $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',
+                'name'       => 'required|string|max:255',
+                'email'      => 'required|string|email|max:255|unique:users',
                 'identifier' => 'required|string|max:31|unique:users',
-                'role' => 'required|in:STUDENT,TEACHER,VP,ADMIN',
-                'password' => 'required|string|min:8|confirmed',
-                'class_id' => 'nullable|exists:classes,id',
-            ], [
-                'name.required' => 'Name is required.',
-                'email.required' => 'Email is required.',
-                'email.email' => 'Email must be a valid email address.',
-                'email.unique' => 'This email is already registered.',
-                'identifier.required' => 'Identifier is required.',
-                'identifier.max' => 'Identifier must not exceed 31 characters.',
-                'identifier.unique' => 'This identifier is already taken.',
-                'role.required' => 'Role is required.',
-                'role.in' => 'Role must be STUDENT, TEACHER, VP, or ADMIN.',
-                'password.required' => 'Password is required.',
-                'password.min' => 'Password must be at least 8 characters.',
-                'password.confirmed' => 'Passwords do not match.',
-                'class_id.exists' => 'Selected class does not exist.',
+                'role'       => 'required|in:STUDENT,TEACHER,VP,ADMIN',
+                'password'   => 'required|string|min:8|confirmed',
+                'class_id'   => 'nullable|exists:classes,id',
             ]);
 
-            // Check class capacity for students
             if ($validated['role'] === 'STUDENT' && isset($validated['class_id'])) {
                 $class = SchoolClass::find($validated['class_id']);
-                
                 if (!$class) {
                     return back()->withErrors('Selected class does not exist.')->withInput();
                 }
-                
                 if ($class->isAtCapacity()) {
                     return back()->withErrors('Selected class has reached its maximum capacity.')->withInput();
                 }
@@ -89,18 +67,17 @@ class UserController extends Controller
             DB::beginTransaction();
 
             $user = User::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
+                'name'       => $validated['name'],
+                'email'      => $validated['email'],
                 'identifier' => $validated['identifier'],
-                'role' => $validated['role'],
-                'password' => bcrypt($validated['password']),
-                'class_id' => $validated['class_id'] ?? null,
+                'role'       => $validated['role'],
+                'password'   => bcrypt($validated['password']),
+                'class_id'   => $validated['class_id'] ?? null,
             ]);
 
-            // If student is assigned to a class, auto-enroll in class activities
             if ($validated['role'] === 'STUDENT' && isset($validated['class_id'])) {
-                $this->autoEnrollStudentInActivities($user);
                 $this->setStudentOrder($user);
+                $this->autoEnrollStudentInActivities($user);
             }
 
             DB::commit();
@@ -115,53 +92,46 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(User $user)
     {
         try {
             $classes = SchoolClass::where('capacity', '>', 0)
                 ->orWhere('id', $user->class_id)
                 ->get();
-            
-            return view('admin.users.edit', compact('user', 'classes'));
+
+            $classActivities = collect();
+            $enrolledActivityIds = [];
+            if ($user->role === 'STUDENT' && $user->class_id) {
+                $classActivities = Activity::where('class_id', $user->class_id)
+                    ->where('deleted_at', null)
+                    ->with('subject', 'teacher', 'period')
+                    ->get();
+                $enrolledActivityIds = $user->activitiesAsStudent()->pluck('activity_id')->toArray();
+            }
+
+            return view('admin.users.edit', compact('user', 'classes', 'classActivities', 'enrolledActivityIds'));
         } catch (\Exception $e) {
             Log::error('Error loading edit form: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error loading edit form: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, User $user)
     {
         try {
             $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-                'identifier' => 'required|string|max:31|unique:users,identifier,' . $user->id,
-                'role' => 'required|in:STUDENT,TEACHER,VP,ADMIN',
-                'class_id' => 'nullable|exists:classes,id',
-            ], [
-                'name.required' => 'Name is required.',
-                'email.required' => 'Email is required.',
-                'email.email' => 'Email must be a valid email address.',
-                'email.unique' => 'This email is already registered.',
-                'identifier.required' => 'Identifier is required.',
-                'identifier.max' => 'Identifier must not exceed 31 characters.',
-                'identifier.unique' => 'This identifier is already taken.',
-                'role.required' => 'Role is required.',
-                'role.in' => 'Role must be STUDENT, TEACHER, VP, or ADMIN.',
-                'class_id.exists' => 'Selected class does not exist.',
+                'name'        => 'required|string|max:255',
+                'email'       => 'required|string|email|max:255|unique:users,email,' . $user->id,
+                'identifier'  => 'required|string|max:31|unique:users,identifier,' . $user->id,
+                'role'        => 'required|in:STUDENT,TEACHER,VP,ADMIN',
+                'class_id'    => 'nullable|exists:classes,id',
+                'activity_ids' => 'nullable|array',
+                'activity_ids.*' => 'exists:activities,id',
             ]);
 
-            // If changing class assignment, check capacity
             $classChanged = $user->class_id !== ($validated['class_id'] ?? null);
             if ($classChanged && $validated['role'] === 'STUDENT' && isset($validated['class_id'])) {
                 $newClass = SchoolClass::find($validated['class_id']);
-                
                 if ($newClass && $newClass->isAtCapacity()) {
                     return back()->withErrors('Selected class has reached its maximum capacity.')->withInput();
                 }
@@ -170,24 +140,29 @@ class UserController extends Controller
             DB::beginTransaction();
 
             $user->update([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
+                'name'       => $validated['name'],
+                'email'      => $validated['email'],
                 'identifier' => $validated['identifier'],
-                'role' => $validated['role'],
-                'class_id' => $validated['class_id'] ?? null,
+                'role'       => $validated['role'],
+                'class_id'   => $validated['class_id'] ?? null,
             ]);
 
-            // If class was changed and user is student, update activity enrollments
-            if ($classChanged && $user->role === 'STUDENT') {
-                // Remove from old class activities (if applicable)
-                if ($user->class_id) {
-                    $user->activities()->detach();
+            if ($user->role === 'STUDENT') {
+                if ($classChanged) {
+                    $this->setStudentOrder($user);
+                    $user->activitiesAsStudent()->detach();
+                    if ($user->class_id) {
+                        $this->autoEnrollStudentInActivities($user);
+                    }
+                } else {
+                    if (isset($validated['activity_ids'])) {
+                        $user->activitiesAsStudent()->sync($validated['activity_ids']);
+                    } else {
+                        $user->activitiesAsStudent()->detach();
+                    }
                 }
-                
-                // Auto-enroll in new class activities
-                if (isset($validated['class_id'])) {
-                    $this->autoEnrollStudentInActivities($user);
-                }
+            } else {
+                $user->activitiesAsStudent()->detach();
             }
 
             DB::commit();
@@ -202,20 +177,15 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(User $user)
     {
         try {
-            // Prevent deleting admins
             if ($user->role === 'ADMIN' && User::where('role', 'ADMIN')->count() <= 1) {
                 return redirect()->route('users.index')->withErrors('Cannot delete the last admin user.');
             }
 
             DB::beginTransaction();
 
-            // Soft delete activities associated with user if teacher
             if ($user->role === 'TEACHER') {
                 $user->activities()->delete();
             }
@@ -232,9 +202,6 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Restore a soft-deleted user (admin only).
-     */
     public function restore(User $user)
     {
         try {
@@ -251,34 +218,24 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Auto-enroll student in all activities of their assigned class.
-     */
     private function autoEnrollStudentInActivities(User $user)
     {
         if (!$user->class_id || $user->role !== 'STUDENT') {
             return;
         }
 
-        $activities = $user->schoolClass->activities()->whereNull('deleted_at')->get();
+        $activities = Activity::where('class_id', $user->class_id)
+            ->whereNull('deleted_at')
+            ->pluck('id');
 
-        foreach ($activities as $activity) {
-            if ($user->activities()->where('activity_id', $activity->id)->exists()) {
-                continue;
-            }
-
-            $maxOrder = DB::table('activity_students')
-                ->where('activity_id', $activity->id)
-                ->max('student_order') ?? 0;
-
-            $user->activities()->attach($activity->id, ['student_order' => $maxOrder + 1]);
-        }
+        $user->activitiesAsStudent()->sync($activities);
     }
 
     private function setStudentOrder(User $user)
     {
         if ($user->role !== 'STUDENT' || !$user->class_id) {
             $user->student_order = null;
+            $user->save();
             return;
         }
 
@@ -287,5 +244,6 @@ class UserController extends Controller
             ->max('student_order');
 
         $user->student_order = $maxOrder ? $maxOrder + 1 : 1;
+        $user->save();
     }
 }

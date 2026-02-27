@@ -4,7 +4,6 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Edit User') }}
             </h2>
-            {{-- <x-admin-tabs active="users" /> --}}
         </div>
     </x-slot>
 
@@ -49,7 +48,7 @@
                                 </select>
                                 <x-input-error :messages="$errors->get('role')" class="mt-2" />
                             </div>
-                            @if ($user->role == 'STUDENT' || $user->role == 'TEACHER')
+                            @if (in_array($user->role, ['STUDENT', 'TEACHER']))
                                 <div>
                                     <label for="class_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Class</label>
                                     <select name="class_id" id="class_id" 
@@ -64,6 +63,25 @@
                                     <x-input-error :messages="$errors->get('class_id')" class="mt-2" />
                                 </div>
                             @endif
+
+                            @if($user->role === 'STUDENT')
+                                <div id="activity-section" style="{{ $user->class_id ? '' : 'display: none;' }}">
+                                    <label for="activity_ids" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Enrolled Activities
+                                    </label>
+                                    <select name="activity_ids[]" id="activity_ids" multiple 
+                                            class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white" size="6">
+                                        @foreach($classActivities as $activity)
+                                            <option value="{{ $activity->id }}" 
+                                                {{ in_array($activity->id, old('activity_ids', $enrolledActivityIds)) ? 'selected' : '' }}>
+                                                {{ $activity->subject->name }} – {{ $activity->period->weekday_name }} {{ $activity->period->time_begin }}-{{ $activity->period->time_end }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Hold Ctrl/Cmd to select multiple.</p>
+                                    <x-input-error :messages="$errors->get('activity_ids')" class="mt-2" />
+                                </div>
+                            @endif
                         </div>
                         <div class="flex items-center justify-end mt-6">
                             <a href="{{ route('users.index') }}" class="mr-4 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">Cancel</a>
@@ -76,4 +94,29 @@
             </div>
         </div>
     </div>
+
+    @if($user->role === 'STUDENT')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const classSelect = document.getElementById('class_id');
+            const activitySection = document.getElementById('activity-section');
+            const activitySelect = document.getElementById('activity_ids');
+            const allActivities = @json($classActivities);
+
+            function updateActivityOptions() {
+                const classId = classSelect.value;
+                if (!classId) {
+                    activitySection.style.display = 'none';
+                    return;
+                }
+                if (classId != {{ $user->class_id ?? 'null' }}) {
+                    alert('Changing the class will reset the activity enrollment to all activities of the new class. Please save the form to apply the change.');
+                }
+                activitySection.style.display = 'block';
+            }
+
+            classSelect.addEventListener('change', updateActivityOptions);
+        });
+    </script>
+    @endif
 </x-app-layout>

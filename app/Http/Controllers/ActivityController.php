@@ -182,9 +182,8 @@ class ActivityController extends Controller
             $subjects = Subject::all();
             $teachers = User::where('role', '!=', 'STUDENT')->get();
             $periods = LessonPeriod::whereNull('parent_id')->with('semester')->get();
-            $classes = SchoolClass::with('major', 'grade')->all();
+            $classes = SchoolClass::with('major', 'grade')->get();
 
-            
             $classSubjects = [];
             foreach ($classes as $class) {
                 $subjectIds = Subject::whereHas('majors', fn($q) => $q->where('id', $class->major_id))
@@ -193,7 +192,7 @@ class ActivityController extends Controller
                     ->toArray();
                 $classSubjects[$class->id] = $subjectIds;
             }
-            
+
             return view('activities.edit', compact('activity', 'subjects', 'teachers', 'periods', 'classes', 'classSubjects'));
         } catch (\Exception $e) {
             Log::error('Error loading activity edit form: ' . $e->getMessage());

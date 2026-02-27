@@ -105,10 +105,6 @@ class AnnouncementController extends Controller
                                    ->paginate(100);
             
             return view('announcements.index', compact('announcements', 'showDeleted'));
-
-            $announcements = $query->latest()->paginate(100);
-
-            return view('announcements.index', compact('announcements'));
         } catch (\Exception $e) {
             Log::error('Error loading announcements: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error loading announcements: ' . $e->getMessage());

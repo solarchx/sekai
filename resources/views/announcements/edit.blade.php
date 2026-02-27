@@ -52,11 +52,13 @@
                     </div>
 
                     <div id="activity-selector" class="mb-6 {{ old('scope', $announcement->scope) == 'SPECIFIC-CLASS' ? '' : 'hidden' }}">
-                        <label for="activity_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Class</label>
+                        <label for="activity_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Class (Activity)</label>
                         <select name="activity_id" id="activity_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
                             <option value="">Select Class</option>
                             @foreach($activities as $activity)
-                                <option value="{{ $activity->id }}" {{ old('activity_id', $announcement->activity_id) == $activity->id ? 'selected' : '' }}>{{ $activity->subject->name }} - {{ $activity->class->name }}</option>
+                                <option value="{{ $activity->id }}" {{ old('activity_id', $announcement->activity_id) == $activity->id ? 'selected' : '' }}>
+                                    {{ $activity->subject->name }} – {{ $activity->class->name }} ({{ $activity->period->weekday_name }} {{ $activity->period->time_begin }}-{{ $activity->period->time_end }})
+                                </option>
                             @endforeach
                         </select>
                         @error('activity_id')
@@ -102,7 +104,6 @@
             }
         }
 
-        
         document.addEventListener('DOMContentLoaded', updateScopeOptions);
     </script>
 </x-app-layout>

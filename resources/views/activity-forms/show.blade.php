@@ -9,7 +9,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Activity Form Information Card -->
+            
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg mb-6">
                 <div class="p-6" style="background: linear-gradient(to right, #f59e0b, #f97316); color: white;">
                     <h3 class="text-2xl font-bold">{{ $form->activity->subject->name ?? 'N/A' }} - {{ \Carbon\Carbon::parse($form->activity_date)->format('M d, Y') }}</h3>
@@ -37,7 +37,7 @@
                         </div>
                     </div>
 
-                    <!-- Action Buttons for Teachers+ -->
+                    
                     @if(auth()->user()->role !== 'STUDENT')
                         <div class="mt-6 flex flex-wrap gap-3">
                             <a href="{{ route('activity-forms.edit', $form) }}" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors inline-flex items-center">
@@ -61,7 +61,7 @@
                 </div>
             </div>
 
-            <!-- Activity Presences Section -->
+            
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6" style="background: linear-gradient(to right, #f59e0b, #f97316); color: white;">
                     <h3 class="text-2xl font-bold">Attendance Records</h3>

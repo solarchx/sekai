@@ -74,16 +74,16 @@
                                                     </button>
                                                 </form>
                                             @else
-                                                {{-- Student Order (always available for active classes) --}}
+                                                
                                                 <a href="{{ route('classes.student-order', $class) }}"
                                                     class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors inline-flex items-center"
                                                     title="Manage Student Order">
                                                     <i class="bi bi-sort-numeric-up"></i> Order
                                                 </a>
 
-                                                {{-- Placeholder for future pop-ups --}}
-                                                {{-- <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors" title="View Activities">Activities</button> --}}
-                                                {{-- <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors" title="View Members">Members</button> --}}
+                                                
+                                                
+                                                
 
                                                 <a href="{{ route('classes.edit', $class) }}"
                                                     class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors inline-flex items-center"

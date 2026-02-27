@@ -7,18 +7,18 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
-        <!-- Fonts -->
+        
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        <!-- Bootstrap Icons -->
+        
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
-        <!-- Scripts -->
+        
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         
         <script>
-            // Initialize dark mode on page load
+            
             if (localStorage.getItem('dark-mode') === 'true' || (localStorage.getItem('dark-mode') === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
             }
@@ -28,7 +28,7 @@
         <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
             @include('layouts.navigation')
 
-            <!-- Page Heading -->
+            
             @if (isset($header))
                 <header class="bg-white dark:bg-gray-800 shadow dark:shadow-lg dark:shadow-black/20 border-b dark:border-gray-700">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -37,10 +37,10 @@
                 </header>
             @endif
 
-            <!-- Page Content -->
+            
             <main>
                 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-6">
-                    {{-- Global Messages --}}
+                    
                     @if(session('success'))
                         <div class="bg-green-100 border border-green-400 text-green-700 dark:bg-green-900 dark:border-green-700 dark:text-green-200 px-4 py-3 rounded relative mb-4" role="alert">
                             <span class="block sm:inline">{{ session('success') }}</span>

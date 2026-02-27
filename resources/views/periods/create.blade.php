@@ -14,7 +14,7 @@
                     <form method="POST" action="{{ route('periods.store') }}">
                         @csrf
 
-                        {{-- Hidden semester_id from query parameter --}}
+                        
                         <input type="hidden" name="semester_id" value="{{ request('semester_id') }}">
 
                         <div class="mb-6">

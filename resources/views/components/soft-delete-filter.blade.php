@@ -1,4 +1,4 @@
-<!-- Soft Delete Filter Component -->
+
 <div class="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg">
     <form method="GET" action="{{ request()->url() }}" class="flex items-center gap-4">
         <label for="show_deleted_checkbox" class="flex items-center gap-2 cursor-pointer">

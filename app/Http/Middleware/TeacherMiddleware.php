@@ -10,7 +10,6 @@ class TeacherMiddleware
 {
     /**
      * Handle an incoming request.
-     * Allows TEACHER, VP, and ADMIN
      */
     public function handle(Request $request, Closure $next): Response
     {

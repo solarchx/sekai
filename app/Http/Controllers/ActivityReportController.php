@@ -10,10 +10,7 @@ use Illuminate\Support\Facades\Log;
 
 class ActivityReportController extends Controller
 {
-    /**
-     * Display all activity reports (admin only).
-     * Students should not see each other's reports due to anonymity.
-     */
+    
     public function index(Request $request)
     {
         if (auth()->user()->role !== 'ADMIN') {
@@ -31,13 +28,11 @@ class ActivityReportController extends Controller
         return view('activity-reports.index', compact('reports', 'showDeleted'));
     }
 
-    /**
-     * Show the form for creating an anonymous report.
-     */
+    
     public function create()
     {
         try {
-            // Students can only report on their own presences
+            
             $presences = ActivityPresence::where('student_id', auth()->id())
                 ->with('student', 'form.activity.subject', 'form.activity.teacher')
                 ->where('deleted_at', null)
@@ -54,10 +49,7 @@ class ActivityReportController extends Controller
         }
     }
 
-    /**
-     * Store an anonymous activity report.
-     * This is for students to rate teachers.
-     */
+    
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -83,9 +75,7 @@ class ActivityReportController extends Controller
         return redirect()->route('dashboard')->with('success', 'Report submitted.');
     }
 
-    /**
-     * Edit is not allowed for anonymous reports.
-     */
+    
     public function edit(ActivityReport $activityReport)
     {
         if ($activityReport->presence->student_id !== auth()->id()) {
@@ -94,9 +84,7 @@ class ActivityReportController extends Controller
         return view('activity-reports.edit', compact('activityReport'));
     }
 
-    /**
-     * Update is not allowed for anonymous reports.
-     */
+    
     public function update(Request $request, ActivityReport $activityReport)
     {
         if ($activityReport->presence->student_id !== auth()->id()) {
@@ -113,12 +101,10 @@ class ActivityReportController extends Controller
         return redirect()->route('dashboard')->with('success', 'Report updated.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(ActivityReport $activityReport)
     {
-        // Student can delete own, admin can delete any
+        
         if ($activityReport->presence->student_id !== auth()->id() && auth()->user()->role !== 'ADMIN') {
             abort(403);
         }
@@ -126,9 +112,7 @@ class ActivityReportController extends Controller
         return redirect()->back()->with('success', 'Report deleted.');
     }
 
-    /**
-     * Restore a soft-deleted report (admin only).
-     */
+    
     public function restore(ActivityReport $activityReport)
     {
         try {

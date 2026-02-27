@@ -70,10 +70,6 @@ class Activity extends Model
     {
         return $this->hasMany(StudentScore::class, 'activity_id');
     }
-
-    /**
-     * Check if teacher has overlapping activities
-     */
     public function hasTeacherOverlap(): bool
     {
         $conflictingActivities = Activity::where('teacher_id', $this->teacher_id)

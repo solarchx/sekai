@@ -71,7 +71,7 @@ class ScoreDistributionController extends Controller
 
             $activity = Activity::find($validated['activity_id']);
 
-            // Validate total weight equals 100
+            
             $totalWeight = array_sum(array_column($validated['distributions'], 'weight'));
             if ($totalWeight !== 100) {
                 return back()->withErrors(['distributions' => "Total weight must equal 100. Current total: {$totalWeight}"])->withInput();
@@ -79,12 +79,12 @@ class ScoreDistributionController extends Controller
 
             DB::beginTransaction();
 
-            // Delete existing distributions for this activity
+            
             ScoreDistribution::where('activity_id', $validated['activity_id'])->delete();
 
-            // Create new distributions with unique names per activity
+            
             foreach ($validated['distributions'] as $index => $distribution) {
-                // Check for duplicate name (excluding soft deleted)
+                
                 $exists = ScoreDistribution::where('activity_id', $validated['activity_id'])
                     ->where('name', $distribution['name'])
                     ->where('deleted_at', null)
@@ -121,7 +121,7 @@ class ScoreDistributionController extends Controller
                 ->where('deleted_at', null)
                 ->get();
             
-            // Get all distributions for the activity to show as a group
+            
             $activityDistributions = ScoreDistribution::where('activity_id', $scoreDistribution->activity_id)
                 ->where('deleted_at', null)
                 ->get();
@@ -154,7 +154,7 @@ class ScoreDistributionController extends Controller
                 'distributions.*.weight.max' => 'Score distribution weight must not exceed 100.',
             ]);
 
-            // Validate total weight equals 100
+            
             $totalWeight = array_sum(array_column($validated['distributions'], 'weight'));
             if ($totalWeight !== 100) {
                 return back()->withErrors(['distributions' => "Total weight must equal 100. Current total: {$totalWeight}"])->withInput();
@@ -162,10 +162,10 @@ class ScoreDistributionController extends Controller
 
             DB::beginTransaction();
 
-            // Delete existing distributions for this activity
+            
             ScoreDistribution::where('activity_id', $validated['activity_id'])->delete();
 
-            // Create new distributions
+            
             foreach ($validated['distributions'] as $distribution) {
                 ScoreDistribution::create([
                     'activity_id' => $validated['activity_id'],
@@ -193,7 +193,7 @@ class ScoreDistributionController extends Controller
 
             $activityId = $scoreDistribution->activity_id;
 
-            // Delete all score distributions for this activity
+            
             ScoreDistribution::where('activity_id', $activityId)->delete();
 
             DB::commit();
@@ -206,9 +206,7 @@ class ScoreDistributionController extends Controller
         }
     }
 
-    /**
-     * Restore soft-deleted distributions (admin only).
-     */
+    
     public function restore(ScoreDistribution $scoreDistribution)
     {
         try {
@@ -216,7 +214,7 @@ class ScoreDistributionController extends Controller
                 return redirect()->back()->withErrors('Unauthorized action.');
             }
 
-            // Restore all distributions for this activity
+            
             ScoreDistribution::where('activity_id', $scoreDistribution->activity_id)
                 ->onlyTrashed()
                 ->restore();

@@ -56,7 +56,7 @@ class SubjectController extends Controller
 
             $subject = Subject::create(['name' => $validated['name']]);
 
-            // Attach selected majors and grades
+            
             if (!empty($validated['majors'])) {
                 $subject->majors()->sync($validated['majors']);
             }
@@ -80,7 +80,7 @@ class SubjectController extends Controller
     {
         $majors = Major::all();
         $grades = Grade::all();
-        // Load existing relationships for preselection
+        
         $subject->load('majors', 'grades');
         return view('subjects.edit', compact('subject', 'majors', 'grades'));
     }
@@ -103,7 +103,7 @@ class SubjectController extends Controller
 
             $subject->update(['name' => $validated['name']]);
 
-            // Sync majors and grades
+            
             $subject->majors()->sync($validated['majors'] ?? []);
             $subject->grades()->sync($validated['grades'] ?? []);
 

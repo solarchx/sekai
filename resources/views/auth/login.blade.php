@@ -1,6 +1,6 @@
 <x-guest-layout>
     <div class="max-w-md mx-auto">
-        <!-- Header Section -->
+        
         <div class="text-center mb-8">
             <div class="mb-4 inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700 rounded-lg shadow-lg">
                 <i class="bi bi-lock text-4xl text-white"></i>
@@ -9,15 +9,15 @@
             <p class="text-gray-600 dark:text-gray-400">Sign in to your account to continue</p>
         </div>
 
-        <!-- Session Status -->
+        
         <x-auth-session-status class="mb-6" :status="session('status')" />
 
-        <!-- Form Card -->
+        
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl dark:shadow-2xl dark:shadow-black/50 p-8 border border-gray-100 dark:border-gray-700">
             <form method="POST" action="{{ route('login') }}">
                 @csrf
 
-                <!-- Email Address -->
+                
                 <div class="mb-6">
                     <x-input-label for="email" :value="__('Email Address')" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2" />
                     <div class="relative">
@@ -29,7 +29,7 @@
                     <x-input-error :messages="$errors->get('email')" class="mt-2 text-sm" />
                 </div>
 
-                <!-- Password -->
+                
                 <div class="mb-6">
                     <x-input-label for="password" :value="__('Password')" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2" />
                     <div class="relative">
@@ -44,7 +44,7 @@
                     <x-input-error :messages="$errors->get('password')" class="mt-2 text-sm" />
                 </div>
 
-                <!-- Remember Me -->
+                
                 <div class="mb-6">
                     <label for="remember_me" class="inline-flex items-center cursor-pointer">
                         <input id="remember_me" type="checkbox" class="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-indigo-600 dark:text-indigo-500 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-400" name="remember">
@@ -52,7 +52,7 @@
                     </label>
                 </div>
 
-                <!-- Forgot Password & Login Button -->
+                
                 <div class="space-y-4">
                     <x-primary-button class="w-full justify-center py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-600 dark:to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 dark:hover:from-indigo-700 dark:hover:to-indigo-800 font-semibold transition shadow-lg">
                         {{ __('Sign In') }}
@@ -67,7 +67,7 @@
                     @endif
                 </div>
 
-                <!-- Divider -->
+                
                 <div class="mt-6 relative">
                     <div class="absolute inset-0 flex items-center">
                         <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
@@ -77,7 +77,7 @@
                     </div>
                 </div>
 
-                <!-- Sign Up Link -->
+                
                 @if (Route::has('register'))
                     <div class="mt-6 text-center">
                         <a href="{{ route('register') }}" class="inline-block px-4 py-2.5 border-2 border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400 font-semibold rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950 transition w-full text-center">
@@ -88,7 +88,7 @@
             </form>
         </div>
 
-        <!-- Footer -->
+        
         <div class="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
             <p>Protected by enterprise-grade security provided by Miku</p>
         </div>

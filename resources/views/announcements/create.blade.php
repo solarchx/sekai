@@ -101,7 +101,7 @@
             }
         }
 
-        // Initialize on page load
+        
         document.addEventListener('DOMContentLoaded', updateScopeOptions);
     </script>
 </x-app-layout>

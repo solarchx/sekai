@@ -10,9 +10,7 @@ use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request)
     {
         try {
@@ -33,9 +31,7 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    
     public function create()
     {
         try {
@@ -73,7 +69,7 @@ class UserController extends Controller
                 'class_id.exists' => 'Selected class does not exist.',
             ]);
 
-            // Check class capacity for students
+            
             if ($validated['role'] === 'STUDENT' && isset($validated['class_id'])) {
                 $class = SchoolClass::find($validated['class_id']);
                 
@@ -97,7 +93,7 @@ class UserController extends Controller
                 'class_id' => $validated['class_id'] ?? null,
             ]);
 
-            // If student is assigned to a class, auto-enroll in class activities
+            
             if ($validated['role'] === 'STUDENT' && isset($validated['class_id'])) {
                 $this->autoEnrollStudentInActivities($user);
                 $this->setStudentOrder($user);
@@ -115,9 +111,7 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+    
     public function edit(User $user)
     {
         try {
@@ -132,9 +126,7 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, User $user)
     {
         try {
@@ -157,7 +149,7 @@ class UserController extends Controller
                 'class_id.exists' => 'Selected class does not exist.',
             ]);
 
-            // If changing class assignment, check capacity
+            
             $classChanged = $user->class_id !== ($validated['class_id'] ?? null);
             if ($classChanged && $validated['role'] === 'STUDENT' && isset($validated['class_id'])) {
                 $newClass = SchoolClass::find($validated['class_id']);
@@ -177,14 +169,14 @@ class UserController extends Controller
                 'class_id' => $validated['class_id'] ?? null,
             ]);
 
-            // If class was changed and user is student, update activity enrollments
+            
             if ($classChanged && $user->role === 'STUDENT') {
-                // Remove from old class activities (if applicable)
+                
                 if ($user->class_id) {
                     $user->activities()->detach();
                 }
                 
-                // Auto-enroll in new class activities
+                
                 if (isset($validated['class_id'])) {
                     $this->autoEnrollStudentInActivities($user);
                 }
@@ -202,20 +194,18 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(User $user)
     {
         try {
-            // Prevent deleting admins
+            
             if ($user->role === 'ADMIN' && User::where('role', 'ADMIN')->count() <= 1) {
                 return redirect()->route('users.index')->withErrors('Cannot delete the last admin user.');
             }
 
             DB::beginTransaction();
 
-            // Soft delete activities associated with user if teacher
+            
             if ($user->role === 'TEACHER') {
                 $user->activities()->delete();
             }
@@ -232,9 +222,7 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Restore a soft-deleted user (admin only).
-     */
+    
     public function restore(User $user)
     {
         try {
@@ -251,9 +239,7 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Auto-enroll student in all activities of their assigned class.
-     */
+    
     private function autoEnrollStudentInActivities(User $user)
     {
         if (!$user->class_id || $user->role !== 'STUDENT') {

@@ -98,7 +98,7 @@
                             @enderror
                         </div>
 
-                        {{-- Homeroom Teacher (optional) --}}
+                        
                         <div class="mb-6">
                             <label for="homeroom_teacher_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                 Homeroom Teacher (optional)

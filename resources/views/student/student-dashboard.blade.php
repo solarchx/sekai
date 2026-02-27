@@ -14,7 +14,7 @@
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- My Classes -->
+                        
                         <div
                             class="bg-blue-50 dark:bg-blue-900 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center">
@@ -31,7 +31,7 @@
                             </div>
                         </div>
 
-                        <!-- Attendance -->
+                        
                         <div
                             class="bg-green-50 dark:bg-green-900 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center">
@@ -48,7 +48,7 @@
                             </div>
                         </div>
 
-                        <!-- Grades -->
+                        
                         <div
                             class="bg-purple-50 dark:bg-purple-900 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center">
@@ -65,7 +65,7 @@
                             </div>
                         </div>
 
-                        <!-- Announcements -->
+                        
                         <div
                             class="bg-yellow-50 dark:bg-yellow-900 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center">

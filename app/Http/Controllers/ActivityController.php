@@ -39,10 +39,10 @@ class ActivityController extends Controller
         try {
             $subjects = Subject::all();
             $teachers = User::where('role', '!=', 'STUDENT')->get();
-            $periods = LessonPeriod::whereNull('parent_id')->with('semester')->get(); // Only show parent periods
+            $periods = LessonPeriod::whereNull('parent_id')->with('semester')->get(); 
             $classes = SchoolClass::with('major', 'grade')->get();
 
-            // Build a mapping of class_id => allowed subject ids
+            
             $classSubjects = [];
             foreach ($classes as $class) {
                 $subjectIds = Subject::whereHas('majors', fn($q) => $q->where('id', $class->major_id))
@@ -85,12 +85,12 @@ class ActivityController extends Controller
             $period = LessonPeriod::find($validated['period_id']);
             $teacher = User::find($validated['teacher_id']);
 
-            // Validate teacher role
+            
             if (!in_array($teacher->role, ['TEACHER', 'VP', 'ADMIN'])) {
                 return back()->withErrors(['teacher_id' => 'Selected user must be a teacher, VP, or admin.'])->withInput();
             }
 
-            // Check for teacher schedule conflicts
+            
             $teacherConflict = Activity::where('teacher_id', $validated['teacher_id'])
                 ->whereHas('period', function ($query) use ($period) {
                     $query->where('semester_id', $period->semester_id)
@@ -106,7 +106,7 @@ class ActivityController extends Controller
                 return back()->withErrors(['teacher_id' => 'Teacher has overlapping activities on this time slot.'])->withInput();
             }
 
-            // Check for class schedule conflicts
+            
             $classConflict = Activity::where('class_id', $validated['class_id'])
                 ->whereHas('period', function ($query) use ($period) {
                     $query->where('semester_id', $period->semester_id)
@@ -122,7 +122,7 @@ class ActivityController extends Controller
                 return back()->withErrors(['class_id' => 'Class has overlapping activities on this time slot.'])->withInput();
             }
 
-            // Check for duplicate activity
+            
             $duplicate = Activity::where('subject_id', $validated['subject_id'])
                 ->where('teacher_id', $validated['teacher_id'])
                 ->where('period_id', $validated['period_id'])
@@ -138,7 +138,7 @@ class ActivityController extends Controller
 
             $activity = Activity::create($validated);
 
-            // Assign activity to all students in the class
+            
             $students = SchoolClass::find($validated['class_id'])
                 ->students()
                 ->where('role', 'STUDENT')
@@ -184,7 +184,7 @@ class ActivityController extends Controller
             $periods = LessonPeriod::whereNull('parent_id')->with('semester')->get();
             $classes = SchoolClass::with('major', 'grade')->all();
 
-            // Build classSubjects mapping
+            
             $classSubjects = [];
             foreach ($classes as $class) {
                 $subjectIds = Subject::whereHas('majors', fn($q) => $q->where('id', $class->major_id))
@@ -223,12 +223,12 @@ class ActivityController extends Controller
             $period = LessonPeriod::find($validated['period_id']);
             $teacher = User::find($validated['teacher_id']);
 
-            // Validate teacher role
+            
             if (!in_array($teacher->role, ['TEACHER', 'VP', 'ADMIN'])) {
                 return back()->withErrors(['teacher_id' => 'Selected user must be a teacher, VP, or admin.'])->withInput();
             }
 
-            // Check for teacher conflicts (excluding current activity)
+            
             $teacherConflict = Activity::where('teacher_id', $validated['teacher_id'])
                 ->where('id', '!=', $activity->id)
                 ->whereHas('period', function ($query) use ($period) {
@@ -245,7 +245,7 @@ class ActivityController extends Controller
                 return back()->withErrors(['teacher_id' => 'Teacher has overlapping activities on this time slot.'])->withInput();
             }
 
-            // Check for class conflicts (excluding current activity)
+            
             $classConflict = Activity::where('class_id', $validated['class_id'])
                 ->where('id', '!=', $activity->id)
                 ->whereHas('period', function ($query) use ($period) {
@@ -267,7 +267,7 @@ class ActivityController extends Controller
             $classChanged = $activity->class_id !== $validated['class_id'];
             $activity->update($validated);
 
-            // If class changed, update student enrollments
+            
             if ($classChanged) {
                 $activity->students()->detach();
                 
@@ -297,10 +297,10 @@ class ActivityController extends Controller
     public function destroy(Activity $activity)
     {
         DB::transaction(function () use ($activity) {
-            // Soft delete pivot records
+            
             ActivityStudent::where('activity_id', $activity->id)->delete();
 
-            // Delete forms and presences
+            
             $activity->forms()->delete();
             $activity->presences()->delete();
 
@@ -310,9 +310,7 @@ class ActivityController extends Controller
         return redirect()->route('activities.index')->with('success', 'Activity deleted.');
     }
 
-    /**
-     * Restore a soft-deleted activity (admin only).
-     */
+    
     public function restore(Activity $activity)
     {
         if (auth()->user()->role !== 'ADMIN') {

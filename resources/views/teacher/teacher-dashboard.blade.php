@@ -14,7 +14,7 @@
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- My Classes -->
+                        
                         <div
                             class="bg-blue-50 dark:bg-blue-900 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center">
@@ -31,7 +31,7 @@
                             </div>
                         </div>
 
-                        <!-- Mark Attendance -->
+                        
                         <div
                             class="bg-green-50 dark:bg-green-900 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center">
@@ -49,7 +49,7 @@
                             </div>
                         </div>
 
-                        <!-- Record Grades -->
+                        
                         <div
                             class="bg-purple-50 dark:bg-purple-900 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center">
@@ -66,7 +66,7 @@
                             </div>
                         </div>
 
-                        <!-- Class Materials -->
+                        
                         <div
                             class="bg-red-50 dark:bg-red-900 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center">
@@ -85,7 +85,7 @@
                         </div>
                     </div>
 
-                    <!-- Schedule Section -->
+                    
                     @if($parentPeriods && $parentPeriods->count() > 0)
                         <div class="mt-8">
                             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">

@@ -1,6 +1,6 @@
 @props(['parentPeriods', 'periods', 'isReadOnly' => true])
 
-<!-- Schedule Sheet Component -->
+
 <div class="overflow-x-auto mb-6">
     <table class="min-w-full bg-white dark:bg-gray-800">
         <thead class="bg-gray-50 dark:bg-gray-700">

@@ -23,7 +23,7 @@
                             @enderror
                         </div>
 
-                        {{-- Majors multi-select --}}
+                        
                         <div class="mb-6">
                             <label for="majors" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Applicable Majors</label>
                             <select name="majors[]" id="majors" multiple class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('majors') is-invalid @enderror" size="5">
@@ -41,7 +41,7 @@
                             @enderror
                         </div>
 
-                        {{-- Grades multi-select --}}
+                        
                         <div class="mb-6">
                             <label for="grades" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Applicable Grades</label>
                             <select name="grades[]" id="grades" multiple class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('grades') is-invalid @enderror" size="5">

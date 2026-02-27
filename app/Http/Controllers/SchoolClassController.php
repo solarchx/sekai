@@ -15,9 +15,7 @@ use Illuminate\Support\Facades\Log;
 
 class SchoolClassController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request)
     {
         try {
@@ -38,9 +36,7 @@ class SchoolClassController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    
     public function create()
     {
         try {
@@ -59,9 +55,7 @@ class SchoolClassController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request)
     {
         try {
@@ -84,7 +78,7 @@ class SchoolClassController extends Controller
                 'homeroom_teacher_id.exists' => 'Selected teacher does not exist.',
             ]);
 
-            // Validate homeroom teacher is not a student
+            
             if (isset($validated['homeroom_teacher_id'])) {
                 $teacher = User::find($validated['homeroom_teacher_id']);
                 if ($teacher->role === 'STUDENT') {
@@ -108,9 +102,7 @@ class SchoolClassController extends Controller
         }
     }
 
-    /**
-     * Display "My Class" page for students.
-     */
+    
     public function show(SchoolClass $class)
     {
         try {
@@ -131,7 +123,7 @@ class SchoolClassController extends Controller
                 ->orderBy('name')
                 ->get();
 
-            // Get activities for the class
+            
             $activities = $userClass->activities()
                 ->with('teacher', 'subject', 'period')
                 ->where('deleted_at', null)
@@ -144,9 +136,7 @@ class SchoolClassController extends Controller
         }
     }
 
-    /**
-     * Update student order for a class.
-     */
+    
     public function updateStudentOrder(Request $request, SchoolClass $class)
     {
         $validated = $request->validate([
@@ -166,9 +156,7 @@ class SchoolClassController extends Controller
         return redirect()->back()->with('success', 'Student order updated.');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+    
     public function edit(SchoolClass $class)
     {
         try {
@@ -185,9 +173,7 @@ class SchoolClassController extends Controller
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, SchoolClass $class)
     {
         try {
@@ -210,7 +196,7 @@ class SchoolClassController extends Controller
                 'homeroom_teacher_id.exists' => 'Selected teacher does not exist.',
             ]);
 
-            // Validate homeroom teacher is not a student
+            
             if (isset($validated['homeroom_teacher_id'])) {
                 $teacher = User::find($validated['homeroom_teacher_id']);
                 if ($teacher->role === 'STUDENT') {
@@ -218,7 +204,7 @@ class SchoolClassController extends Controller
                 }
             }
 
-            // Check if capacity reduction would violate current enrollment
+            
             $currentStudentCount = $class->students()
                 ->where('role', 'STUDENT')
                 ->count();
@@ -243,15 +229,13 @@ class SchoolClassController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(SchoolClass $class)
     {
         try {
             DB::beginTransaction();
 
-            // Remove all students from the class (soft delete their associations)
+            
             $class->students()->update(['class_id' => null]);
 
             $class->delete();
@@ -266,9 +250,7 @@ class SchoolClassController extends Controller
         }
     }
 
-    /**
-     * Restore a soft-deleted class (admin only).
-     */
+    
     public function restore(SchoolClass $class)
     {
         try {
@@ -291,7 +273,7 @@ class SchoolClassController extends Controller
             ->where('role', 'STUDENT')
             ->where('deleted_at', null)
             ->orderBy('student_order')
-            ->get(['id', 'name', 'identifier', 'student_order']);  // include student_order
+            ->get(['id', 'name', 'identifier', 'student_order']);  
 
         return view('admin.classes.student-order', compact('class', 'students'));
     }
@@ -304,7 +286,7 @@ class SchoolClassController extends Controller
             $taughtActivities = collect();
 
             if ($user->role === 'STUDENT') {
-                // Student: only their own class
+                
                 if ($user->class_id) {
                     $class = SchoolClass::with('major', 'grade')->find($user->class_id);
                     if ($class) {
@@ -322,13 +304,13 @@ class SchoolClassController extends Controller
                     }
                 }
             } else {
-                // Teachers, VP, Admin: homeroom classes
+                
                 $homeroomClasses = SchoolClass::with('major', 'grade')
                     ->where('homeroom_teacher_id', $user->id)
                     ->get()
                     ->map(function ($class) {
                         $class->homeroomTeacher = $class->homeroom_teacher_id ? User::find($class->homeroom_teacher_id) : null;
-                        // Load students and activities for modals
+                        
                         $class->students = $class->students()
                             ->where('role', 'STUDENT')
                             ->where('deleted_at', null)
@@ -341,7 +323,7 @@ class SchoolClassController extends Controller
                         return $class;
                     });
 
-                // All activities taught by the user
+                
                 $taughtActivities = Activity::with(['subject', 'teacher', 'class.major', 'class.grade', 'period'])
                     ->where('teacher_id', $user->id)
                     ->where('deleted_at', null)

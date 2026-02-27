@@ -74,7 +74,7 @@ class StudentScoreController extends Controller
 
             $activity = Activity::find($validated['activity_id']);
 
-            // Validate all students are enrolled in the activity
+            
             foreach ($validated['scores'] as $scoreData) {
                 $isEnrolled = $activity->students()
                     ->where('users.id', $scoreData['student_id'])
@@ -84,7 +84,7 @@ class StudentScoreController extends Controller
                     return back()->withErrors(['scores' => 'One or more students are not enrolled in this activity.'])->withInput();
                 }
 
-                // Validate distribution exists for this activity
+                
                 $distribution = ScoreDistribution::where('activity_id', $validated['activity_id'])
                     ->where('name', $scoreData['distribution_name'])
                     ->where('deleted_at', null)
@@ -94,7 +94,7 @@ class StudentScoreController extends Controller
                     return back()->withErrors(['scores' => "Score distribution '{$scoreData['distribution_name']}' does not exist for this activity."])->withInput();
                 }
 
-                // Check for duplicate
+                
                 $exists = StudentScore::where('activity_id', $validated['activity_id'])
                     ->where('student_id', $scoreData['student_id'])
                     ->where('name', $scoreData['distribution_name'])
@@ -137,7 +137,7 @@ class StudentScoreController extends Controller
                 ->where('deleted_at', null)
                 ->get();
             
-            // Get all distributions for the activity
+            
             $distributions = ScoreDistribution::where('activity_id', $studentScore->activity_id)
                 ->where('deleted_at', null)
                 ->get();
@@ -168,7 +168,7 @@ class StudentScoreController extends Controller
                 'score.between' => 'Score must be between 0 and 100.',
             ]);
 
-            // Validate student is enrolled
+            
             $activity = Activity::find($validated['activity_id']);
             $isEnrolled = $activity->students()
                 ->where('users.id', $validated['student_id'])
@@ -178,7 +178,7 @@ class StudentScoreController extends Controller
                 return back()->withErrors('Student is not enrolled in this activity.')->withInput();
             }
 
-            // Check for duplicates (excluding current)
+            
             $exists = StudentScore::where('activity_id', $validated['activity_id'])
                 ->where('student_id', $validated['student_id'])
                 ->where('name', $validated['name'])
@@ -223,9 +223,7 @@ class StudentScoreController extends Controller
         }
     }
 
-    /**
-     * Restore soft-deleted student score (admin only).
-     */
+    
     public function restore(StudentScore $studentScore)
     {
         try {

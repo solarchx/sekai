@@ -102,14 +102,14 @@
                     }
                 });
 
-                // If current selection is not allowed, clear it
+                
                 if (subjectSelect.value && !allowedSubjectIds.includes(parseInt(subjectSelect.value))) {
                     subjectSelect.value = '';
                 }
             }
 
             classSelect.addEventListener('change', filterSubjects);
-            filterSubjects(); // initial filter based on pre-selected class
+            filterSubjects(); 
         });
     </script>
 </x-app-layout>

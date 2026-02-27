@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('User Management') }}
             </h2>
-            {{-- <x-admin-tabs active="users" /> --}}
+            
         </div>
     </x-slot>
 
@@ -126,7 +126,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <!-- Pagination -->
+                    
                     <div class="mt-6 flex justify-between items-center">
                         <div class="text-sm text-gray-600 dark:text-gray-400">
                             Showing {{ $users->firstItem() }} to {{ $users->lastItem() }} of {{ $users->total() }}

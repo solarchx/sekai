@@ -14,7 +14,7 @@
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Academic Reports -->
+                        
                         <div class="bg-blue-50 dark:bg-blue-900 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center">
                                 <div class="p-3 bg-blue-500 rounded-full">
@@ -28,7 +28,7 @@
                             </div>
                         </div>
 
-                        <!-- Class Overview -->
+                        
                         <div class="bg-green-50 dark:bg-green-900 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center">
                                 <div class="p-3 bg-green-500 rounded-full">
@@ -42,7 +42,7 @@
                             </div>
                         </div>
 
-                        <!-- Teacher Performance -->
+                        
                         <div class="bg-purple-50 dark:bg-purple-900 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center">
                                 <div class="p-3 bg-purple-500 rounded-full">
@@ -56,7 +56,7 @@
                             </div>
                         </div>
 
-                        <!-- Attendance Summary -->
+                        
                         <div class="bg-yellow-50 dark:bg-yellow-900 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center">
                                 <div class="p-3 bg-yellow-500 rounded-full">

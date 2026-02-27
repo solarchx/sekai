@@ -66,18 +66,18 @@ class ActivityFormController extends Controller
             $activity = Activity::find($validated['activity_id']);
             $formDate = Carbon::createFromFormat('Y-m-d', $validated['activity_date']);
 
-            // Verify date matches activity's lesson period weekday
-            $activityWeekday = $activity->period->weekday;
-            $dateWeekday = $formDate->dayOfWeek; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
             
-            // Adjust weekday comparison (Laravel Carbon: Sunday=0, Monday=1; Database: Monday=0, Sunday=6)
+            $activityWeekday = $activity->period->weekday;
+            $dateWeekday = $formDate->dayOfWeek; 
+            
+            
             $carbonWeekday = ($dateWeekday + 6) % 7;
             
             if ($carbonWeekday !== $activityWeekday) {
                 return back()->withErrors(['activity_date' => "Activity date must be on a {$this->getWeekdayName($activityWeekday)}."])->withInput();
             }
 
-            // Check for duplicate
+            
             $exists = ActivityForm::where('activity_id', $validated['activity_id'])
                 ->where('activity_date', $validated['activity_date'])
                 ->where('deleted_at', null)
@@ -152,7 +152,7 @@ class ActivityFormController extends Controller
             $activity = Activity::find($validated['activity_id']);
             $formDate = Carbon::createFromFormat('Y-m-d', $validated['activity_date']);
 
-            // Verify date matches activity's lesson period weekday
+            
             $activityWeekday = $activity->period->weekday;
             $dateWeekday = $formDate->dayOfWeek;
             $carbonWeekday = ($dateWeekday + 6) % 7;
@@ -161,7 +161,7 @@ class ActivityFormController extends Controller
                 return back()->withErrors(['activity_date' => "Activity date must be on a {$this->getWeekdayName($activityWeekday)}."])->withInput();
             }
 
-            // Check for duplicates (excluding current)
+            
             $exists = ActivityForm::where('activity_id', $validated['activity_id'])
                 ->where('activity_date', $validated['activity_date'])
                 ->where('id', '!=', $activityForm->id)
@@ -193,7 +193,7 @@ class ActivityFormController extends Controller
         try {
             DB::beginTransaction();
 
-            // Delete all presences associated with this form
+            
             $activityForm->presences()->delete();
 
             $activityForm->delete();
@@ -208,9 +208,7 @@ class ActivityFormController extends Controller
         }
     }
 
-    /**
-     * Restore a soft-deleted form (admin only).
-     */
+    
     public function restore(ActivityForm $activityForm)
     {
         try {
@@ -227,9 +225,7 @@ class ActivityFormController extends Controller
         }
     }
 
-    /**
-     * Get weekday name from weekday number (0-6, Monday-Sunday).
-     */
+    
     private function getWeekdayName($weekday): string
     {
         $days = [

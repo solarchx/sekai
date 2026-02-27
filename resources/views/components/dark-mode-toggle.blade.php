@@ -18,9 +18,9 @@
     type="button"
     title="Toggle dark mode"
 >
-    <!-- Sun Icon (shown in dark mode) -->
+    
     <i x-show="dark" class="bi bi-sun text-lg"></i>
     
-    <!-- Moon Icon (shown in light mode) -->
+    
     <i x-show="!dark" class="bi bi-moon text-lg"></i>
 </button>

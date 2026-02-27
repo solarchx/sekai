@@ -80,18 +80,18 @@
         document.addEventListener('DOMContentLoaded', function() {
             const classSelect = document.getElementById('class_id');
             const subjectSelect = document.getElementById('subject_id');
-            const allSubjects = Array.from(subjectSelect.options).slice(1); // exclude placeholder
+            const allSubjects = Array.from(subjectSelect.options).slice(1); 
 
             function filterSubjects() {
                 const classId = classSelect.value;
                 if (!classId) {
-                    // No class selected -> hide all subjects
+                    
                     allSubjects.forEach(opt => opt.style.display = 'none');
                     subjectSelect.value = '';
                     return;
                 }
 
-                // Get allowed subject IDs from the data attribute
+                
                 const allowedSubjectIds = @json($classSubjects)[classId] || [];
 
                 allSubjects.forEach(opt => {
@@ -103,14 +103,14 @@
                     }
                 });
 
-                // If current selection is not allowed, clear it
+                
                 if (subjectSelect.value && !allowedSubjectIds.includes(parseInt(subjectSelect.value))) {
                     subjectSelect.value = '';
                 }
             }
 
             classSelect.addEventListener('change', filterSubjects);
-            // Initial filter on page load (in case old value is set)
+            
             filterSubjects();
         });
     </script>

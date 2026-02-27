@@ -7,18 +7,18 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
-        <!-- Fonts -->
+        
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        <!-- Bootstrap Icons -->
+        
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
-        <!-- Scripts -->
+        
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         
         <script>
-            // Initialize dark mode on page load
+            
             if (localStorage.getItem('dark-mode') === 'true' || (localStorage.getItem('dark-mode') === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
             }
@@ -34,7 +34,7 @@
         let audio = document.getElementById('plaudite');
         audio.volume = 0.12;
     </script>
-    <!-- Left Lock -->
+    
     <img src="{{ asset('img/storylock/lock_side_closed.png') }}"
             class="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-4/5 z-1"
             alt="Left Lock I">
@@ -43,12 +43,12 @@
             class="absolute top-3/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-4/5 z-1"
             alt="Left Lock II">
 
-    <!-- Center Lock -->
+    
     <img src="{{ asset('img/storylock/lock_main_closed.png') }}"
             class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 z-2"
             alt="Center Lock I">
 
-    <!-- Right Lock -->
+    
     <img src="{{ asset('img/storylock/lock_side_closed.png') }}"
             class="absolute top-1/4 left-3/4 -translate-x-1/2 -translate-y-1/2 w-4/5 z-1"
             alt="Right Lock I">

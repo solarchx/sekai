@@ -17,7 +17,7 @@ class DashboardController extends Controller
         $classes = SchoolClass::count();
         $activities = Activity::count();
 
-        // Get user's schedule (empty for VP and Admin)
+        
         $schedule = $this->getUserSchedule($user);
 
         return match ($user->role) {
@@ -29,12 +29,10 @@ class DashboardController extends Controller
         };
     }
 
-    /**
-     * Get the schedule (activities) for a given user.
-     */
+    
     private function getUserSchedule(User $user)
     {
-        // VP and Admin do not have a personal schedule on the dashboard
+        
         if (in_array($user->role, ['VP', 'ADMIN'])) {
             return [];
         }
@@ -51,17 +49,17 @@ class DashboardController extends Controller
                 ->get();
         }
 
-        // Group activities by weekday
+        
         $schedule = [];
         foreach ($activities as $activity) {
             $weekday = $activity->period->weekday;
             $schedule[$weekday][] = $activity;
         }
 
-        // Sort weekdays in ascending order (0 = Monday, 6 = Sunday)
+        
         ksort($schedule);
 
-        // Sort activities within each weekday by time_begin
+        
         foreach ($schedule as &$weekdayActivities) {
             usort($weekdayActivities, function ($a, $b) {
                 return strcmp($a->period->time_begin, $b->period->time_begin);

@@ -47,7 +47,7 @@ class AcademicSemesterController extends Controller
                 'semester.between' => 'Semester must be either 1 or 2.',
             ]);
 
-            // Check for duplicate
+            
             $exists = AcademicSemester::where('academic_year', $validated['academic_year'])
                 ->where('semester', $validated['semester'])
                 ->where('deleted_at', null)
@@ -91,7 +91,7 @@ class AcademicSemesterController extends Controller
                 'semester.between' => 'Semester must be either 1 or 2.',
             ]);
 
-            // Check for duplicates (excluding current)
+            
             $exists = AcademicSemester::where('academic_year', $validated['academic_year'])
                 ->where('semester', $validated['semester'])
                 ->where('id', '!=', $semester->id)

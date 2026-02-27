@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 class MajorController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request)
     {
         try {
@@ -32,16 +30,13 @@ class MajorController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    
     public function create()
     {
         return view('admin.majors.create');
     }
 
-    /**\n     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request)
     {
         try {
@@ -68,17 +63,13 @@ class MajorController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+    
     public function edit(Major $major)
     {
         return view('admin.majors.edit', compact('major'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, Major $major)
     {
         try {
@@ -105,9 +96,7 @@ class MajorController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(Major $major)
     {
         try {
@@ -125,9 +114,7 @@ class MajorController extends Controller
         }
     }
 
-    /**
-     * Restore a soft-deleted major (admin only).
-     */
+    
     public function restore(Major $major)
     {
         try {

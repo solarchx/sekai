@@ -9,7 +9,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Activity Information Card -->
+            
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg mb-6">
                 <div class="p-6" style="background: linear-gradient(to right, #06b6d4, #0891b2); color: white;">
                     <h3 class="text-2xl font-bold">{{ $activity->subject->name ?? 'N/A' }}</h3>
@@ -37,7 +37,7 @@
                         </div>
                     </div>
 
-                    <!-- Action Buttons for Teachers+ -->
+                    
                     @if(auth()->user()->role !== 'STUDENT')
                         <div class="mt-6 flex flex-wrap gap-3">
                             <a href="{{ route('activities.edit', $activity) }}" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors inline-flex items-center">
@@ -73,7 +73,7 @@
                 </div>
             </div>
 
-            <!-- Activity Forms Section -->
+            
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6" style="background: linear-gradient(to right, #06b6d4, #0891b2); color: white;">
                     <h3 class="text-2xl font-bold">Activity Forms</h3>

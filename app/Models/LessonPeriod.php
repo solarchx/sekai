@@ -58,10 +58,7 @@ class LessonPeriod extends Model
     {
         return self::WEEKDAYS[$this->weekday] ?? 'Unknown';
     }
-
-    /**
-     * Check if this period overlaps with another period
-     */
+    
     public function overlapsWithPeriod(LessonPeriod $otherPeriod): bool
     {
         if ($this->weekday != $otherPeriod->weekday || $this->semester_id != $otherPeriod->semester_id) {

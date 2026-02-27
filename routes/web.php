@@ -18,16 +18,7 @@ use App\Http\Controllers\StudentScoreController;
 use App\Http\Controllers\AnnouncementController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
+
 Route::get('/',  function () {return view('auth/login');})->middleware('guest');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
@@ -38,7 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Admin-only routes
+
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('users', UserController::class);
     Route::post('/users/{user}/restore', [UserController::class, 'restore'])->name('users.restore');
@@ -64,13 +55,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/periods/{period}/restore', [LessonPeriodController::class, 'restore'])->name('periods.restore');
 });
 
-// VP and above routes
+
 Route::middleware(['auth', 'vp'])->group(function () {
     Route::resource('activities', ActivityController::class);
     Route::post('/activities/{activity}/restore', [ActivityController::class, 'restore'])->name('activities.restore');
 });
 
-// Teacher and above routes
+
 Route::middleware(['auth', 'teacher'])->group(function () {
     Route::resource('activity-forms', ActivityFormController::class);
     Route::post('/activity-forms/{activityForm}/restore', [ActivityFormController::class, 'restore'])->name('activity-forms.restore');
@@ -82,7 +73,7 @@ Route::middleware(['auth', 'teacher'])->group(function () {
     Route::post('/student-scores/{studentScore}/restore', [StudentScoreController::class, 'restore'])->name('student-scores.restore');
 });
 
-// Student and above routes
+
 Route::middleware(['auth'])->group(function () {
     Route::resource('activity-reports', ActivityReportController::class);
     Route::post('/activity-reports/{activityReport}/restore', [ActivityReportController::class, 'restore'])->name('activity-reports.restore');

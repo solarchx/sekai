@@ -10,7 +10,6 @@ class VpMiddleware
 {
     /**
      * Handle an incoming request.
-     * Allows VP and ADMIN
      */
     public function handle(Request $request, Closure $next): Response
     {

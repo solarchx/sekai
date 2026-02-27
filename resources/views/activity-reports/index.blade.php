@@ -113,7 +113,7 @@
                         </table>
                     </div>
 
-                    <!-- Pagination -->
+                    
                     <div class="mt-6 flex justify-between items-center">
                         <div class="text-sm text-gray-600 dark:text-gray-400">
                             Showing {{ $reports->firstItem() }} to {{ $reports->lastItem() }} of {{ $reports->total() }}

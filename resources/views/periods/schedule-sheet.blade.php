@@ -15,7 +15,7 @@
                     <p class="mt-2">View and manage lesson periods by academic time.</p>
                 </div>
                 <div class="p-6">
-                    <!-- Academic Time Selector -->
+                    
                     <div class="mb-6 flex items-center gap-4">
                         <label for="semester_id"
                             class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Academic
@@ -32,7 +32,7 @@
                         </select>
                     </div>
 
-                    <!-- Schedule Sheet Table -->
+                    
                     @if($selectedSemesterId && $parentPeriods->count() > 0)
                         <div class="overflow-x-auto mb-6">
                             <table class="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -103,7 +103,7 @@
                         </div>
                     @endif
 
-                    <!-- Create Button -->
+                    
                     <div class="mt-6">
                         <a href="{{ route('periods.create', ['semester_id' => $selectedSemesterId]) }}"
                             class="bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-lg shadow-md transition-colors inline-flex items-center">

@@ -9,7 +9,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
             @if(auth()->user()->role === 'STUDENT')
-                {{-- Student view: single class card with classmates and activities --}}
+                
                 @if($homeroomClasses->isEmpty())
                     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6 text-center text-gray-500">
                         You are not assigned to any class.
@@ -69,9 +69,9 @@
                 @endif
 
             @else
-                {{-- Teacher+ view: homeroom class cards and taught activities --}}
+                
 
-                {{-- Homeroom Classes Cards --}}
+                
                 @if($homeroomClasses->isNotEmpty())
                     <div class="mb-8">
                         <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Classes I Homeroom</h3>
@@ -98,7 +98,7 @@
                                     </div>
                                 </div>
 
-                                {{-- Members Modal --}}
+                                
                                 <x-modal name="members-modal-{{ $class->id }}" :show="$errors->isNotEmpty()" focusable>
                                     <div class="p-6">
                                         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
@@ -121,7 +121,7 @@
                                     </div>
                                 </x-modal>
 
-                                {{-- Activities Modal --}}
+                                
                                 <x-modal name="activities-modal-{{ $class->id }}" :show="$errors->isNotEmpty()" focusable>
                                     <div class="p-6">
                                         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
@@ -161,7 +161,7 @@
                     </div>
                 @endif
 
-                {{-- Taught Activities List --}}
+                
                 @if($taughtActivities->isNotEmpty())
                     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
                         <div class="p-6" style="background: linear-gradient(to right, #f59e0b, #f97316); color: white;">

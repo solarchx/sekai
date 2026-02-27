@@ -73,7 +73,7 @@ class ActivityPresenceController extends Controller
             $form = ActivityForm::find($validated['form_id']);
             $activity = $form->activity;
 
-            // Check if submission is within time window (15 min before to 15 min after activity time)
+            
             $activityStart = Carbon::createFromFormat('H:i', $activity->period->time_begin);
             $activityEnd = Carbon::createFromFormat('H:i', $activity->period->time_end);
             
@@ -86,7 +86,7 @@ class ActivityPresenceController extends Controller
                 return back()->withErrors(['student_id' => "Submission window closed. Available from {$submissionStart->format('H:i')} to {$submissionEnd->format('H:i')}."]);
             }
 
-            // Check for duplicate
+            
             $exists = ActivityPresence::where('form_id', $validated['form_id'])
                 ->where('student_id', $validated['student_id'])
                 ->where('deleted_at', null)
@@ -96,7 +96,7 @@ class ActivityPresenceController extends Controller
                 return back()->withErrors(['student_id' => 'This student already has a presence record for this form.']);
             }
 
-            // Verify student is enrolled in the activity
+            
             $isEnrolled = $activity->students()
                 ->where('users.id', $validated['student_id'])
                 ->exists();
@@ -155,7 +155,7 @@ class ActivityPresenceController extends Controller
                 'location.max' => 'Location must not exceed 255 characters.',
             ]);
 
-            // Check for duplicates (excluding current record)
+            
             $exists = ActivityPresence::where('form_id', $validated['form_id'])
                 ->where('student_id', $validated['student_id'])
                 ->where('id', '!=', $activityPresence->id)
@@ -187,7 +187,7 @@ class ActivityPresenceController extends Controller
         try {
             DB::beginTransaction();
 
-            // Delete associated activity report
+            
             $activityPresence->report()->delete();
 
             $activityPresence->delete();
@@ -202,9 +202,7 @@ class ActivityPresenceController extends Controller
         }
     }
 
-    /**
-     * Restore a soft-deleted presence (admin only).
-     */
+    
     public function restore(ActivityPresence $activityPresence)
     {
         try {

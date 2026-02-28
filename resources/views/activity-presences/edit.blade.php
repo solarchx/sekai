@@ -11,43 +11,20 @@
                 <div class="p-6">
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Edit Presence Record</h3>
                     
-                    <form method="POST" action="{{ route('activity-presences.update', $activityPresence) }}">
+                    <form method="POST" action="{{ route('activity-presences.update', $activityPresence) }}" id="presenceForm">
                         @csrf
                         @method('PUT')
 
+                        <input type="hidden" name="location" id="location" value="{{ $activityPresence->location }}">
+
                         <div class="mb-6">
-                            <label for="form_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Activity Form</label>
-                            <select name="form_id" id="form_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('form_id') is-invalid @enderror" required>
-                                <option value="">Select Form</option>
-                                @foreach($forms as $form)
-                                    <option value="{{ $form->id }}" {{ old('form_id', $activityPresence->form_id) == $form->id ? 'selected' : '' }}>
-                                        {{ $form->activity->subject->name }} - {{ $form->activity_date }} ({{ $form->activity->class->name }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('form_id')
-                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                            @enderror
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Activity Form</label>
+                            <p class="mt-1 text-lg text-gray-900 dark:text-gray-100">{{ $form->activity->subject->name }} - {{ $form->activity_date }} ({{ $form->activity->class->name }})</p>
                         </div>
 
                         <div class="mb-6">
-                            <label for="student_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Student</label>
-                            <select name="student_id" id="student_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('student_id') is-invalid @enderror" required>
-                                <option value="">Select Student</option>
-                                @php
-                                    $currentForm = $forms->firstWhere('id', old('form_id', $activityPresence->form_id));
-                                @endphp
-                                @if($currentForm && $currentForm->activity->students)
-                                    @foreach($currentForm->activity->students as $student)
-                                        <option value="{{ $student->id }}" {{ old('student_id', $activityPresence->student_id) == $student->id ? 'selected' : '' }}>
-                                            {{ $student->name }}
-                                        </option>
-                                    @endforeach
-                                @endif
-                            </select>
-                            @error('student_id')
-                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                            @enderror
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Student</label>
+                            <p class="mt-1 text-lg text-gray-900 dark:text-gray-100">{{ $student->name }}</p>
                         </div>
 
                         <div class="mb-6">
@@ -75,21 +52,43 @@
                             @enderror
                         </div>
 
-                        <div class="mb-6">
-                            <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Location (GPS)</label>
-                            <input type="text" name="location" id="location" value="{{ old('location', $activityPresence->location) }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('location') is-invalid @enderror" required placeholder="e.g., -6.2088, 106.8456">
-                            @error('location')
-                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
                         <div class="flex justify-end gap-4">
-                            <a href="{{ route('activity-presences.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Cancel</a>
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Update</button>
+                            <a href="{{ route('activity-presences.index', ['form_id' => $form->id]) }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Cancel</a>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors" id="submitBtn">Update</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const locationInput = document.getElementById('location');
+            const submitBtn = document.getElementById('submitBtn');
+            const form = document.getElementById('presenceForm');
+
+            if (!locationInput.value) {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            locationInput.value = position.coords.latitude + ',' + position.coords.longitude;
+                        },
+                        function(error) {
+                            alert('Unable to retrieve your location. The existing location will be kept.');
+                        }
+                    );
+                } else {
+                    alert('Geolocation is not supported by your browser.');
+                }
+            }
+
+            form.addEventListener('submit', function(e) {
+                if (!locationInput.value) {
+                    e.preventDefault();
+                    alert('Location is required. Please enable location services.');
+                }
+            });
+        });
+    </script>
 </x-app-layout>

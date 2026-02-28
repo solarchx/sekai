@@ -16,15 +16,31 @@ class ActivityPresenceController extends Controller
     {
         try {
             $showDeleted = $request->has('show_deleted') && auth()->user()->role === 'ADMIN';
-            
+            $formId = $request->query('form_id');
+
+            if ($formId) {
+                $form = ActivityForm::with('activity.class')->findOrFail($formId);
+                $students = $form->activity->class->students()
+                    ->where('role', 'STUDENT')
+                    ->where('deleted_at', null)
+                    ->orderBy('student_order')
+                    ->get(['id', 'name', 'identifier']);
+
+                $presences = ActivityPresence::where('form_id', $formId)
+                    ->with('student')
+                    ->get()
+                    ->keyBy('student_id');
+
+                return view('activity-presences.index', compact('form', 'students', 'presences', 'showDeleted'));
+            }
+
             $query = ActivityPresence::with('form', 'student');
-            
             if ($showDeleted) {
                 $presences = $query->onlyTrashed()->paginate(100);
             } else {
                 $presences = $query->paginate(100);
             }
-            
+
             return view('activity-presences.index', compact('presences', 'showDeleted'));
         } catch (\Exception $e) {
             Log::error('Error loading presences: ' . $e->getMessage());
@@ -32,18 +48,24 @@ class ActivityPresenceController extends Controller
         }
     }
 
-    public function create()
+    public function create(Request $request)
     {
         try {
-            $forms = ActivityForm::with('activity.subject', 'activity.teacher', 'activity.class', 'activity.students')
-                ->where('deleted_at', null)
-                ->get();
-            
-            if ($forms->isEmpty()) {
-                return redirect()->route('activity-presences.index')->withErrors('No activity forms available.');
+            $formId = $request->query('form_id');
+            $studentId = $request->query('student_id');
+
+            if (!$formId || !$studentId) {
+                return redirect()->route('activity-presences.index')->withErrors('Form and student are required.');
             }
-            
-            return view('activity-presences.create', compact('forms'));
+
+            $form = ActivityForm::with('activity.class')->findOrFail($formId);
+            $student = User::findOrFail($studentId);
+
+            if ($student->class_id != $form->activity->class_id) {
+                return redirect()->route('activity-presences.index')->withErrors('Student does not belong to this class.');
+            }
+
+            return view('activity-presences.create', compact('form', 'student'));
         } catch (\Exception $e) {
             Log::error('Error loading presence create form: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error loading form: ' . $e->getMessage());
@@ -54,64 +76,47 @@ class ActivityPresenceController extends Controller
     {
         try {
             $validated = $request->validate([
-                'form_id' => 'required|exists:activity_forms,id',
+                'form_id'    => 'required|exists:activity_forms,id',
                 'student_id' => 'required|exists:users,id',
-                'score' => 'required|integer|between:0,3',
-                'location' => 'required|string|max:255',
-            ], [
-                'form_id.required' => 'Activity form is required.',
-                'form_id.exists' => 'Selected form does not exist.',
-                'student_id.required' => 'Student is required.',
-                'student_id.exists' => 'Selected student does not exist.',
-                'score.required' => 'Score is required.',
-                'score.integer' => 'Score must be a number.',
-                'score.between' => 'Score must be between 0 and 3.',
-                'location.required' => 'Location (GPS) is required.',
-                'location.max' => 'Location must not exceed 255 characters.',
+                'score'      => 'required|integer|between:0,3',
+                'location'   => 'required|string|max:255',
             ]);
 
             $form = ActivityForm::find($validated['form_id']);
             $activity = $form->activity;
 
-            
-            $activityStart = Carbon::createFromFormat('H:i', $activity->period->time_begin);
-            $activityEnd = Carbon::createFromFormat('H:i', $activity->period->time_end);
-            
-            $submissionStart = $activityStart->copy()->subMinutes(15);
-            $submissionEnd = $activityEnd->copy()->addMinutes(15);
-            
-            $now = Carbon::now();
-            
-            if ($now->lt($submissionStart) || $now->gt($submissionEnd)) {
-                return back()->withErrors(['student_id' => "Submission window closed. Available from {$submissionStart->format('H:i')} to {$submissionEnd->format('H:i')}."]);
+            if (auth()->user()->role === 'STUDENT') {
+                $activityStart = Carbon::createFromFormat('H:i:s', $activity->period->time_begin);
+                $activityEnd = Carbon::createFromFormat('H:i:s', $activity->period->time_end);
+                $submissionStart = $activityStart->copy()->subMinutes(15);
+                $submissionEnd = $activityEnd->copy()->addMinutes(15);
+                $now = Carbon::now();
+
+                if ($now->lt($submissionStart) || $now->gt($submissionEnd)) {
+                    return back()->withErrors(['student_id' => "Submission window closed."])->withInput();
+                }
             }
 
-            
             $exists = ActivityPresence::where('form_id', $validated['form_id'])
                 ->where('student_id', $validated['student_id'])
                 ->where('deleted_at', null)
                 ->exists();
 
             if ($exists) {
-                return back()->withErrors(['student_id' => 'This student already has a presence record for this form.']);
+                return back()->withErrors(['student_id' => 'This student already has a presence record.'])->withInput();
             }
 
-            
-            $isEnrolled = $activity->students()
-                ->where('users.id', $validated['student_id'])
-                ->exists();
-
+            $isEnrolled = $activity->students()->where('users.id', $validated['student_id'])->exists();
             if (!$isEnrolled) {
-                return back()->withErrors(['student_id' => 'Selected student is not enrolled in this activity.']);
+                return back()->withErrors(['student_id' => 'Student is not enrolled in this activity.'])->withInput();
             }
 
             DB::beginTransaction();
-
             ActivityPresence::create($validated);
-
             DB::commit();
 
-            return redirect()->route('activity-presences.index')->with('success', 'Presence record created successfully.');
+            return redirect()->route('activity-presences.index', ['form_id' => $validated['form_id']])
+                ->with('success', 'Presence record created successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
@@ -124,11 +129,9 @@ class ActivityPresenceController extends Controller
     public function edit(ActivityPresence $activityPresence)
     {
         try {
-            $forms = ActivityForm::with('activity.subject', 'activity.teacher', 'activity.class', 'activity.students')
-                ->where('deleted_at', null)
-                ->get();
-            
-            return view('activity-presences.edit', compact('activityPresence', 'forms'));
+            $form = $activityPresence->form;
+            $student = $activityPresence->student;
+            return view('activity-presences.edit', compact('activityPresence', 'form', 'student'));
         } catch (\Exception $e) {
             Log::error('Error loading edit form: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error loading form: ' . $e->getMessage());
@@ -139,40 +142,16 @@ class ActivityPresenceController extends Controller
     {
         try {
             $validated = $request->validate([
-                'form_id' => 'required|exists:activity_forms,id',
-                'student_id' => 'required|exists:users,id',
-                'score' => 'required|integer|between:0,3',
+                'score'    => 'required|integer|between:0,3',
                 'location' => 'required|string|max:255',
-            ], [
-                'form_id.required' => 'Activity form is required.',
-                'form_id.exists' => 'Selected form does not exist.',
-                'student_id.required' => 'Student is required.',
-                'student_id.exists' => 'Selected student does not exist.',
-                'score.required' => 'Score is required.',
-                'score.integer' => 'Score must be a number.',
-                'score.between' => 'Score must be between 0 and 3.',
-                'location.required' => 'Location (GPS) is required.',
-                'location.max' => 'Location must not exceed 255 characters.',
             ]);
 
-            
-            $exists = ActivityPresence::where('form_id', $validated['form_id'])
-                ->where('student_id', $validated['student_id'])
-                ->where('id', '!=', $activityPresence->id)
-                ->where('deleted_at', null)
-                ->exists();
-
-            if ($exists) {
-                return back()->withErrors(['student_id' => 'This student already has a presence record for this form.']);
-            }
-
             DB::beginTransaction();
-
             $activityPresence->update($validated);
-
             DB::commit();
 
-            return redirect()->route('activity-presences.index')->with('success', 'Presence record updated successfully.');
+            return redirect()->route('activity-presences.index', ['form_id' => $activityPresence->form_id])
+                ->with('success', 'Presence record updated successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
@@ -186,15 +165,12 @@ class ActivityPresenceController extends Controller
     {
         try {
             DB::beginTransaction();
-
-            
             $activityPresence->report()->delete();
-
             $activityPresence->delete();
-
             DB::commit();
 
-            return redirect()->route('activity-presences.index')->with('success', 'Presence record deleted successfully.');
+            return redirect()->route('activity-presences.index', ['form_id' => $activityPresence->form_id])
+                ->with('success', 'Presence record deleted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error deleting presence: ' . $e->getMessage());
@@ -202,17 +178,15 @@ class ActivityPresenceController extends Controller
         }
     }
 
-    
     public function restore(ActivityPresence $activityPresence)
     {
         try {
             if (auth()->user()->role !== 'ADMIN') {
                 return redirect()->back()->withErrors('Unauthorized action.');
             }
-
             $activityPresence->restore();
-
-            return redirect()->route('activity-presences.index')->with('success', 'Presence restored successfully.');
+            return redirect()->route('activity-presences.index', ['form_id' => $activityPresence->form_id])
+                ->with('success', 'Presence restored successfully.');
         } catch (\Exception $e) {
             Log::error('Error restoring presence: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error restoring presence: ' . $e->getMessage());

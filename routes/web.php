@@ -81,7 +81,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/announcements/{announcement}/restore', [AnnouncementController::class, 'restore'])->name('announcements.restore');
 });
 
-Route::get('/my-class', [SchoolClassController::class, 'myClasses'])->middleware('auth')->name('class.show');
+Route::get('/my-class', [SchoolClassController::class, 'show'])->middleware('auth')->name('class.show');
 
 Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
 Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');

@@ -102,41 +102,6 @@ class SchoolClassController extends Controller
         }
     }
 
-    
-    public function show(SchoolClass $class)
-    {
-        try {
-            $userClass = Auth::user()->class()->with(['major', 'grade'])->first();
-            
-            if (!$userClass) {
-                return redirect()->route('dashboard')->withErrors('You are not assigned to any class.');
-            }
-
-            $homeroomTeacher = null;
-            if ($userClass->homeroom_teacher_id) {
-                $homeroomTeacher = User::find($userClass->homeroom_teacher_id);
-            }
-
-            $students = $userClass->students()
-                ->where('role', 'STUDENT')
-                ->where('deleted_at', null)
-                ->orderBy('name')
-                ->get();
-
-            
-            $activities = $userClass->activities()
-                ->with('teacher', 'subject', 'period')
-                ->where('deleted_at', null)
-                ->get();
-
-            return view('class.show', compact('userClass', 'homeroomTeacher', 'students', 'activities'));
-        } catch (Exception $e) {
-            Log::error('Error loading my class: ' . $e->getMessage());
-            return redirect()->route('dashboard')->withErrors('Error loading class: ' . $e->getMessage());
-        }
-    }
-
-    
     public function updateStudentOrder(Request $request, SchoolClass $class)
     {
         $validated = $request->validate([
@@ -278,7 +243,7 @@ class SchoolClassController extends Controller
         return view('admin.classes.student-order', compact('class', 'students'));
     }
 
-    public function myClasses()
+    public function show()
     {
         try {
             $user = auth()->user();

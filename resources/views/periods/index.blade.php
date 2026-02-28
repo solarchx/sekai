@@ -16,6 +16,7 @@
                 </div>
                 <div class="p-6">
                     <x-soft-delete-filter />
+
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Periods List
                             ({{ $periods->total() }})</h4>

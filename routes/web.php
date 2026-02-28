@@ -39,8 +39,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     
     Route::resource('classes', SchoolClassController::class);
     Route::post('/classes/{class}/restore', [SchoolClassController::class, 'restore'])->name('classes.restore');
-    Route::get('/classes/{class}/student-order', [SchoolClassController::class, 'studentOrder'])->name('classes.student-order');
-    Route::put('/classes/{class}/student-order', [SchoolClassController::class, 'updateStudentOrder'])->name('classes.update-student-order');
     
     Route::resource('subjects', SubjectController::class);
     Route::post('/subjects/{subject}/restore', [SubjectController::class, 'restore'])->name('subjects.restore');
@@ -71,6 +69,8 @@ Route::middleware(['auth', 'teacher'])->group(function () {
     Route::post('/score-distributions/{scoreDistribution}/restore', [ScoreDistributionController::class, 'restore'])->name('score-distributions.restore');
     Route::resource('student-scores', StudentScoreController::class);
     Route::post('/student-scores/{studentScore}/restore', [StudentScoreController::class, 'restore'])->name('student-scores.restore');
+    Route::get('/classes/{class}/student-order', [SchoolClassController::class, 'studentOrder'])->name('classes.student-order');
+    Route::put('/classes/{class}/student-order', [SchoolClassController::class, 'updateStudentOrder'])->name('classes.update-student-order');
 });
 
 

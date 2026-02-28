@@ -22,14 +22,14 @@ class LessonPeriodController extends Controller
 
             if ($selectedSemesterId) {
                 
-                $parentPeriods = LessonPeriod::with('semester')
+                $parentPeriods = LessonPeriod::with('semester')->withTrashed()
                     ->where('semester_id', $selectedSemesterId)
                     ->whereNull('parent_id')
                     ->orderBy('time_begin')               
                     ->get();
 
                 
-                $periods = LessonPeriod::where('semester_id', $selectedSemesterId)->get();
+                $periods = LessonPeriod::withTrashed()->where('semester_id', $selectedSemesterId)->get();
 
                 
                 $activities = Activity::whereIn('period_id', $periods->pluck('id'))

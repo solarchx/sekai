@@ -64,13 +64,13 @@
                                                     $presence = $form->presences->first();
                                                     $report = $presence ? $presence->report : null;
 
-                                                    // Time window for presence submission
-                                                    $period = $selectedActivity->period;
-                                                    $start = \Carbon\Carbon::parse($period->time_begin);
-                                                    $end = \Carbon\Carbon::parse($period->time_end);
-                                                    $windowStart = $start->copy()->subMinutes(15);
-                                                    $windowEnd = $end->copy()->addMinutes(15);
-                                                    $canSubmit = $now->between($windowStart, $windowEnd) && $now->toDateString() == $form->activity_date->toDateString();
+                                                    $formDate = $form->activity_date->format('Y-m-d');
+                                                    $startDateTime = \Carbon\Carbon::parse($formDate . ' ' . $selectedActivity->period->time_begin);
+                                                    $endDateTime = \Carbon\Carbon::parse($formDate . ' ' . $selectedActivity->period->time_end);
+                                                    $windowStart = $startDateTime->copy()->subMinutes(15);
+                                                    $windowEnd = $endDateTime->copy()->addMinutes(15);
+                                                    $now = \Carbon\Carbon::now();
+                                                    $canSubmit = $now->between($windowStart, $windowEnd);
                                                 @endphp
                                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">

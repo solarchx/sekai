@@ -86,10 +86,12 @@ class ActivityPresenceController extends Controller
             $activity = $form->activity;
 
             if (auth()->user()->role === 'STUDENT') {
-                $activityStart = Carbon::createFromFormat('H:i:s', $activity->period->time_begin);
-                $activityEnd = Carbon::createFromFormat('H:i:s', $activity->period->time_end);
-                $submissionStart = $activityStart->copy()->subMinutes(15);
-                $submissionEnd = $activityEnd->copy()->addMinutes(15);
+                $formDate = $form->activity_date->format('Y-m-d');
+                $startDateTime = Carbon::parse($formDate . ' ' . $activity->period->time_begin);
+                $endDateTime = Carbon::parse($formDate . ' ' . $activity->period->time_end);
+                
+                $submissionStart = $startDateTime->copy()->subMinutes(15);
+                $submissionEnd = $endDateTime->copy()->addMinutes(15);
                 $now = Carbon::now();
 
                 if ($now->lt($submissionStart) || $now->gt($submissionEnd)) {

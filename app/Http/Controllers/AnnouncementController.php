@@ -18,16 +18,12 @@ class AnnouncementController extends Controller
         try {
             $user = Auth::user();
             
-            
             $query = Announcement::query();
-            
             
             $showDeleted = $request->has('show_deleted') && $user->role === 'ADMIN';
             if ($showDeleted) {
                 $query = $query->onlyTrashed();
             }
-            
-            $query = Announcement::with('sender', 'activity', 'grade');
 
             if ($user->role === 'STUDENT') {
                 $query->where(function ($q) use ($user) {
@@ -100,7 +96,7 @@ class AnnouncementController extends Controller
                 });
             }
             
-            $announcements = $query->with('sender', 'class', 'grade')
+            $announcements = $query->with('sender', 'activity', 'grade')
                                    ->latest()
                                    ->paginate(100);
             

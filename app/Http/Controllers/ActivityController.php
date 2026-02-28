@@ -39,7 +39,7 @@ class ActivityController extends Controller
         try {
             $subjects = Subject::all();
             $teachers = User::where('role', '!=', 'STUDENT')->get();
-            $periods = LessonPeriod::whereNull('parent_id')->with('semester')->get(); 
+            $periods = LessonPeriod::with('semester')->get(); 
             $classes = SchoolClass::with('major', 'grade')->get();
 
             
@@ -181,7 +181,7 @@ class ActivityController extends Controller
         try {
             $subjects = Subject::all();
             $teachers = User::where('role', '!=', 'STUDENT')->get();
-            $periods = LessonPeriod::whereNull('parent_id')->with('semester')->get();
+            $periods = LessonPeriod::with('semester')->get();
             $classes = SchoolClass::with('major', 'grade')->get();
 
             $classSubjects = [];

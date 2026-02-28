@@ -75,6 +75,8 @@ Route::middleware(['auth', 'teacher'])->group(function () {
 
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/student/activities', [App\Http\Controllers\StudentActivityController::class, 'index'])->middleware('auth')->name('student.activities');
+    Route::get('/student/grades', [App\Http\Controllers\StudentActivityController::class, 'grades'])->middleware('auth')->name('student.grades');
     Route::resource('activity-reports', ActivityReportController::class);
     Route::post('/activity-reports/{activityReport}/restore', [ActivityReportController::class, 'restore'])->name('activity-reports.restore');
     Route::resource('announcements', AnnouncementController::class);

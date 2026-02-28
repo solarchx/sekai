@@ -32,35 +32,29 @@
                         </div>
 
                         
-                        <div
-                            class="bg-green-50 dark:bg-green-900 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                        <div class="bg-indigo-50 dark:bg-indigo-900 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center">
-                                <div class="p-3 bg-green-500 rounded-full">
-                                    <i class="bi bi-check-circle text-2xl text-white"></i>
+                                <div class="p-3 bg-indigo-500 rounded-full">
+                                    <i class="bi bi-calendar-check text-2xl text-white"></i>
                                 </div>
                                 <div class="ml-4">
-                                    <h5 class="text-lg font-medium text-gray-900 dark:text-gray-100">Attendance</h5>
-                                    <p class="text-gray-600 dark:text-gray-400">Check your attendance record</p>
-                                    <a href="#"
-                                        class="mt-2 inline-block text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300">View
-                                        Attendance →</a>
+                                    <h5 class="text-lg font-medium text-gray-900 dark:text-gray-100">My Activities</h5>
+                                    <p class="text-gray-600 dark:text-gray-400">View and submit attendance for your classes</p>
+                                    <a href="{{ route('student.activities') }}" class="mt-2 inline-block text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">Go to Activities →</a>
                                 </div>
                             </div>
                         </div>
 
                         
-                        <div
-                            class="bg-purple-50 dark:bg-purple-900 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                        <div class="bg-purple-50 dark:bg-purple-900 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                             <div class="flex items-center">
                                 <div class="p-3 bg-purple-500 rounded-full">
-                                    <i class="bi bi-file-earmark-text text-2xl text-white"></i>
+                                    <i class="bi bi-bar-chart-line text-2xl text-white"></i>
                                 </div>
                                 <div class="ml-4">
-                                    <h5 class="text-lg font-medium text-gray-900 dark:text-gray-100">Grades</h5>
-                                    <p class="text-gray-600 dark:text-gray-400">Review your grades</p>
-                                    <a href="#"
-                                        class="mt-2 inline-block text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300">View
-                                        Grades →</a>
+                                    <h5 class="text-lg font-medium text-gray-900 dark:text-gray-100">My Grades</h5>
+                                    <p class="text-gray-600 dark:text-gray-400">View your performance by semester</p>
+                                    <a href="{{ route('student.grades') }}" class="mt-2 inline-block text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300">View Grades →</a>
                                 </div>
                             </div>
                         </div>
@@ -75,7 +69,7 @@
                                 <div class="ml-4">
                                     <h5 class="text-lg font-medium text-gray-900 dark:text-gray-100">Announcements</h5>
                                     <p class="text-gray-600 dark:text-gray-400">Latest school announcements</p>
-                                    <a href="#"
+                                    <a href=""{{ route('announcements') }}""
                                         class="mt-2 inline-block text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300">View
                                         Announcements →</a>
                                 </div>

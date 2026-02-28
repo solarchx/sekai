@@ -15,7 +15,7 @@
                     <p class="mt-2">View and manage lesson periods by academic time.</p>
                 </div>
                 <div class="p-6">
-                    
+                    <x-soft-delete-filter />
                     <div class="mb-6 flex items-center gap-4">
                         <label for="semester_id"
                             class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Academic

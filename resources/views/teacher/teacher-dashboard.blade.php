@@ -84,29 +84,6 @@
                             </div>
                         </div>
                     </div>
-
-                    
-                    @if($parentPeriods && $parentPeriods->count() > 0)
-                        <div class="mt-8">
-                            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
-                                <div class="p-6"
-                                    style="background: linear-gradient(to right, #f59e0b, #d97706); color: white;">
-                                    <h3 class="text-2xl font-bold">My Teaching Schedule</h3>
-                                    <p class="mt-2">
-                                        @if($currentSemester)
-                                            {{ $currentSemester->full_name }}
-                                        @else
-                                            Current Academic Term
-                                        @endif
-                                    </p>
-                                </div>
-                                <div class="p-6">
-                                    <x-schedule-sheet :parentPeriods="$parentPeriods" :periods="$periods"
-                                        :isReadOnly="true" />
-                                </div>
-                            </div>
-                        </div>
-                    @endif
                 </div>
             </div>
         </div>

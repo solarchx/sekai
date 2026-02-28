@@ -71,9 +71,13 @@
                                             {{ $activity->teacher->name ?? 'N/A' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                             {{ $activity->class->name ?? 'N/A' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $activity->period->weekday_name }} {{ $activity->period->time_begin }} -
-                                            {{ $activity->period->time_end }}</td>
+                                        @if ($activity->period)
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                                {{ $activity->period->weekday_name }} {{ $activity->period->time_begin }} -
+                                                {{ $activity->period->time_end }}</td>
+                                        @else
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-red-900 dark:text-red-100">PERIOD UNAVAILABLE</td>
+                                        @endif
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if($activity->deleted_at)
                                                 <span

@@ -31,7 +31,6 @@
                         </select>
                     </div>
 
-                    
                     @if($selectedSemesterId && $parentPeriods->count() > 0)
                         <div class="overflow-x-auto mb-6">
                             <table class="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -51,58 +50,78 @@
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     @foreach($parentPeriods as $parentPeriod)
                                         @php
+                                            $isTrashed = $parentPeriod->trashed();
                                             $childPeriods = $periods->where('parent_id', $parentPeriod->id)->keyBy('weekday');
                                         @endphp
-                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 border">
-                                                {{ $parentPeriod->time_begin }} - {{ $parentPeriod->time_end }}
-                                            </td>
-                                            @for ($day = 0; $day < 7; $day++)
-                                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 border align-top">
-                                                    @if(isset($childPeriods[$day]))
-                                                        @php
-                                                            $period = $childPeriods[$day];
-                                                            $periodActivities = $activities->get($period->id, collect());
-                                                        @endphp
-                                                        @forelse($periodActivities as $activity)
-                                                            <div class="mb-2 p-2 bg-blue-50 dark:bg-blue-900 rounded border border-blue-200 dark:border-blue-700">
-                                                                <div class="font-semibold">{{ $activity->class->name }}: {{ $activity->subject->name }}</div>
-                                                                <div class="text-xs">{{ $activity->teacher->name }}</div>
-                                                            </div>
-                                                        @empty
-                                                            <span class="text-gray-400">—</span>
-                                                        @endforelse
-                                                    @else
-                                                        <span class="text-gray-400">—</span>
-                                                    @endif
+
+                                        @if($isTrashed)
+                                            <tr class="bg-red-50 dark:bg-red-900 hover:bg-red-100 dark:hover:bg-red-800">
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 border">
+                                                    {{ $parentPeriod->time_begin }} - {{ $parentPeriod->time_end }}
                                                 </td>
-                                            @endfor
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium border space-x-2">
-                                                <a href="{{ route('periods.edit', $parentPeriod) }}" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">Edit</a>
-                                                <form action="{{ route('periods.destroy', $parentPeriod) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure? All 7 day periods will be deleted.');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs transition-colors">Delete</button>
-                                                </form>
-                                            </td>
-                                        </tr>
+                                                <td colspan="7" class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 border text-center">
+                                                    <em>This period has been deleted.</em>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium border">
+                                                    <form action="{{ route('periods.restore', $parentPeriod) }}" method="POST" class="inline">
+                                                        @csrf
+                                                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-xs transition-colors">
+                                                            Restore
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        @else
+                                            {{-- Normal row for active period --}}
+                                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 border">
+                                                    {{ $parentPeriod->time_begin }} - {{ $parentPeriod->time_end }}
+                                                </td>
+                                                @for ($day = 0; $day < 7; $day++)
+                                                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 border align-top">
+                                                        @if(isset($childPeriods[$day]))
+                                                            @php
+                                                                $period = $childPeriods[$day];
+                                                                $periodActivities = $activities->get($period->id, collect());
+                                                            @endphp
+                                                            @forelse($periodActivities as $activity)
+                                                                <div class="mb-2 p-2 bg-blue-50 dark:bg-blue-900 rounded border border-blue-200 dark:border-blue-700">
+                                                                    <div class="font-semibold">{{ $activity->class->name }}: {{ $activity->subject->name }}</div>
+                                                                    <div class="text-xs">{{ $activity->teacher->name }}</div>
+                                                                </div>
+                                                            @empty
+                                                                <span class="text-gray-400">—</span>
+                                                            @endforelse
+                                                        @else
+                                                            <span class="text-gray-400">—</span>
+                                                        @endif
+                                                    </td>
+                                                @endfor
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium border space-x-2">
+                                                    <a href="{{ route('periods.edit', $parentPeriod) }}" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">Edit</a>
+                                                    <form action="{{ route('periods.destroy', $parentPeriod) }}" method="POST" class="inline" 
+                                                          onsubmit="return confirmDelete('{{ $parentPeriod->hasActivities ? 'true' : 'false' }}', '{{ $parentPeriod->time_begin }}', '{{ $parentPeriod->time_end }}');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs transition-colors">Delete</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
                     @elseif($selectedSemesterId)
-                        <div
-                            class="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg p-4 text-blue-700 dark:text-blue-100">
+                        <div class="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg p-4 text-blue-700 dark:text-blue-100">
                             No periods found for this academic time. Create a new one to get started.
                         </div>
                     @else
-                        <div
-                            class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 text-gray-600 dark:text-gray-300">
+                        <div class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 text-gray-600 dark:text-gray-300">
                             Select an academic time from the dropdown above to view periods.
                         </div>
                     @endif
 
-                    
                     <div class="mt-6">
                         <a href="{{ route('periods.create', ['semester_id' => $selectedSemesterId]) }}"
                             class="bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-lg shadow-md transition-colors inline-flex items-center">
@@ -126,6 +145,13 @@
             } else {
                 window.location.href = '{{ route("periods.index") }}';
             }
+        }
+
+        function confirmDelete(hasActivities, timeBegin, timeEnd) {
+            if (hasActivities === 'true') {
+                return confirm(`The period ${timeBegin}–${timeEnd} has scheduled activities. Deleting it will remove those activities. Are you absolutely sure?`);
+            }
+            return confirm('Are you sure you want to delete this period?');
         }
     </script>
 </x-app-layout>

@@ -42,8 +42,7 @@ class Activity extends Model
     public function students()
     {
         return $this->belongsToMany(User::class, 'activity_students', 'activity_id', 'student_id')
-                    ->withTimestamps()
-                    ->withPivot('student_order');
+                    ->withTimestamps();
     }
 
     public function activityForms()

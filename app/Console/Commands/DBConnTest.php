@@ -24,8 +24,8 @@ class DBConnTest extends Command
         // I am never doing commands again
         // - Ven
         if ($this->option('clear')) {
-            if ($this->confirm('Config cache will be cleared. Are you sure?')) {
-                $this->clearConfigCache();
+            if ($this->confirm('All caches will be cleared. Are you sure?')) {
+                $this->clearCache();
             }
         }
 
@@ -50,7 +50,7 @@ class DBConnTest extends Command
             if (!$this->option('clear')) {
                 $this->line("");
                 if ($this->confirm('Would you like to clear caches and try again?')) {
-                    $this->clearConfigCache();
+                    $this->clearCache();
                     $this->info("One more time! Restarting tester...");
                     $this->line("");
                     sleep(5);
@@ -70,7 +70,7 @@ class DBConnTest extends Command
             if (!$this->option('clear')) {
                 $this->line("");
                 if ($this->confirm('Would you like to clear caches and try again?')) {
-                    $this->clearConfigCache();
+                    $this->clearCache();
                     $this->line("One more time! Restarting tester...");
                     sleep(1);
                     $this->handle(); 
@@ -97,21 +97,10 @@ class DBConnTest extends Command
         }
     }
 
-    private function clearConfigCache()
+    private function clearCache()
     {
         $this->info("Clearing cache...");
-        
-        Artisan::call('config:clear');
-        $this->info("Config cache cleared!");
-        
-        Artisan::call('cache:clear');
-        $this->info("Application cache cleared!");
-
-        if ($this->confirm('Clear view cache as well?')) {
-                Artisan::call('view:clear');
-                $this->info("View cache cleared!");
-            }
-        
+        Artisan::call('optimize:clear');
         $this->info("All caches cleared!");
         $this->line("");
     }

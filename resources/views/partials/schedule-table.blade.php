@@ -8,10 +8,14 @@
             <table class="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                        <th class="px-4 py-2 border">Day</th>
-                        <th class="px-4 py-2 border">Time</th>
-                        <th class="px-4 py-2 border">Subject</th>
-                        <th class="px-4 py-2 border">Teacher</th>
+                        <th class="px-4 py-2 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Day</th>
+                        <th class="px-4 py-2 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Time</th>
+                        <th class="px-4 py-2 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Subject</th>
+                        <th class="px-4 py-2 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Teacher</th>
+                        <th class="px-4 py-2 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Class</th>
+                        @if (auth()->user()->role !== 'STUDENT')
+                            <th class="px-4 py-2 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Semester</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -19,24 +23,24 @@
                         @foreach($activities as $activity)
                             @if ($activity->period) 
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td class="px-4 py-2 border">{{ $activity->period->weekday_name }}</td>
-                                    <td class="px-4 py-2 border">{{ $activity->period->time_begin }} - {{ $activity->period->time_end }}</td>
-                                    <td class="px-4 py-2 border">{{ $activity->subject->name }}</td>
-                                    <td class="px-4 py-2 border">{{ $activity->teacher->name }}</td>
-                                    <td class="px-4 py-2 border">{{ $activity->class->name }}</td>
+                                    <td class="px-4 py-2">{{ $activity->period->weekday_name }}</td>
+                                    <td class="px-4 py-2">{{ $activity->period->time_begin }} - {{ $activity->period->time_end }}</td>
+                                    <td class="px-4 py-2">{{ $activity->subject->name }}</td>
+                                    <td class="px-4 py-2">{{ $activity->teacher->name }}</td>
+                                    <td class="px-4 py-2">{{ $activity->class->name }}</td>
                                     @if (auth()->user()->role !== 'STUDENT')
-                                        <td class="px-4 py-2 border">{{ $activity->period->semester->full_name }}</td>
+                                        <td class="px-4 py-2">{{ $activity->period->semester->full_name }}</td>
                                     @endif
                                 </tr>
                             @else
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td class="px-4 py-2 border">??????</td>
-                                    <td class="px-4 py-2 border">??:??:?? - ??:??:??</td>
-                                    <td class="px-4 py-2 border">{{ $activity->subject->name }}</td>
-                                    <td class="px-4 py-2 border">{{ $activity->teacher->name }}</td>
-                                    <td class="px-4 py-2 border">{{ $activity->class->name }}</td>
+                                    <td class="px-4 py-2">??????</td>
+                                    <td class="px-4 py-2">??:??:?? - ??:??:??</td>
+                                    <td class="px-4 py-2">{{ $activity->subject->name }}</td>
+                                    <td class="px-4 py-2">{{ $activity->teacher->name }}</td>
+                                    <td class="px-4 py-2">{{ $activity->class->name }}</td>
                                     @if (auth()->user()->role !== 'STUDENT')
-                                        <td class="px-4 py-2 border">??????</td>
+                                        <td class="px-4 py-2">??????</td>
                                     @endif
                                 </tr>
                             @endif

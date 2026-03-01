@@ -24,7 +24,9 @@
                                     <td class="px-4 py-2 border">{{ $activity->subject->name }}</td>
                                     <td class="px-4 py-2 border">{{ $activity->teacher->name }}</td>
                                     <td class="px-4 py-2 border">{{ $activity->class->name }}</td>
-                                    <td class="px-4 py-2 border">{{ $activity->period->semester->full_name }}</td>
+                                    @if (auth()->user()->role !== 'STUDENT')
+                                        <td class="px-4 py-2 border">{{ $activity->period->semester->full_name }}</td>
+                                    @endif
                                 </tr>
                             @else
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -33,7 +35,9 @@
                                     <td class="px-4 py-2 border">{{ $activity->subject->name }}</td>
                                     <td class="px-4 py-2 border">{{ $activity->teacher->name }}</td>
                                     <td class="px-4 py-2 border">{{ $activity->class->name }}</td>
-                                    <td class="px-4 py-2 border">??????</td>
+                                    @if (auth()->user()->role !== 'STUDENT')
+                                        <td class="px-4 py-2 border">??????</td>
+                                    @endif
                                 </tr>
                             @endif
                         @endforeach

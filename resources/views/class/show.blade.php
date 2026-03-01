@@ -194,8 +194,8 @@
                                                     @method('DELETE')
                                                     <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs">Delete</button>
                                                 </form>
-                                                <a href="{{ route('score-distributions.index', ['activity_id' => $activity->id]) }}" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-lg text-xs inline-block">Scores Dist</a>
-                                                <a href="{{ route('student-scores.index', ['activity_id' => $activity->id]) }}" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded-lg text-xs inline-block">Student Scores</a>
+                                                <a href="{{ route('score-distributions.index', $activity) }}" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-lg text-xs inline-block">Scores Dist</a>
+                                                <a href="{{ route('student-scores.index', $activity) }}" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded-lg text-xs inline-block">Student Scores</a>
                                             </td>
                                         </tr>
                                     @endforeach

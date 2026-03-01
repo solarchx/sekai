@@ -25,11 +25,11 @@
                     @php $user = auth()->user(); @endphp
 
                     
-                    @if($user->role === 'ADMIN')
+                    @if(in_array($user->role, ['VP', 'ADMIN']))
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
-                                    <span>Admin</span>
+                                    <span>Manage</span>
                                     <i class="bi bi-chevron-down ms-1 text-sm"></i>
                                 </button>
                             </x-slot>
@@ -41,21 +41,8 @@
                                 <x-dropdown-link :href="route('grades.index')">{{ __('Grades') }}</x-dropdown-link>
                                 <x-dropdown-link :href="route('periods.index')">{{ __('Periods') }}</x-dropdown-link>
                                 <x-dropdown-link :href="route('semesters.index')">{{ __('Semesters') }}</x-dropdown-link>
-                            </x-slot>
-                        </x-dropdown>
-                    @endif
-
-                    
-                    @if(in_array($user->role, ['VP', 'ADMIN']))
-                        <x-dropdown>
-                            <x-slot name="trigger">
-                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
-                                    <span>VP</span>
-                                    <i class="bi bi-chevron-down ms-1 text-sm"></i>
-                                </button>
-                            </x-slot>
-                            <x-slot name="content">
                                 <x-dropdown-link :href="route('activities.index')">{{ __('Activities') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('activity-reports.index')">{{ __('Activity Reports') }}</x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
                     @endif
@@ -72,8 +59,6 @@
                             <x-slot name="content">
                                 <x-dropdown-link :href="route('activity-forms.index')">{{ __('Activity Forms') }}</x-dropdown-link>
                                 <x-dropdown-link :href="route('activity-presences.index')">{{ __('Activity Presences') }}</x-dropdown-link>
-                                <x-dropdown-link :href="route('score-distributions.index')">{{ __('Score Distributions') }}</x-dropdown-link>
-                                <x-dropdown-link :href="route('student-scores.index')">{{ __('Student Scores') }}</x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
                     @endif
@@ -138,9 +123,9 @@
 
             @php $user = auth()->user(); @endphp
 
-            @if($user->role === 'ADMIN')
+            @if(in_array($user->role, ['VP', 'ADMIN']))
                 <div class="pt-4 pb-2 border-t border-gray-200 dark:border-gray-700">
-                    <div class="px-4 text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">Admin</div>
+                    <div class="px-4 text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">VP</div>
                 </div>
                 <x-responsive-nav-link :href="route('users.index')">{{ __('Users') }}</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('majors.index')">{{ __('Majors') }}</x-responsive-nav-link>
@@ -149,13 +134,8 @@
                 <x-responsive-nav-link :href="route('grades.index')">{{ __('Grades') }}</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('periods.index')">{{ __('Periods') }}</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('semesters.index')">{{ __('Semesters') }}</x-responsive-nav-link>
-            @endif
-
-            @if(in_array($user->role, ['VP', 'ADMIN']))
-                <div class="pt-4 pb-2 border-t border-gray-200 dark:border-gray-700">
-                    <div class="px-4 text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">VP</div>
-                </div>
                 <x-responsive-nav-link :href="route('activities.index')">{{ __('Activities') }}</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('activity-reports.index')">{{ __('Activity Reports') }}</x-responsive-nav-link>
             @endif
 
             @if(in_array($user->role, ['TEACHER', 'VP', 'ADMIN']))
@@ -164,8 +144,6 @@
                 </div>
                 <x-responsive-nav-link :href="route('activity-forms.index')">{{ __('Activity Forms') }}</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('activity-presences.index')">{{ __('Activity Presences') }}</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('score-distributions.index')">{{ __('Score Distributions') }}</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('student-scores.index')">{{ __('Student Scores') }}</x-responsive-nav-link>
             @endif
         </div>
 

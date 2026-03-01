@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Create Score Distribution') }}
+            {{ isset($distributions) ? 'Edit' : 'Create' }} Score Distributions for {{ $activity->subject->name }}
         </h2>
     </x-slot>
 
@@ -9,47 +9,110 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6">
-                    <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Create New Score Distribution</h3>
-                    
-                    <form method="POST" action="{{ route('score-distributions.store') }}">
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+                        {{ isset($distributions) ? 'Edit Distributions' : 'Add Distributions' }}
+                    </h3>
+                    <p class="mb-4 text-gray-600 dark:text-gray-400">
+                        Activity: {{ $activity->subject->name }} ({{ $activity->class->name }})
+                    </p>
+
+                    <form method="POST" action="{{ route('score-distributions.store', $activity) }}" id="distributionForm">
                         @csrf
 
                         <div class="mb-6">
-                            <label for="activity_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Activity</label>
-                            <select name="activity_id" id="activity_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('activity_id') is-invalid @enderror" required>
-                                <option value="">Select Activity</option>
-                                @foreach($activities as $activity)
-                                    <option value="{{ $activity->id }}" {{ old('activity_id') == $activity->id ? 'selected' : '' }}>{{ $activity->subject->name }} - {{ $activity->teacher->name }} ({{ $activity->class->name }})</option>
-                                @endforeach
-                            </select>
-                            @error('activity_id')
-                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div class="mb-6">
-                            <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Component Name</label>
-                            <input type="text" name="name" id="name" placeholder="e.g., Participation, Assignment, Test" value="{{ old('name') }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('name') is-invalid @enderror" required>
-                            @error('name')
-                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div class="mb-6">
-                            <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Weight</label>
-                            <input type="number" name="weight" id="weight" min="1" value="{{ old('weight', 1) }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('weight') is-invalid @enderror" required>
-                            @error('weight')
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Distributions</label>
+                                <button type="button" onclick="addRow()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-sm">
+                                    + Add Row
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
+                                    <thead class="bg-gray-50 dark:bg-gray-700">
+                                        <tr>
+                                            <th class="px-4 py-2 border">Name</th>
+                                            <th class="px-4 py-2 border">Weight (%)</th>
+                                            <th class="px-4 py-2 border">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="distributions-body">
+                                        @if(isset($distributions) && $distributions->count() > 0)
+                                            @foreach($distributions as $index => $dist)
+                                                <tr class="distribution-row">
+                                                    <td class="px-4 py-2 border">
+                                                        <input type="text" name="distributions[{{ $index }}][name]" value="{{ $dist->name }}" class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" required>
+                                                    </td>
+                                                    <td class="px-4 py-2 border">
+                                                        <input type="number" name="distributions[{{ $index }}][weight]" value="{{ $dist->weight }}" min="1" max="100" class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" required>
+                                                    </td>
+                                                    <td class="px-4 py-2 border text-center">
+                                                        <button type="button" onclick="removeRow(this)" class="text-red-600 hover:text-red-800">Remove</button>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        @else
+                                            <tr class="distribution-row">
+                                                <td class="px-4 py-2 border">
+                                                    <input type="text" name="distributions[0][name]" class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" required>
+                                                </td>
+                                                <td class="px-4 py-2 border">
+                                                    <input type="number" name="distributions[0][weight]" min="1" max="100" class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" required>
+                                                </td>
+                                                <td class="px-4 py-2 border text-center">
+                                                    <button type="button" onclick="removeRow(this)" class="text-red-600 hover:text-red-800">Remove</button>
+                                                </td>
+                                            </tr>
+                                        @endif
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Total weight must sum to 100.</p>
+                            @error('distributions')
                                 <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <div class="flex justify-end gap-4">
-                            <a href="{{ route('score-distributions.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Cancel</a>
-                            <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Create</button>
+                            <a href="{{ route('score-distributions.index', $activity) }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Cancel</a>
+                            <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
+                                {{ isset($distributions) ? 'Update' : 'Save' }} Distributions
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        let rowIndex = {{ isset($distributions) ? $distributions->count() : 1 }};
+
+        function addRow() {
+            const tbody = document.getElementById('distributions-body');
+            const newRow = document.createElement('tr');
+            newRow.className = 'distribution-row';
+            newRow.innerHTML = `
+                <td class="px-4 py-2 border">
+                    <input type="text" name="distributions[${rowIndex}][name]" class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" required>
+                </td>
+                <td class="px-4 py-2 border">
+                    <input type="number" name="distributions[${rowIndex}][weight]" min="1" max="100" class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" required>
+                </td>
+                <td class="px-4 py-2 border text-center">
+                    <button type="button" onclick="removeRow(this)" class="text-red-600 hover:text-red-800">Remove</button>
+                </td>
+            `;
+            tbody.appendChild(newRow);
+            rowIndex++;
+        }
+
+        function removeRow(button) {
+            const row = button.closest('tr');
+            if (document.querySelectorAll('.distribution-row').length > 1) {
+                row.remove();
+            } else {
+                alert('At least one distribution is required.');
+            }
+        }
+    </script>
 </x-app-layout>

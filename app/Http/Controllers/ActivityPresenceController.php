@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityPresence;
 use App\Models\ActivityForm;
+use App\Models\Activity;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,33 +16,53 @@ class ActivityPresenceController extends Controller
     public function index(Request $request)
     {
         try {
-            $showDeleted = $request->has('show_deleted') && auth()->user()->role === 'ADMIN';
+            $user = auth()->user();
+            $showDeleted = $request->has('show_deleted') && $user->role === 'ADMIN';
+            $activityId = $request->query('activity_id');
             $formId = $request->query('form_id');
 
-            if ($formId) {
-                $form = ActivityForm::with('activity.class')->findOrFail($formId);
-                $students = $form->activity->class->students()
-                    ->where('role', 'STUDENT')
-                    ->where('deleted_at', null)
-                    ->orderBy('student_order')
-                    ->get(['id', 'name', 'identifier']);
-
-                $presences = ActivityPresence::where('form_id', $formId)
-                    ->with('student')
-                    ->get()
-                    ->keyBy('student_id');
-
-                return view('activity-presences.index', compact('form', 'students', 'presences', 'showDeleted'));
-            }
-
-            $query = ActivityPresence::with('form', 'student');
-            if ($showDeleted) {
-                $presences = $query->onlyTrashed()->paginate(100);
+            if ($user->role === 'TEACHER') {
+                $activities = Activity::where('teacher_id', $user->id)
+                    ->with('subject', 'class')
+                    ->get();
+            } elseif (in_array($user->role, ['VP', 'ADMIN'])) {
+                $activities = Activity::with('subject', 'class')->get();
             } else {
-                $presences = $query->paginate(100);
+                $activities = collect();
             }
 
-            return view('activity-presences.index', compact('presences', 'showDeleted'));
+            $selectedActivity = null;
+            $forms = collect();
+            $selectedForm = null;
+            $students = collect();
+            $presences = collect();
+
+            if ($activityId) {
+                $selectedActivity = $activities->firstWhere('id', $activityId);
+                if ($selectedActivity) {
+                    $forms = $selectedActivity->forms()->orderBy('activity_date', 'desc')->get();
+                    if ($formId) {
+                        $selectedForm = $forms->firstWhere('id', $formId);
+                        if ($selectedForm) {
+                            $students = $selectedForm->activity->class->students()
+                                ->where('role', 'STUDENT')
+                                ->where('deleted_at', null)
+                                ->orderBy('student_order')
+                                ->get(['id', 'name', 'identifier']);
+
+                            $presences = ActivityPresence::where('form_id', $formId)
+                                ->with('student')
+                                ->get()
+                                ->keyBy('student_id');
+                        }
+                    }
+                }
+            }
+
+            return view('activity-presences.index', compact(
+                'activities', 'selectedActivity', 'forms', 'selectedForm',
+                'students', 'presences', 'showDeleted'
+            ));
         } catch (\Exception $e) {
             Log::error('Error loading presences: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error loading presences: ' . $e->getMessage());
@@ -86,13 +107,21 @@ class ActivityPresenceController extends Controller
             $activity = $form->activity;
 
             if (auth()->user()->role === 'STUDENT') {
-                $formDate = $form->activity_date->format('Y-m-d');
-                $startDateTime = Carbon::parse($formDate . ' ' . $activity->period->time_begin);
-                $endDateTime = Carbon::parse($formDate . ' ' . $activity->period->time_end);
-                
+                $timezone = config('app.timezone');
+                $formDate = $form->activity_date;
+                $timeBegin = $activity->period->time_begin;
+                $timeEnd   = $activity->period->time_end;
+
+                $startDateTime = Carbon::createFromFormat('Y-m-d H:i:s', $formDate->format('Y-m-d') . ' ' . $timeBegin, $timezone);
+                $endDateTime   = Carbon::createFromFormat('Y-m-d H:i:s', $formDate->format('Y-m-d') . ' ' . $timeEnd, $timezone);
+                if (strlen($timeBegin) == 5) {
+                    $startDateTime = Carbon::createFromFormat('Y-m-d H:i', $formDate->format('Y-m-d') . ' ' . $timeBegin, $timezone);
+                    $endDateTime   = Carbon::createFromFormat('Y-m-d H:i', $formDate->format('Y-m-d') . ' ' . $timeEnd, $timezone);
+                }
+
                 $submissionStart = $startDateTime->copy()->subMinutes(15);
-                $submissionEnd = $endDateTime->copy()->addMinutes(15);
-                $now = Carbon::now();
+                $submissionEnd   = $endDateTime->copy()->addMinutes(15);
+                $now = Carbon::now($timezone);
 
                 if ($now->lt($submissionStart) || $now->gt($submissionEnd)) {
                     return back()->withErrors(['student_id' => "Submission window closed."])->withInput();

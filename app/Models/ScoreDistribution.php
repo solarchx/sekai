@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ScoreDistribution extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $table = 'score_distributions';
 
-    public $incrementing = false;
-    protected $primaryKey = null;
+    protected $primaryKey = 'id';
+    public $incrementing = true;
 
     protected $fillable = [
         'activity_id',
@@ -28,5 +28,10 @@ class ScoreDistribution extends Model
     public function activity()
     {
         return $this->belongsTo(Activity::class, 'activity_id');
+    }
+
+    public function studentScores()
+    {
+        return $this->hasMany(StudentScore::class, 'score_distribution_id');
     }
 }

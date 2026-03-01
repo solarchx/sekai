@@ -32,18 +32,13 @@ class DashboardController extends Controller
     
     private function getUserSchedule(User $user)
     {
-        
-        if (in_array($user->role, ['VP', 'ADMIN'])) {
-            return [];
-        }
-
         $activities = collect();
 
         if ($user->role === 'STUDENT' && $user->class_id) {
             $activities = Activity::where('class_id', $user->class_id)
                 ->with(['subject', 'teacher', 'class', 'period.semester'])
                 ->get();
-        } elseif ($user->role === 'TEACHER') {
+        } elseif (in_array($user->role, ['TEACHER', 'VP', 'ADMIN'])) {
             $activities = Activity::where('teacher_id', $user->id)
                 ->with(['subject', 'teacher', 'class', 'period.semester'])
                 ->get();

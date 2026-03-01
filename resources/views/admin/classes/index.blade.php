@@ -81,10 +81,6 @@
                                                     <i class="bi bi-sort-numeric-up"></i> Order
                                                 </a>
 
-                                                
-                                                
-                                                
-
                                                 <a href="{{ route('classes.edit', $class) }}"
                                                     class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors inline-flex items-center"
                                                     title="Edit">

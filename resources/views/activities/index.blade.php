@@ -100,6 +100,14 @@
                                                 </form>
                                             @else
                                                 <button
+                                                    onclick="window.location.href='{{ route('score-distributions.index', $activity) }}'"
+                                                    class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
+                                                    title="Manage Score Distributions">Score Dist.</button>
+                                                <button
+                                                    onclick="window.location.href='{{ route('student-scores.index', $activity) }}'"
+                                                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
+                                                    title="Manage Student Scores">Student Scores</button>
+                                                <button
                                                     onclick="window.location.href='{{ route('activities.edit', $activity) }}'"
                                                     class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
                                                     title="Edit">Edit</button>

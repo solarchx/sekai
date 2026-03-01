@@ -64,12 +64,21 @@
                                                     $presence = $form->presences->first();
                                                     $report = $presence ? $presence->report : null;
 
-                                                    $formDate = $form->activity_date->format('Y-m-d');
-                                                    $startDateTime = \Carbon\Carbon::parse($formDate . ' ' . $selectedActivity->period->time_begin);
-                                                    $endDateTime = \Carbon\Carbon::parse($formDate . ' ' . $selectedActivity->period->time_end);
+                                                    $timezone = config('app.timezone');
+                                                    $formDate = $form->activity_date;
+                                                    $timeBegin = $selectedActivity->period->time_begin;
+                                                    $timeEnd   = $selectedActivity->period->time_end;
+
+                                                    $startDateTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $formDate->format('Y-m-d') . ' ' . $timeBegin, $timezone);
+                                                    $endDateTime   = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $formDate->format('Y-m-d') . ' ' . $timeEnd, $timezone);
+                                                    if (strlen($timeBegin) == 5) {
+                                                        $startDateTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $formDate->format('Y-m-d') . ' ' . $timeBegin, $timezone);
+                                                        $endDateTime   = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $formDate->format('Y-m-d') . ' ' . $timeEnd, $timezone);
+                                                    }
+
                                                     $windowStart = $startDateTime->copy()->subMinutes(15);
-                                                    $windowEnd = $endDateTime->copy()->addMinutes(15);
-                                                    $now = \Carbon\Carbon::now();
+                                                    $windowEnd   = $endDateTime->copy()->addMinutes(15);
+                                                    $now = \Carbon\Carbon::now($timezone);
                                                     $canSubmit = $now->between($windowStart, $windowEnd);
                                                 @endphp
                                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">

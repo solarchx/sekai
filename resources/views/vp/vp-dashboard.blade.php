@@ -72,7 +72,7 @@
                     </div>
                 </div>
             </div>
+            @include('partials.schedule-table')
         </div>
     </div>
-    @include('partials.schedule-table')
 </x-app-layout>

@@ -14,10 +14,6 @@ use Carbon\Carbon;
 
 class StudentActivityController extends Controller
 {
-    /**
-     * Display a list of activities the student is enrolled in,
-     * and the forms for a selected activity.
-     */
     public function index(Request $request)
     {
         try {
@@ -57,9 +53,6 @@ class StudentActivityController extends Controller
         }
     }
 
-    /**
-     * Display the student's grades, grouped by semester.
-     */
     public function grades(Request $request)
     {
         try {
@@ -86,27 +79,28 @@ class StudentActivityController extends Controller
 
                 foreach ($activities as $activity) {
                     $totalWeight = $activity->scoreDistributions->sum('weight');
+
                     $studentScores = StudentScore::where('activity_id', $activity->id)
                         ->where('student_id', $user->id)
                         ->get()
-                        ->keyBy('name');
+                        ->keyBy('score_distribution_id');
 
                     $breakdown = [];
                     $weightedTotal = 0;
 
                     foreach ($activity->scoreDistributions as $dist) {
-                        $score = $studentScores->get($dist->name);
+                        $score = $studentScores->get($dist->id);
                         $scoreValue = $score ? $score->score : 0;
                         $weightPercent = $totalWeight > 0 ? $dist->weight / $totalWeight : 0;
                         $contribution = $scoreValue * $weightPercent;
                         $weightedTotal += $contribution;
 
                         $breakdown[] = [
-                            'name' => $dist->name,
-                            'weight' => $dist->weight,
+                            'name'           => $dist->name,
+                            'weight'         => $dist->weight,
                             'weight_percent' => $weightPercent * 100,
-                            'score' => $scoreValue,
-                            'contribution' => $contribution,
+                            'score'          => $scoreValue,
+                            'contribution'   => $contribution,
                         ];
                     }
 

@@ -4,11 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StudentScore extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $table = 'student_scores';
 
@@ -18,7 +17,7 @@ class StudentScore extends Model
     protected $fillable = [
         'activity_id',
         'student_id',
-        'name',
+        'score_distribution_id',
         'score',
     ];
 
@@ -34,5 +33,10 @@ class StudentScore extends Model
     public function student()
     {
         return $this->belongsTo(User::class, 'student_id');
+    }
+
+    public function scoreDistribution()
+    {
+        return $this->belongsTo(ScoreDistribution::class, 'score_distribution_id');
     }
 }

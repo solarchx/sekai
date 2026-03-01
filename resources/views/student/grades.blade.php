@@ -13,7 +13,6 @@
                     <p class="mt-2">Select a semester to view your grades.</p>
                 </div>
                 <div class="p-6">
-                    {{-- Semester selector --}}
                     <form method="GET" action="{{ route('student.grades') }}" id="semester-form">
                         <div class="mb-6 flex items-end gap-4">
                             <div class="flex-1">

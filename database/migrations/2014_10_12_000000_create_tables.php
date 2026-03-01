@@ -54,11 +54,11 @@ return new class extends Migration
 
             $table->foreign('major_id', 'fk_class_id_major')
                 ->references('id')->on('majors')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
 
             $table->foreign('grade_id', 'fk_class_id_grade')
                 ->references('id')->on('grades')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
         });
 
         // Users
@@ -78,13 +78,13 @@ return new class extends Migration
 
             $table->foreign('class_id', 'fk_student_class')
                 ->references('id')->on('classes')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
         });
 
         // Classes (again)
         Schema::table('classes', function (Blueprint $table) {
             $table->unsignedInteger('homeroom_teacher_id')->nullable();
-            $table->foreign('homeroom_teacher_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('restrict');
+            $table->foreign('homeroom_teacher_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
         });
 
         // Majors Subjects (Pivot)
@@ -97,11 +97,11 @@ return new class extends Migration
 
             $table->foreign('major_id', 'fk_majors_subjects_id_major')
                 ->references('id')->on('majors')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
 
             $table->foreign('subject_id', 'fk_majors_subjects_id_subject')
                 ->references('id')->on('subjects')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
         });
 
         // Grades Subjects (Pivot)
@@ -114,11 +114,11 @@ return new class extends Migration
 
             $table->foreign('grade_id', 'fk_grades_subjects_id_grade')
                 ->references('id')->on('grades')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
 
             $table->foreign('subject_id', 'fk_grades_subjects_id_subject')
                 ->references('id')->on('subjects')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
         });
 
         // Lesson Periods
@@ -136,7 +136,7 @@ return new class extends Migration
 
             $table->foreign('semester_id', 'fk_period_semester_id')
                 ->references('id')->on('academic_semesters')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
         });
 
         // Activities
@@ -153,19 +153,19 @@ return new class extends Migration
 
             $table->foreign('subject_id', 'fk_activity_subject_id')
                 ->references('id')->on('subjects')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
 
             $table->foreign('teacher_id', 'fk_activity_teacher_id')
                 ->references('id')->on('users')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
 
             $table->foreign('period_id', 'fk_activity_period_id')
                 ->references('id')->on('lesson_periods')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
 
             $table->foreign('class_id', 'fk_activity_class_id')
                 ->references('id')->on('classes')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
         });
 
         // Activity Students (Pivot)
@@ -178,25 +178,25 @@ return new class extends Migration
 
             $table->foreign('student_id', 'fk_activity_students_student_id')
                 ->references('id')->on('users')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
 
             $table->foreign('activity_id', 'fk_activity_students_class_id')
                 ->references('id')->on('activities')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
         });
 
         // Score Distributions
         Schema::create('score_distributions', function (Blueprint $table) {
+            $table->increments('id');
             $table->unsignedInteger('activity_id');
             $table->string('name', 255);
             $table->unsignedInteger('weight')->default(1);
-            $table->primary(['activity_id', 'name']);
-            $table->softDeletes();
+            $table->unique(['activity_id', 'name']);
             $table->timestamps();
 
             $table->foreign('activity_id', 'fk_score_distribution_activity_id')
                 ->references('id')->on('activities')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
         });
 
         // Activity Forms
@@ -210,7 +210,7 @@ return new class extends Migration
 
             $table->foreign('activity_id', 'fk_activity_form_activity_id')
                 ->references('id')->on('activities')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
         });
 
         // Activity Presences
@@ -226,11 +226,11 @@ return new class extends Migration
 
             $table->foreign('form_id', 'fk_presence_form_id')
                 ->references('id')->on('activity_forms')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
 
             $table->foreign('student_id', 'fk_presence_student_id')
                 ->references('id')->on('users')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
         });
 
         // Activity Reports
@@ -244,26 +244,29 @@ return new class extends Migration
 
             $table->foreign('presence_id', 'fk_report_presence_id')
                 ->references('id')->on('activity_presences')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
         });
 
         // Student Scores
         Schema::create('student_scores', function (Blueprint $table) {
             $table->unsignedInteger('activity_id');
             $table->unsignedInteger('student_id');
-            $table->string('name', 255);
+            $table->unsignedInteger('score_distribution_id');
             $table->unsignedTinyInteger('score')->default(0);
-            $table->primary(['activity_id', 'student_id', 'name']);
-            $table->softDeletes();
+            $table->primary(['activity_id', 'student_id', 'score_distribution_id']);
             $table->timestamps();
 
             $table->foreign('activity_id', 'fk_student_score_activity_id')
                 ->references('id')->on('activities')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
 
             $table->foreign('student_id', 'fk_student_score_student_id')
                 ->references('id')->on('users')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
+
+            $table->foreign('score_distribution_id', 'fk_student_score_distribution')
+                  ->references('id')->on('score_distributions')
+                  ->onUpdate('cascade')->onDelete('cascade');
         });
         DB::statement('ALTER TABLE student_scores ADD CONSTRAINT chk_student_scores_score CHECK (score BETWEEN 0 AND 100)');
 
@@ -282,15 +285,15 @@ return new class extends Migration
 
             $table->foreign('sender_id', 'fk_announcement_sender_id')
                 ->references('id')->on('users')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
 
             $table->foreign('activity_id', 'fk_announcement_activity_id')
                 ->references('id')->on('activities')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
 
             $table->foreign('grade_id', 'fk_announcement_grade_id')
                 ->references('id')->on('grades')
-                ->onUpdate('cascade')->onDelete('restrict');
+                ->onUpdate('cascade')->onDelete('cascade');
         });
     }
 

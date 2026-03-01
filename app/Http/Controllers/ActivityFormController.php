@@ -14,17 +14,38 @@ class ActivityFormController extends Controller
     public function index(Request $request)
     {
         try {
-            $showDeleted = $request->has('show_deleted') && auth()->user()->role === 'ADMIN';
-            
-            $query = ActivityForm::with('activity.subject', 'activity.teacher', 'activity.class');
-            
+            $user = auth()->user();
+            $showDeleted = $request->has('show_deleted') && $user->role === 'ADMIN';
+
+            if ($user->role === 'TEACHER') {
+                $activities = Activity::where('teacher_id', $user->id)
+                    ->with('subject', 'class')
+                    ->get();
+            } elseif (in_array($user->role, ['VP', 'ADMIN'])) {
+                $activities = Activity::with('subject', 'class')->get();
+            } else {
+                $activities = collect();
+            }
+
+            $activityId = $request->query('activity_id');
+            $query = ActivityForm::with('activity.subject', 'activity.class');
+
+            if ($activityId) {
+                $query->where('activity_id', $activityId);
+            } else {
+                if ($user->role === 'TEACHER') {
+                    $query->whereHas('activity', function ($q) use ($user) {
+                        $q->where('teacher_id', $user->id);
+                    });
+                }
+            }
             if ($showDeleted) {
                 $forms = $query->onlyTrashed()->paginate(100);
             } else {
                 $forms = $query->paginate(100);
             }
-            
-            return view('activity-forms.index', compact('forms', 'showDeleted'));
+
+            return view('activity-forms.index', compact('activities', 'activityId', 'forms', 'showDeleted'));
         } catch (\Exception $e) {
             Log::error('Error loading forms: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error loading forms: ' . $e->getMessage());
@@ -66,10 +87,8 @@ class ActivityFormController extends Controller
             $activity = Activity::find($validated['activity_id']);
             $formDate = Carbon::createFromFormat('Y-m-d', $validated['activity_date']);
 
-            
             $activityWeekday = $activity->period->weekday;
-            $dateWeekday = $formDate->dayOfWeek; 
-            
+            $dateWeekday = $formDate->dayOfWeek;
             
             $carbonWeekday = ($dateWeekday + 6) % 7;
             
@@ -77,7 +96,6 @@ class ActivityFormController extends Controller
                 return back()->withErrors(['activity_date' => "Activity date must be on a {$this->getWeekdayName($activityWeekday)}."])->withInput();
             }
 
-            
             $exists = ActivityForm::where('activity_id', $validated['activity_id'])
                 ->where('activity_date', $validated['activity_date'])
                 ->where('deleted_at', null)
@@ -108,7 +126,7 @@ class ActivityFormController extends Controller
         try {
             $activityForm->load('activity.subject', 'activity.teacher', 'activity.class', 'activity.period');
             $form = $activityForm;
-            $students = $form->activity->class->students()
+            $students = $activityForm->activity->class->students()
                 ->where('role', 'STUDENT')
                 ->where('deleted_at', null)
                 ->orderBy('student_order')
@@ -152,7 +170,6 @@ class ActivityFormController extends Controller
             $activity = Activity::find($validated['activity_id']);
             $formDate = Carbon::createFromFormat('Y-m-d', $validated['activity_date']);
 
-            
             $activityWeekday = $activity->period->weekday;
             $dateWeekday = $formDate->dayOfWeek;
             $carbonWeekday = ($dateWeekday + 6) % 7;
@@ -161,7 +178,6 @@ class ActivityFormController extends Controller
                 return back()->withErrors(['activity_date' => "Activity date must be on a {$this->getWeekdayName($activityWeekday)}."])->withInput();
             }
 
-            
             $exists = ActivityForm::where('activity_id', $validated['activity_id'])
                 ->where('activity_date', $validated['activity_date'])
                 ->where('id', '!=', $activityForm->id)
@@ -193,7 +209,6 @@ class ActivityFormController extends Controller
         try {
             DB::beginTransaction();
 
-            
             $activityForm->presences()->delete();
 
             $activityForm->delete();
@@ -208,7 +223,6 @@ class ActivityFormController extends Controller
         }
     }
 
-    
     public function restore(ActivityForm $activityForm)
     {
         try {
@@ -225,7 +239,6 @@ class ActivityFormController extends Controller
         }
     }
 
-    
     private function getWeekdayName($weekday): string
     {
         $days = [

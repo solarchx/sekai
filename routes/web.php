@@ -65,10 +65,13 @@ Route::middleware(['auth', 'teacher'])->group(function () {
     Route::post('/activity-forms/{activityForm}/restore', [ActivityFormController::class, 'restore'])->name('activity-forms.restore');
     Route::resource('activity-presences', ActivityPresenceController::class);
     Route::post('/activity-presences/{activityPresence}/restore', [ActivityPresenceController::class, 'restore'])->name('activity-presences.restore');
-    Route::resource('score-distributions', ScoreDistributionController::class);
-    Route::post('/score-distributions/{scoreDistribution}/restore', [ScoreDistributionController::class, 'restore'])->name('score-distributions.restore');
-    Route::resource('student-scores', StudentScoreController::class);
-    Route::post('/student-scores/{studentScore}/restore', [StudentScoreController::class, 'restore'])->name('student-scores.restore');
+    Route::get('/activities/{activity}/score-distributions', [ScoreDistributionController::class, 'index'])->name('score-distributions.index');
+    Route::get('/activities/{activity}/score-distributions/create', [ScoreDistributionController::class, 'create'])->name('score-distributions.create');
+    Route::post('/activities/{activity}/score-distributions', [ScoreDistributionController::class, 'store'])->name('score-distributions.store');
+    Route::get('/activities/{activity}/score-distributions/edit', [ScoreDistributionController::class, 'edit'])->name('score-distributions.edit');
+    Route::get('/activities/{activity}/student-scores', [StudentScoreController::class, 'index'])->name('student-scores.index');
+    Route::get('/activities/{activity}/student-scores/{student}/edit', [StudentScoreController::class, 'edit'])->name('student-scores.edit');
+    Route::put('/activities/{activity}/student-scores/{student}', [StudentScoreController::class, 'update'])->name('student-scores.update');
     Route::get('/classes/{class}/student-order', [SchoolClassController::class, 'studentOrder'])->name('classes.student-order');
     Route::put('/classes/{class}/student-order', [SchoolClassController::class, 'updateStudentOrder'])->name('classes.update-student-order');
 });

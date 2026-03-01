@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('Student Score Management') }}
+                {{ __('Student Scores for ') }} {{ $activity->subject->name }}
             </h2>
         </div>
     </x-slot>
@@ -11,116 +11,58 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6" style="background: linear-gradient(to right, #ef4444, #dc2626); color: white;">
-                    <h3 class="text-2xl font-bold">Student Score Management</h3>
-                    <p class="mt-2">Manage individual student scores.</p>
+                    <h3 class="text-2xl font-bold">{{ $activity->subject->name }}</h3>
+                    <p class="mt-2">Class: {{ $activity->class->name }} – Teacher: {{ $activity->teacher->name }}</p>
                 </div>
                 <div class="p-6">
-                    <x-soft-delete-filter />
-                    <div class="flex justify-between items-center mb-6">
-                        <h4 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Scores List
-                            ({{ $scores->total() }})</h4>
-                        @if(!$showDeleted)
-                            <a href="{{ route('student-scores.create') }}"
-                                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
-                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                Add Score
-                            </a>
-                        @endif
-                    </div>
                     <div class="overflow-x-auto">
-                        <table class="min-w-full bg-white dark:bg-gray-800">
+                        <table class="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Student</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Activity</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Component</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Score</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Status</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Actions</th>
+                                    <th class="px-4 py-2 border text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Student</th>
+                                    @foreach($distributions as $dist)
+                                        <th class="px-4 py-2 border text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            {{ $dist->name }}<br><span class="text-xs">({{ $dist->weight }}%)</span>
+                                        </th>
+                                    @endforeach
+                                    <th class="px-4 py-2 border text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                @forelse($scores as $score)
-                                    <tr
-                                        class="hover:bg-gray-50 dark:hover:bg-gray-700 {{ $score->deleted_at ? 'bg-red-50 dark:bg-red-900' : '' }}">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $score->student->name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $score->activity->subject->name }} ({{ $score->activity->class->name }})</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $score->name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $score->score }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            @if($score->deleted_at)
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">DELETED</span>
-                                            @else
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">ACTIVE</span>
-                                            @endif
+                                @forelse($students as $student)
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                        <td class="px-4 py-2 border text-sm text-gray-900 dark:text-gray-100">
+                                            {{ $student->name }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                            @if($score->deleted_at)
-                                                <form action="{{ route('student-scores.restore', $score) }}" method="POST"
-                                                    class="inline">
-                                                    @csrf
-                                                    <button type="submit"
-                                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
-                                                        title="Restore">
-                                                        <i class="bi bi-arrow-counterclockwise"></i> Restore
-                                                    </button>
-                                                </form>
-                                            @else
-                                                <button
-                                                    onclick="window.location.href='{{ route('student-scores.edit', [$score->activity_id, $score->student_id, $score->name]) }}'"
-                                                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
-                                                    title="Edit">Edit</button>
-                                                <form
-                                                    action="{{ route('student-scores.destroy', [$score->activity_id, $score->student_id, $score->name]) }}"
-                                                    method="POST" class="inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
-                                                        title="Delete" onclick="return confirm('Are you sure?')">Delete</button>
-                                                </form>
-                                            @endif
+                                        @foreach($distributions as $dist)
+                                            @php
+                                                $score = $scores[$student->id][$dist->id] ?? null;
+                                                $scoreValue = $score ? $score->score : 0;
+                                            @endphp
+                                            <td class="px-4 py-2 border text-sm text-gray-900 dark:text-gray-100">
+                                                {{ $scoreValue }}
+                                            </td>
+                                        @endforeach
+                                        <td class="px-4 py-2 border text-sm font-medium">
+                                            <a href="{{ route('student-scores.edit', [$activity, $student]) }}" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs inline-block">
+                                                Edit Scores
+                                            </a>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No
-                                            scores found</td>
+                                        <td colspan="{{ count($distributions) + 2 }}" class="px-4 py-2 border text-center text-gray-500 dark:text-gray-400">
+                                            No students enrolled in this activity.
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
-                    
-                    <div class="mt-6 flex justify-between items-center">
-                        <div class="text-sm text-gray-600 dark:text-gray-400">
-                            Showing {{ $scores->firstItem() }} to {{ $scores->lastItem() }} of {{ $scores->total() }}
-                            results
-                        </div>
-                        <div class="flex gap-2">
-                            {{ $scores->links() }}
-                        </div>
+                    <div class="mt-6">
+                        <a href="{{ route('activities.show', $activity) }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
+                            Back to Activity
+                        </a>
                     </div>
                 </div>
             </div>

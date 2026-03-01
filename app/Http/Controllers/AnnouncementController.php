@@ -47,58 +47,61 @@ class AnnouncementController extends Controller
                       });
                 });
             } else {
+                if (in_array($user->role, ['VP', 'ADMIN'])) {
+                    $announcements = Announcement::all();
+                } else {
+                    $teacherClasses = Activity::where('teacher_id', $user->id)->pluck('class_id')->unique();
+                    $homeroomedClass = $user->class_id ? [$user->class_id] : [];
+                    $allClasses = $teacherClasses->merge($homeroomedClass)->unique();
+
+                    $teacherGrades = Activity::where('teacher_id', $user->id)
+                        ->join('classes', 'activities.class_id', '=', 'classes.id')
+                        ->pluck('classes.grade_id')
+                        ->unique();
+                    $homeroomedGrade = $user->class_id && $user->class->grade_id ? [$user->class->grade_id] : [];
+                    $allGrades = $teacherGrades->merge($homeroomedGrade)->unique();
+
+                    $query->where(function ($q) use ($user, $allClasses, $allGrades) {
+                        $q->where('scope', 'PUBLIC')
+                        ->orWhere('scope', 'TEACHERS')
+                        
+                        ->orWhere(function ($sub) use ($allClasses) {
+                            if ($allClasses->isNotEmpty()) {
+                                $sub->where('scope', 'SPECIFIC-CLASS')
+                                    ->whereHas('activity', function ($act) use ($allClasses) {
+                                        $act->whereIn('class_id', $allClasses);
+                                    });
+                            }
+                        })
+                        
+                        ->orWhere(function ($sub) use ($user) {
+                            $sub->where('scope', 'CLASS-TAUGHT')
+                                ->whereExists(function ($exist) use ($user) {
+                                    $exist->select(DB::raw(1))
+                                        ->from('activities')
+                                        ->whereColumn('activities.teacher_id', 'announcements.sender_id')
+                                        ->whereIn('activities.class_id', function ($q) use ($user) {
+                                            $q->select('class_id')
+                                                ->from('users')
+                                                ->where('users.id', $user->id)
+                                                ->whereNotNull('class_id');
+                                        });
+                                });
+                        })
+                        
+                        ->orWhere(function ($sub) use ($allGrades) {
+                            if ($allGrades->isNotEmpty()) {
+                                $sub->where('scope', 'SPECIFIC-GRADE')
+                                    ->whereIn('grade_id', $allGrades);
+                            }
+                        });
+                    });
+                }
                 
-                $teacherClasses = Activity::where('teacher_id', $user->id)->pluck('class_id')->unique();
-                $homeroomedClass = $user->class_id ? [$user->class_id] : [];
-                $allClasses = $teacherClasses->merge($homeroomedClass)->unique();
-
-                $teacherGrades = Activity::where('teacher_id', $user->id)
-                    ->join('classes', 'activities.class_id', '=', 'classes.id')
-                    ->pluck('classes.grade_id')
-                    ->unique();
-                $homeroomedGrade = $user->class_id && $user->class->grade_id ? [$user->class->grade_id] : [];
-                $allGrades = $teacherGrades->merge($homeroomedGrade)->unique();
-
-                $query->where(function ($q) use ($user, $allClasses, $allGrades) {
-                    $q->where('scope', 'PUBLIC')
-                      ->orWhere('scope', 'TEACHERS')
-                      
-                      ->orWhere(function ($sub) use ($allClasses) {
-                          if ($allClasses->isNotEmpty()) {
-                              $sub->where('scope', 'SPECIFIC-CLASS')
-                                  ->whereHas('activity', function ($act) use ($allClasses) {
-                                      $act->whereIn('class_id', $allClasses);
-                                  });
-                          }
-                      })
-                      
-                      ->orWhere(function ($sub) use ($user) {
-                          $sub->where('scope', 'CLASS-TAUGHT')
-                              ->whereExists(function ($exist) use ($user) {
-                                  $exist->select(DB::raw(1))
-                                      ->from('activities')
-                                      ->whereColumn('activities.teacher_id', 'announcements.sender_id')
-                                      ->whereIn('activities.class_id', function ($q) use ($user) {
-                                          $q->select('class_id')
-                                            ->from('users')
-                                            ->where('users.id', $user->id)
-                                            ->whereNotNull('class_id');
-                                      });
-                              });
-                      })
-                      
-                      ->orWhere(function ($sub) use ($allGrades) {
-                          if ($allGrades->isNotEmpty()) {
-                              $sub->where('scope', 'SPECIFIC-GRADE')
-                                  ->whereIn('grade_id', $allGrades);
-                          }
-                      });
-                });
+                $announcements = $query->with('sender', 'activity', 'grade')
+                                    ->latest()
+                                    ->paginate(100);
             }
-            
-            $announcements = $query->with('sender', 'activity', 'grade')
-                                   ->latest()
-                                   ->paginate(100);
             
             return view('announcements.index', compact('announcements', 'showDeleted'));
         } catch (\Exception $e) {
@@ -112,15 +115,18 @@ class AnnouncementController extends Controller
         try {
             $user = Auth::user();
 
-            
-            $activities = Activity::where('teacher_id', $user->id)
-                ->with('class', 'subject')
-                ->get();
-
-            
-            $teacherGrades = $activities->map(fn($a) => $a->class->grade_id)->unique();
-            $homeroomedGrade = $user->class_id && $user->class->grade_id ? [$user->class->grade_id] : [];
-            $grades = Grade::whereIn('id', $teacherGrades->merge($homeroomedGrade)->unique())->get();
+            if (in_array($user->role, ['VP', 'ADMIN'])) {
+                $activities = Activity::all();
+                $grades = Grade::all();
+            } else {
+                $activities = Activity::where('teacher_id', $user->id)
+                    ->with('class', 'subject')
+                    ->get();
+                
+                $teacherGrades = $activities->map(fn($a) => $a->class->grade_id)->unique();
+                $homeroomedGrade = $user->class_id && $user->class->grade_id ? [$user->class->grade_id] : [];
+                $grades = Grade::whereIn('id', $teacherGrades->merge($homeroomedGrade)->unique())->get();
+            }
 
             return view('announcements.create', compact('activities', 'grades'));
         } catch (\Exception $e) {
@@ -188,13 +194,18 @@ class AnnouncementController extends Controller
 
             $user = Auth::user();
 
-            $activities = Activity::where('teacher_id', $user->id)
-                ->with('class', 'subject')
-                ->get();
+            if (in_array($user->role, ['VP', 'ADMIN'])) {
+                $activities = Activity::all();
+                $grades = Grade::all();
+            } else {
+                $activities = Activity::where('teacher_id', $user->id)
+                    ->with('class', 'subject')
+                    ->get();
 
-            $teacherGrades = $activities->map(fn($a) => $a->class->grade_id)->unique();
-            $homeroomedGrade = $user->class_id && $user->class->grade_id ? [$user->class->grade_id] : [];
-            $grades = Grade::whereIn('id', $teacherGrades->merge($homeroomedGrade)->unique())->get();
+                $teacherGrades = $activities->map(fn($a) => $a->class->grade_id)->unique();
+                $homeroomedGrade = $user->class_id && $user->class->grade_id ? [$user->class->grade_id] : [];
+                $grades = Grade::whereIn('id', $teacherGrades->merge($homeroomedGrade)->unique())->get();
+            }
 
             return view('announcements.edit', compact('announcement', 'activities', 'grades'));
         } catch (\Exception $e) {

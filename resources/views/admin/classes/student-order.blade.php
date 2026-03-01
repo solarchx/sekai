@@ -45,7 +45,7 @@
                                                 name="student_orders[{{ $student->id }}]" 
                                                 value="{{ $student->student_order ?? $loop->iteration }}"
                                                 min="1"
-                                                class="..."
+                                                class="... text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-800"
                                                 required
                                             >
                                         </td>

@@ -48,7 +48,7 @@
                                 </select>
                                 <x-input-error :messages="$errors->get('role')" class="mt-2" />
                             </div>
-                            @if (in_array($user->role, ['STUDENT', 'TEACHER']))
+                            @if ($user->role === 'STUDENT')
                                 <div>
                                     <label for="class_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Class</label>
                                     <select name="class_id" id="class_id" 

@@ -80,5 +80,7 @@
             </div>
         </div>
     </div>
-    @include('partials.schedule-table')
+    <div class="pb-12 max-w-7xl mx-auto sm:px-6 lg:px-8 mt-8">
+        @include('partials.schedule-table')
+    </div>
 </x-app-layout>

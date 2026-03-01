@@ -12,8 +12,6 @@
                         <th class="px-4 py-2 border">Time</th>
                         <th class="px-4 py-2 border">Subject</th>
                         <th class="px-4 py-2 border">Teacher</th>
-                        <th class="px-4 py-2 border">Class</th>
-                        <th class="px-4 py-2 border">Semester</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -24,8 +22,6 @@
                                 <td class="px-4 py-2 border">{{ $activity->period->time_begin }} - {{ $activity->period->time_end }}</td>
                                 <td class="px-4 py-2 border">{{ $activity->subject->name }}</td>
                                 <td class="px-4 py-2 border">{{ $activity->teacher->name }}</td>
-                                <td class="px-4 py-2 border">{{ $activity->class->name }}</td>
-                                <td class="px-4 py-2 border">{{ $activity->period->semester->full_name }}</td>
                             </tr>
                         @endforeach
                     @endforeach

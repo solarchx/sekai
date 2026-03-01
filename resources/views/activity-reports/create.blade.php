@@ -14,22 +14,28 @@
                     <form method="POST" action="{{ route('activity-reports.store') }}">
                         @csrf
 
-                        <div class="mb-6">
-                            <label for="presence_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Presence</label>
-                            <select name="presence_id" id="presence_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('presence_id') is-invalid @enderror" required>
-                                <option value="">Select Presence</option>
-                                @foreach($presences as $presence)
-                                    <option value="{{ $presence->id }}" {{ old('presence_id') == $presence->id ? 'selected' : '' }}>{{ $presence->student->name }} - {{ $presence->form->activity_date }}</option>
-                                @endforeach
-                            </select>
-                            @error('presence_id')
-                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+                        <input type="hidden" name="presence_id" value="{{ $presenceId }}">
 
                         <div class="mb-6">
-                            <label for="score" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Score (0-100)</label>
-                            <input type="number" name="score" id="score" min="0" max="100" value="{{ old('score') }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('score') is-invalid @enderror" required>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Teacher Performance Score</label>
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <input type="radio" name="score" id="score_0" value="0" {{ old('score') == '0' ? 'checked' : '' }} class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" required>
+                                    <label for="score_0" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">0 - Absent</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="radio" name="score" id="score_1" value="1" {{ old('score') == '1' ? 'checked' : '' }} class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
+                                    <label for="score_1" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">1 - Mostly absent, did not teach</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="radio" name="score" id="score_2" value="2" {{ old('score') == '2' ? 'checked' : '' }} class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
+                                    <label for="score_2" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">2 - Mostly present, barely taught</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="radio" name="score" id="score_3" value="3" {{ old('score') == '3' ? 'checked' : '' }} class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
+                                    <label for="score_3" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">3 - Present, taught actively</label>
+                                </div>
+                            </div>
                             @error('score')
                                 <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                             @enderror

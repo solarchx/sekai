@@ -4,52 +4,57 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityReport;
 use App\Models\ActivityPresence;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ActivityReportController extends Controller
 {
-    
     public function index(Request $request)
     {
         if (auth()->user()->role !== 'ADMIN') {
             abort(403);
         }
-        
-        $query = ActivityReport::with('presence.form.activity.subject');
-        
-        $showDeleted = $request->has('show_deleted') && auth()->user()->role === 'ADMIN';
+
+        $teacherId = $request->query('teacher_id');
+        $teachers = User::where('role', '!=', 'STUDENT')->orderBy('name')->get();
+
+        $query = ActivityReport::with([
+            'presence.form.activity.subject',
+            'presence.form.activity.teacher',
+            'presence.form.activity.class'
+        ]);
+
+        if ($teacherId) {
+            $query->whereHas('presence.form.activity', function ($q) use ($teacherId) {
+                $q->where('teacher_id', $teacherId);
+            });
+        } else {
+            $query->whereRaw('1 = 0');
+        }
+
+        $showDeleted = $request->has('show_deleted');
         if ($showDeleted) {
             $query = $query->onlyTrashed();
         }
-        
+
         $reports = $query->paginate(100);
-        return view('activity-reports.index', compact('reports', 'showDeleted'));
+
+        return view('activity-reports.index', compact('reports', 'teachers', 'teacherId', 'showDeleted'));
     }
 
-    
-    public function create()
+    public function create(Request $request)
     {
         try {
-            
-            $presences = ActivityPresence::where('student_id', auth()->id())
-                ->with('student', 'form.activity.subject', 'form.activity.teacher')
-                ->where('deleted_at', null)
-                ->get();
-            
-            if ($presences->isEmpty()) {
-                return redirect()->route('dashboard')->withErrors('You have no activity presences to report on.');
-            }
-            
-            return view('activity-reports.create', compact('presences'));
+            $presenceId = $request->query('presence_id');
+            return view('activity-reports.create', compact('presenceId'));
         } catch (\Exception $e) {
             Log::error('Error loading report create form: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error loading form: ' . $e->getMessage());
         }
     }
 
-    
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -75,7 +80,6 @@ class ActivityReportController extends Controller
         return redirect()->route('dashboard')->with('success', 'Report submitted.');
     }
 
-    
     public function edit(ActivityReport $activityReport)
     {
         if ($activityReport->presence->student_id !== auth()->id()) {
@@ -84,7 +88,6 @@ class ActivityReportController extends Controller
         return view('activity-reports.edit', compact('activityReport'));
     }
 
-    
     public function update(Request $request, ActivityReport $activityReport)
     {
         if ($activityReport->presence->student_id !== auth()->id()) {
@@ -101,10 +104,8 @@ class ActivityReportController extends Controller
         return redirect()->route('dashboard')->with('success', 'Report updated.');
     }
 
-    
     public function destroy(ActivityReport $activityReport)
     {
-        
         if ($activityReport->presence->student_id !== auth()->id() && auth()->user()->role !== 'ADMIN') {
             abort(403);
         }
@@ -112,7 +113,6 @@ class ActivityReportController extends Controller
         return redirect()->back()->with('success', 'Report deleted.');
     }
 
-    
     public function restore(ActivityReport $activityReport)
     {
         try {

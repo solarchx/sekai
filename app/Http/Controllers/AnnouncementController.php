@@ -22,34 +22,31 @@ class AnnouncementController extends Controller
             
             $showDeleted = $request->has('show_deleted') && $user->role === 'ADMIN';
             if ($showDeleted) {
-                $query = $query->onlyTrashed();
+                $query->onlyTrashed();
             }
 
             if ($user->role === 'STUDENT') {
                 $query->where(function ($q) use ($user) {
+                    $q->where('scope', 'PUBLIC');
                     
-                    $q->where('scope', 'PUBLIC')
-                      
-                      ->orWhere(function ($sub) use ($user) {
-                          if ($user->class_id) {
-                              $sub->where('scope', 'SPECIFIC-CLASS')
-                                  ->whereHas('activity', function ($act) use ($user) {
-                                      $act->where('class_id', $user->class_id);
-                                  });
-                          }
-                      })
-                      
-                      ->orWhere(function ($sub) use ($user) {
-                          if ($user->class_id && $user->class->grade_id) {
-                              $sub->where('scope', 'SPECIFIC-GRADE')
-                                  ->where('grade_id', $user->class->grade_id);
-                          }
-                      });
+                    if ($user->class_id) {
+                        $q->orWhere(function ($sub) use ($user) {
+                            $sub->where('scope', 'SPECIFIC-CLASS')
+                                ->whereHas('activity', function ($act) use ($user) {
+                                    $act->where('class_id', $user->class_id);
+                                });
+                        });
+                    }
+                    
+                    if ($user->class_id && $user->class->grade_id) {
+                        $q->orWhere(function ($sub) use ($user) {
+                            $sub->where('scope', 'SPECIFIC-GRADE')
+                                ->where('grade_id', $user->class->grade_id);
+                        });
+                    }
                 });
             } else {
-                if (in_array($user->role, ['VP', 'ADMIN'])) {
-                    $announcements = Announcement::all();
-                } else {
+                if (!in_array($user->role, ['VP', 'ADMIN'])) {
                     $teacherClasses = Activity::where('teacher_id', $user->id)->pluck('class_id')->unique();
                     $homeroomedClass = $user->class_id ? [$user->class_id] : [];
                     $allClasses = $teacherClasses->merge($homeroomedClass)->unique();
@@ -63,46 +60,43 @@ class AnnouncementController extends Controller
 
                     $query->where(function ($q) use ($user, $allClasses, $allGrades) {
                         $q->where('scope', 'PUBLIC')
-                        ->orWhere('scope', 'TEACHERS')
-                        
-                        ->orWhere(function ($sub) use ($allClasses) {
-                            if ($allClasses->isNotEmpty()) {
-                                $sub->where('scope', 'SPECIFIC-CLASS')
-                                    ->whereHas('activity', function ($act) use ($allClasses) {
-                                        $act->whereIn('class_id', $allClasses);
-                                    });
-                            }
-                        })
-                        
-                        ->orWhere(function ($sub) use ($user) {
-                            $sub->where('scope', 'CLASS-TAUGHT')
-                                ->whereExists(function ($exist) use ($user) {
-                                    $exist->select(DB::raw(1))
-                                        ->from('activities')
-                                        ->whereColumn('activities.teacher_id', 'announcements.sender_id')
-                                        ->whereIn('activities.class_id', function ($q) use ($user) {
-                                            $q->select('class_id')
+                          ->orWhere('scope', 'TEACHERS')
+                          ->orWhere(function ($sub) use ($allClasses) {
+                              if ($allClasses->isNotEmpty()) {
+                                  $sub->where('scope', 'SPECIFIC-CLASS')
+                                      ->whereHas('activity', function ($act) use ($allClasses) {
+                                          $act->whereIn('class_id', $allClasses);
+                                      });
+                              }
+                          })
+                          ->orWhere(function ($sub) use ($user) {
+                              $sub->where('scope', 'CLASS-TAUGHT')
+                                  ->whereExists(function ($exist) use ($user) {
+                                      $exist->select(DB::raw(1))
+                                          ->from('activities')
+                                          ->whereColumn('activities.teacher_id', 'announcements.sender_id')
+                                          ->whereIn('activities.class_id', function ($q) use ($user) {
+                                              $q->select('class_id')
                                                 ->from('users')
                                                 ->where('users.id', $user->id)
                                                 ->whereNotNull('class_id');
-                                        });
-                                });
-                        })
-                        
-                        ->orWhere(function ($sub) use ($allGrades) {
-                            if ($allGrades->isNotEmpty()) {
-                                $sub->where('scope', 'SPECIFIC-GRADE')
-                                    ->whereIn('grade_id', $allGrades);
-                            }
-                        });
+                                          });
+                                  });
+                          })
+                          ->orWhere(function ($sub) use ($allGrades) {
+                              if ($allGrades->isNotEmpty()) {
+                                  $sub->where('scope', 'SPECIFIC-GRADE')
+                                      ->whereIn('grade_id', $allGrades);
+                              }
+                          });
                     });
                 }
-                
-                $announcements = $query->with('sender', 'activity', 'grade')
-                                    ->latest()
-                                    ->paginate(100);
             }
-            
+
+            $announcements = $query->with('sender', 'activity', 'grade')
+                                   ->latest()
+                                   ->paginate(100);
+
             return view('announcements.index', compact('announcements', 'showDeleted'));
         } catch (\Exception $e) {
             Log::error('Error loading announcements: ' . $e->getMessage());

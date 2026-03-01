@@ -187,13 +187,15 @@
                                                 {{ $activity->period->weekday_name }} {{ $activity->period->time_begin }}-{{ $activity->period->time_end }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                                <a href="{{ route('activities.show', $activity) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs inline-block">Details</a>
-                                                <a href="{{ route('activities.edit', $activity) }}" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1 rounded-lg text-xs inline-block">Edit</a>
-                                                <form action="{{ route('activities.destroy', $activity) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs">Delete</button>
-                                                </form>
+                                                @if (in_array(auth()->user()->role, ['VP', 'ADMIN']))
+                                                    <a href="{{ route('activities.show', $activity) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs inline-block">Details</a>
+                                                    <a href="{{ route('activities.edit', $activity) }}" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1 rounded-lg text-xs inline-block">Edit</a>
+                                                    <form action="{{ route('activities.destroy', $activity) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs">Delete</button>
+                                                    </form>
+                                                @endif
                                                 <a href="{{ route('score-distributions.index', $activity) }}" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-lg text-xs inline-block">Scores Dist</a>
                                                 <a href="{{ route('student-scores.index', $activity) }}" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded-lg text-xs inline-block">Student Scores</a>
                                             </td>

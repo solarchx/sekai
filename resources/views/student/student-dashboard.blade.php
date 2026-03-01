@@ -69,7 +69,7 @@
                                 <div class="ml-4">
                                     <h5 class="text-lg font-medium text-gray-900 dark:text-gray-100">Announcements</h5>
                                     <p class="text-gray-600 dark:text-gray-400">Latest school announcements</p>
-                                    <a href=""{{ route('announcements.index') }}""
+                                    <a href="{{ route('announcements.index') }}"
                                         class="mt-2 inline-block text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300">View
                                         Announcements →</a>
                                 </div>

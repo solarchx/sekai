@@ -96,7 +96,8 @@ class ActivityController extends Controller
                     $query->where('semester_id', $period->semester_id)
                         ->where(function ($q) use ($period) {
                             $q->where('time_end', '>', $period->time_begin)
-                              ->where('time_begin', '<', $period->time_end);
+                              ->where('time_begin', '<', $period->time_end)
+                              ->where('weekday', $period->weekday);
                         });
                 })
                 ->where('deleted_at', null)
@@ -106,13 +107,13 @@ class ActivityController extends Controller
                 return back()->withErrors(['teacher_id' => 'Teacher has overlapping activities on this time slot.'])->withInput();
             }
 
-            
             $classConflict = Activity::where('class_id', $validated['class_id'])
                 ->whereHas('period', function ($query) use ($period) {
                     $query->where('semester_id', $period->semester_id)
                         ->where(function ($q) use ($period) {
                             $q->where('time_end', '>', $period->time_begin)
-                              ->where('time_begin', '<', $period->time_end);
+                              ->where('time_begin', '<', $period->time_end)
+                              ->where('weekday', $period->weekday);
                         });
                 })
                 ->where('deleted_at', null)
@@ -234,7 +235,8 @@ class ActivityController extends Controller
                     $query->where('semester_id', $period->semester_id)
                         ->where(function ($q) use ($period) {
                             $q->where('time_end', '>', $period->time_begin)
-                              ->where('time_begin', '<', $period->time_end);
+                              ->where('time_begin', '<', $period->time_end)
+                              ->where('weekday', $period->weekday);
                         });
                 })
                 ->where('deleted_at', null)
@@ -251,7 +253,8 @@ class ActivityController extends Controller
                     $query->where('semester_id', $period->semester_id)
                         ->where(function ($q) use ($period) {
                             $q->where('time_end', '>', $period->time_begin)
-                              ->where('time_begin', '<', $period->time_end);
+                              ->where('time_begin', '<', $period->time_end)
+                              ->where('weekday', $period->weekday);
                         });
                 })
                 ->where('deleted_at', null)

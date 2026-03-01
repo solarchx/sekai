@@ -71,12 +71,6 @@
                     @if(auth()->user()->role !== 'STUDENT')
                         <div class="flex justify-between items-center mb-6">
                             <h4 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Students List</h4>
-                            <a href="{{ route('activity-presences.create', ['form_id' => $form->id]) }}" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
-                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                Record Presence
-                            </a>
                         </div>
                     @endif
 
@@ -116,8 +110,8 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                             @if(auth()->user()->role !== 'STUDENT')
                                                 @if($presence)
-                                                    <a href="{{ route('activity-presences.edit', $presence) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">Edit</a>
-                                                    <form action="{{ route('activity-presences.destroy', $presence) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?');">
+                                                    <a href="{{ route('activity-presences.edit', [$form, $presence]) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">Edit</a>
+                                                    <form action="{{ route('activity-presences.destroy', [$form, $presence]) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?');">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs transition-colors">Delete</button>

@@ -95,7 +95,7 @@
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                                     @if($presence)
-                                                        <a href="{{ route('activity-presences.edit', $presence) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs inline-block">Edit</a>
+                                                        <a href="{{ route('activity-presences.edit', ['activityForm' => $selectedForm, 'activityPresence' => $presence]) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs inline-block">Edit</a>
                                                     @else
                                                         <a href="{{ route('activity-presences.create', ['form_id' => $selectedForm->id, 'student_id' => $student->id]) }}" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-xs inline-block">Record</a>
                                                     @endif

@@ -54,7 +54,7 @@
                         </div>
 
                         <div class="flex justify-end gap-4">
-                            <a href="{{ route('activity-presences.index', ['form_id' => $form->id]) }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Cancel</a>
+                            <a href="{{ route('class.show') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Cancel</a>
                             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors" id="submitBtn">Create</button>
                         </div>
                     </form>

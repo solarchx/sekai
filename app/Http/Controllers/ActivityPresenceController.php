@@ -69,21 +69,24 @@ class ActivityPresenceController extends Controller
         }
     }
 
-    public function create(Request $request)
+    public function create(Request $request, ?ActivityForm $form = null)
     {
         try {
             $formId = $request->query('form_id');
             $studentId = $request->query('student_id');
 
-            if (!$formId || !$studentId) {
-                return redirect()->route('activity-presences.index')->withErrors('Form and student are required.');
+            if (!$form && $formId) {
+                $form = ActivityForm::with('activity.class')->findOrFail($formId);
             }
 
-            $form = ActivityForm::with('activity.class')->findOrFail($formId);
+            if (!$form || !$studentId) {
+                return redirect()->route('activity-forms.index')->withErrors('Form and student are required.');
+            }
+
             $student = User::findOrFail($studentId);
 
             if ($student->class_id != $form->activity->class_id) {
-                return redirect()->route('activity-presences.index')->withErrors('Student does not belong to this class.');
+                return redirect()->route('activity-forms.show', $form)->withErrors('Student does not belong to this class.');
             }
 
             return view('activity-presences.create', compact('form', 'student'));
@@ -93,7 +96,7 @@ class ActivityPresenceController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(Request $request, ?ActivityForm $activityForm = null)
     {
         try {
             $validated = $request->validate([
@@ -157,10 +160,14 @@ class ActivityPresenceController extends Controller
         }
     }
 
-    public function edit(ActivityPresence $activityPresence)
+    public function edit(ActivityForm $activityForm, ActivityPresence $activityPresence)
     {
         try {
-            $form = $activityPresence->form;
+            if ($activityPresence->form_id !== $activityForm->id) {
+                abort(404);
+            }
+
+            $form = $activityForm;
             $student = $activityPresence->student;
             return view('activity-presences.edit', compact('activityPresence', 'form', 'student'));
         } catch (\Exception $e) {
@@ -169,9 +176,13 @@ class ActivityPresenceController extends Controller
         }
     }
 
-    public function update(Request $request, ActivityPresence $activityPresence)
+    public function update(Request $request, ActivityForm $activityForm, ActivityPresence $activityPresence)
     {
         try {
+            if ($activityPresence->form_id !== $activityForm->id) {
+                abort(404);
+            }
+
             $validated = $request->validate([
                 'score'    => 'required|integer|between:0,3',
                 'location' => 'required|string|max:255',
@@ -181,7 +192,7 @@ class ActivityPresenceController extends Controller
             $activityPresence->update($validated);
             DB::commit();
 
-            return redirect()->route('activity-presences.index', ['form_id' => $activityPresence->form_id])
+            return redirect()->route('activity-presences.index', ['form_id' => $activityForm->id])
                 ->with('success', 'Presence record updated successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
@@ -192,15 +203,19 @@ class ActivityPresenceController extends Controller
         }
     }
 
-    public function destroy(ActivityPresence $activityPresence)
+    public function destroy(ActivityForm $activityForm, ActivityPresence $activityPresence)
     {
         try {
+            if ($activityPresence->form_id !== $activityForm->id) {
+                abort(404);
+            }
+
             DB::beginTransaction();
             $activityPresence->report()->delete();
             $activityPresence->delete();
             DB::commit();
 
-            return redirect()->route('activity-presences.index', ['form_id' => $activityPresence->form_id])
+            return redirect()->route('activity-presences.index', ['form_id' => $activityForm->id])
                 ->with('success', 'Presence record deleted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -209,14 +224,17 @@ class ActivityPresenceController extends Controller
         }
     }
 
-    public function restore(ActivityPresence $activityPresence)
+    public function restore(ActivityForm $activityForm, ActivityPresence $activityPresence)
     {
         try {
             if (auth()->user()->role !== 'ADMIN') {
                 return redirect()->back()->withErrors('Unauthorized action.');
             }
+            if ($activityPresence->form_id !== $activityForm->id) {
+                abort(404);
+            }
             $activityPresence->restore();
-            return redirect()->route('activity-presences.index', ['form_id' => $activityPresence->form_id])
+            return redirect()->route('activity-presences.index', ['form_id' => $activityForm->id])
                 ->with('success', 'Presence restored successfully.');
         } catch (\Exception $e) {
             Log::error('Error restoring presence: ' . $e->getMessage());

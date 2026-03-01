@@ -60,7 +60,7 @@
                         </table>
                     </div>
                     <div class="mt-6">
-                        <a href="{{ route('activities.show', $activity) }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
+                        <a href="{{ route('class.show') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
                             Back to Activity
                         </a>
                     </div>

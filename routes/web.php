@@ -63,8 +63,11 @@ Route::middleware(['auth', 'vp'])->group(function () {
 Route::middleware(['auth', 'teacher'])->group(function () {
     Route::resource('activity-forms', ActivityFormController::class);
     Route::post('/activity-forms/{activityForm}/restore', [ActivityFormController::class, 'restore'])->name('activity-forms.restore');
-    Route::resource('activity-presences', ActivityPresenceController::class);
-    Route::post('/activity-presences/{activityPresence}/restore', [ActivityPresenceController::class, 'restore'])->name('activity-presences.restore');
+    Route::get('/activity-presences', [ActivityPresenceController::class, 'index'])->name('activity-presences.index');
+    Route::get('/activity-forms/{activityForm}/presences/{activityPresence}/edit', [ActivityPresenceController::class, 'edit'])->name('activity-presences.edit');
+    Route::put('/activity-forms/{activityForm}/presences/{activityPresence}', [ActivityPresenceController::class, 'update'])->name('activity-presences.update');
+    Route::delete('/activity-forms/{activityForm}/presences/{activityPresence}', [ActivityPresenceController::class, 'destroy'])->name('activity-presences.destroy');
+    Route::post('/activity-forms/{activityForm}/presences/{activityPresence}/restore', [ActivityPresenceController::class, 'restore'])->name('activity-presences.restore');
     Route::get('/activities/{activity}/score-distributions', [ScoreDistributionController::class, 'index'])->name('score-distributions.index');
     Route::get('/activities/{activity}/score-distributions/create', [ScoreDistributionController::class, 'create'])->name('score-distributions.create');
     Route::post('/activities/{activity}/score-distributions', [ScoreDistributionController::class, 'store'])->name('score-distributions.store');
@@ -84,6 +87,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/activity-reports/{activityReport}/restore', [ActivityReportController::class, 'restore'])->name('activity-reports.restore');
     Route::resource('announcements', AnnouncementController::class);
     Route::post('/announcements/{announcement}/restore', [AnnouncementController::class, 'restore'])->name('announcements.restore');
+    Route::get('/activity-presences/create', [ActivityPresenceController::class, 'create'])->name('activity-presences.create');
+    Route::post('/activity-presences', [ActivityPresenceController::class, 'store'])->name('activity-presences.store');
 });
 
 Route::get('/my-class', [SchoolClassController::class, 'show'])->middleware('auth')->name('class.show');

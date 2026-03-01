@@ -17,12 +17,10 @@ class StudentScoreController extends Controller
         try {
             $students = $activity->class->students()
                 ->where('role', 'STUDENT')
-                ->where('deleted_at', null)
                 ->orderBy('student_order')
                 ->get(['id', 'name', 'identifier']);
 
             $distributions = ScoreDistribution::where('activity_id', $activity->id)
-                ->where('deleted_at', null)
                 ->get();
 
             $scores = StudentScore::where('activity_id', $activity->id)
@@ -47,7 +45,6 @@ class StudentScoreController extends Controller
             }
 
             $distributions = ScoreDistribution::where('activity_id', $activity->id)
-                ->where('deleted_at', null)
                 ->get();
 
             $existingScores = StudentScore::where('activity_id', $activity->id)

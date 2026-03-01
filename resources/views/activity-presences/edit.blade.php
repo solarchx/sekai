@@ -11,7 +11,7 @@
                 <div class="p-6">
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Edit Presence Record</h3>
                     
-                    <form method="POST" action="{{ route('activity-presences.update', $activityPresence) }}" id="presenceForm">
+                    <form method="POST" action="{{ route('activity-presences.update', ['activityForm' => $form, 'activityPresence' => $activityPresence]) }}" id="presenceForm">
                         @csrf
                         @method('PUT')
 

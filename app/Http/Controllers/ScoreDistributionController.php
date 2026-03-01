@@ -45,7 +45,7 @@ class ScoreDistributionController extends Controller
 
             $totalWeight = array_sum(array_column($validated['distributions'], 'weight'));
             if ($totalWeight !== 100) {
-                return back()->withErrors(['distributions' => "Total weight must equal 100. Current total: {$totalWeight}"])->withInput();
+                return back()->withErrors(['distributions' => "Total weight must equal 100. Current total: {$totalWeight}."])->withInput();
             }
 
             DB::beginTransaction();

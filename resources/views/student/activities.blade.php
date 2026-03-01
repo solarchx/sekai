@@ -108,7 +108,7 @@
                                                                     <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs">Delete Report</button>
                                                                 </form>
                                                             @else
-                                                                <span class="text-gray-500">No report yet</span>
+                                                                <a href="{{ route('activity-reports.create', ['presence_id' => $presence->id]) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs">Create Report</a>
                                                             @endif
                                                         @else
                                                             @if($canSubmit)

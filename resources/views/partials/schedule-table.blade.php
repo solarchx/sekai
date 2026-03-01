@@ -12,8 +12,6 @@
                         <th class="px-4 py-2 border">Time</th>
                         <th class="px-4 py-2 border">Subject</th>
                         <th class="px-4 py-2 border">Teacher</th>
-                        <th class="px-4 py-2 border">Class</th>
-                        <th class="px-4 py-2 border">Semester</th>
                     </tr>
                 </thead>
                 <tbody>

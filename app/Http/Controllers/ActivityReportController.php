@@ -14,7 +14,7 @@ class ActivityReportController extends Controller
     public function index(Request $request)
     {
         if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {
-            abort(403);
+            return redirect()->route('wrongway');
         }
 
         $teacherId = $request->query('teacher_id');
@@ -82,16 +82,16 @@ class ActivityReportController extends Controller
 
     public function edit(ActivityReport $activityReport)
     {
-        if ($activityReport->presence->student_id !== auth()->id()) {
-            abort(403);
+        if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {
+            return redirect()->route('wrongway');
         }
         return view('activity-reports.edit', compact('activityReport'));
     }
 
     public function update(Request $request, ActivityReport $activityReport)
     {
-        if ($activityReport->presence->student_id !== auth()->id()) {
-            abort(403);
+        if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {
+            return redirect()->route('wrongway');
         }
 
         $validated = $request->validate([
@@ -106,8 +106,8 @@ class ActivityReportController extends Controller
 
     public function destroy(ActivityReport $activityReport)
     {
-        if ($activityReport->presence->student_id !== auth()->id() && auth()->user()->role !== 'ADMIN') {
-            abort(403);
+        if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {
+            return redirect()->route('wrongway');
         }
         $activityReport->delete();
         return redirect()->back()->with('success', 'Report deleted.');

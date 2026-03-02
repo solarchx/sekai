@@ -46,13 +46,13 @@
                                 </svg>
                                 Edit Activity
                             </a>
-                            <a href="{{ route('score-distributions.index', ['activity_id' => $activity->id]) }}" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors inline-flex items-center">
+                            <a href="{{ route('score-distributions.index', $activity->id) }}" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors inline-flex items-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
                                 Score Distribution
                             </a>
-                            <a href="{{ route('student-scores.index', ['activity_id' => $activity->id]) }}" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors inline-flex items-center">
+                            <a href="{{ route('student-scores.index', $activity->id) }}" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors inline-flex items-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
                                 </svg>

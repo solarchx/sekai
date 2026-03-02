@@ -91,7 +91,7 @@
                                                                 $statusLabels = [0 => 'Absent', 1 => 'Permitted Leave', 2 => 'Sick Leave', 3 => 'Present'];
                                                                 $statusColors = [0 => 'red', 1 => 'yellow', 2 => 'orange', 3 => 'green'];
                                                             @endphp
-                                                            <span class="bg-{{ $statusColors[$presence->score] }}-100 dark:bg-{{ $statusColors[$presence->score] }}-900 text-{{ $statusColors[$presence->score] }}-800 dark:text-{{ $statusColors[$presence->score] }}-100 px-3 py-1 rounded-full text-xs font-semibold">
+                                                            <span class="bg-{{ $statusColors[$presence->score] }}-100 dark:bg-{{ $statusColors[$presence->score] }}-900 text-{{ $statusColors[$presence->score] }}-800 dark:text-{{ $statusColors[$presence->score] }}-200 px-3 py-1 rounded-full text-xs font-semibold">
                                                                 {{ $statusLabels[$presence->score] }}
                                                             </span>
                                                         @else

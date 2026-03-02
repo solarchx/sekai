@@ -82,7 +82,7 @@ class ActivityReportController extends Controller
 
     public function edit(ActivityReport $activityReport)
     {
-        if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {
+        if (!in_array(auth()->user()->role, ['VP', 'ADMIN', 'STUDENT'])) {
             return redirect()->route('wrongway');
         }
         return view('activity-reports.edit', compact('activityReport'));
@@ -90,7 +90,7 @@ class ActivityReportController extends Controller
 
     public function update(Request $request, ActivityReport $activityReport)
     {
-        if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {
+        if (!in_array(auth()->user()->role, ['VP', 'ADMIN', 'STUDENT'])) {
             return redirect()->route('wrongway');
         }
 
@@ -106,7 +106,7 @@ class ActivityReportController extends Controller
 
     public function destroy(ActivityReport $activityReport)
     {
-        if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {
+        if (!in_array(auth()->user()->role, ['VP', 'ADMIN', 'STUDENT'])) {
             return redirect()->route('wrongway');
         }
         $activityReport->delete();

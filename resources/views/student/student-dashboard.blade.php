@@ -7,7 +7,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 shadow-xl sm:rounded-lg">
+            <div class="bg-white dark:bg-gray-800 shadow-xl sm:rounded-lg overflow-hidden">
                 <div class="p-6" style="background: linear-gradient(to right, #06b6d4, #0891b2); color: white;">
                     <h3 class="text-2xl font-bold">{{ __("Welcome, " . auth()->user()->name . "!") }}</h3>
                     <p class="mt-2">{{ __("Track your academic progress and stay updated") }}</p>

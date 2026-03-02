@@ -21,6 +21,11 @@
                     <x-nav-link :href="route('announcements.index')" :active="request()->routeIs('announcements.*')">
                         {{ __('Announcements') }}
                     </x-nav-link>
+                    @if(in_array(auth()->user()->role, ['STUDENT']))
+                        <x-nav-link :href="route('student.activities')" :active="request()->routeIs('student.activities')">
+                            {{ __('My Activities') }}
+                        </x-nav-link>
+                    @endif
 
                     @php $user = auth()->user(); @endphp
 
@@ -120,6 +125,11 @@
             <x-responsive-nav-link :href="route('announcements.index')" :active="request()->routeIs('announcements.*')">
                 {{ __('Announcements') }}
             </x-responsive-nav-link>
+            @if(in_array(auth()->user()->role, ['STUDENT']))
+                <x-responsive-nav-link :href="route('student.activities')" :active="request()->routeIs('student.activities')">
+                    {{ __('My Activities') }}
+                </x-responsive-nav-link>
+            @endif
 
             @php $user = auth()->user(); @endphp
 

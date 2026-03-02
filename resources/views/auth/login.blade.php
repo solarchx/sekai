@@ -58,13 +58,13 @@
                         {{ __('Sign In') }}
                     </x-primary-button>
 
-                    @if (Route::has('password.request'))
+                    {{-- @if (Route::has('password.request'))
                         <div class="text-center">
                             <a class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium transition" href="{{ route('password.request') }}">
                                 {{ __('Forgot your password?') }}
                             </a>
                         </div>
-                    @endif
+                    @endif --}}
                 </div>
 
                 

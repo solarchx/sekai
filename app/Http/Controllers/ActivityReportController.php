@@ -13,7 +13,7 @@ class ActivityReportController extends Controller
 {
     public function index(Request $request)
     {
-        if (auth()->user()->role !== 'ADMIN') {
+        if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {
             abort(403);
         }
 

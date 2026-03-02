@@ -30,7 +30,7 @@ Route::middleware('auth')->group(function () {
 });
 
 
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'admin', 'vp'])->group(function () {
     Route::resource('users', UserController::class);
     Route::post('/users/{user}/restore', [UserController::class, 'restore'])->name('users.restore');
     
@@ -51,13 +51,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     
     Route::resource('periods', LessonPeriodController::class);
     Route::post('/periods/{period}/restore', [LessonPeriodController::class, 'restore'])->name('periods.restore');
-});
 
-
-Route::middleware(['auth', 'vp'])->group(function () {
     Route::resource('activities', ActivityController::class);
     Route::post('/activities/{activity}/restore', [ActivityController::class, 'restore'])->name('activities.restore');
 });
+
+    
 
 
 Route::middleware(['auth', 'teacher'])->group(function () {

@@ -17,7 +17,7 @@ class ActivityController extends Controller
     public function index(Request $request)
     {
         try {
-            $showDeleted = $request->has('show_deleted') && auth()->user()->role === 'ADMIN';
+            $showDeleted = $request->has('show_deleted') && in_array(auth()->user()->role, ['ADMIN', 'VP']);
             
             $query = Activity::with('subject', 'teacher', 'period', 'class');
             

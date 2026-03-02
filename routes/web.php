@@ -30,7 +30,7 @@ Route::middleware('auth')->group(function () {
 });
 
 
-Route::middleware(['auth', 'admin', 'vp'])->group(function () {
+Route::middleware(['auth', 'vp'])->group(function () {
     Route::resource('users', UserController::class);
     Route::post('/users/{user}/restore', [UserController::class, 'restore'])->name('users.restore');
     

@@ -214,8 +214,8 @@ class LessonPeriodController extends Controller
     
     public function restore(LessonPeriod $period)
     {
-        if (auth()->user()->role !== 'ADMIN') {
-            abort(403);
+        if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {
+            return redirect()->route('wrongway');
         }
 
         DB::transaction(function () use ($period) {

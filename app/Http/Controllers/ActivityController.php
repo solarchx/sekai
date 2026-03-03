@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Activity;
 use App\Models\Subject;
 use App\Models\User;
+use App\Models\Major;
 use App\Models\LessonPeriod;
 use App\Models\SchoolClass;
 use App\Models\ActivityStudent;
+use App\Models\SubjectAvailability;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -15,39 +17,48 @@ use Illuminate\Support\Facades\Log;
 class ActivityController extends Controller
 {
     public function index(Request $request)
-    {
-        try {
-            $showDeleted = $request->has('show_deleted') && in_array(auth()->user()->role, ['ADMIN', 'VP']);
-            
-            $query = Activity::with('subject', 'teacher', 'period', 'class');
-            
-            if ($showDeleted) {
-                $activities = $query->onlyTrashed()->paginate(100);
-            } else {
-                $activities = $query->paginate(100);
-            }
-            
-            return view('activities.index', compact('activities', 'showDeleted'));
-        } catch (\Exception $e) {
-            Log::error('Error loading activities: ' . $e->getMessage());
-            return redirect()->back()->withErrors('Error loading activities: ' . $e->getMessage());
+{
+    try {
+        $user = auth()->user();
+        $showDeleted = $request->has('show_deleted') && in_array($user->role, ['ADMIN', 'VP']);
+        
+        $query = Activity::with('subject', 'teacher', 'period', 'class');
+
+        $majorId = $request->query('major_id');
+        if ($majorId) {
+            $query->whereHas('class', function ($q) use ($majorId) {
+                $q->where('major_id', $majorId);
+            });
         }
+
+        if ($showDeleted) {
+            $activities = $query->onlyTrashed()->paginate(100);
+        } else {
+            $activities = $query->paginate(100);
+        }
+
+        $majors = Major::orderBy('name')->get();
+
+        return view('activities.index', compact('activities', 'showDeleted', 'majors', 'majorId'));
+    } catch (\Exception $e) {
+        Log::error('Error loading activities: ' . $e->getMessage());
+        return redirect()->back()->withErrors('Error loading activities: ' . $e->getMessage());
     }
+}
 
     public function create()
     {
         try {
             $subjects = Subject::all();
             $teachers = User::where('role', '!=', 'STUDENT')->get();
-            $periods = LessonPeriod::with('semester')->get(); 
+            $periods = LessonPeriod::with('semester', 'major', 'grade')->get(); 
             $classes = SchoolClass::with('major', 'grade')->get();
 
-            
             $classSubjects = [];
             foreach ($classes as $class) {
-                $subjectIds = Subject::whereHas('majors', fn($q) => $q->where('id', $class->major_id))
-                    ->whereHas('grades', fn($q) => $q->where('id', $class->grade_id))
-                    ->pluck('id')
+                $subjectIds = SubjectAvailability::where('major_id', $class->major_id)
+                    ->where('grade_id', $class->grade_id)
+                    ->pluck('subject_id')
                     ->toArray();
                 $classSubjects[$class->id] = $subjectIds;
             }
@@ -85,19 +96,17 @@ class ActivityController extends Controller
             $period = LessonPeriod::find($validated['period_id']);
             $teacher = User::find($validated['teacher_id']);
 
-            
             if (!in_array($teacher->role, ['TEACHER', 'VP', 'ADMIN'])) {
                 return back()->withErrors(['teacher_id' => 'Selected user must be a teacher, VP, or admin.'])->withInput();
             }
 
-            
             $teacherConflict = Activity::where('teacher_id', $validated['teacher_id'])
                 ->whereHas('period', function ($query) use ($period) {
                     $query->where('semester_id', $period->semester_id)
+                        ->where('weekday', $period->weekday)
                         ->where(function ($q) use ($period) {
                             $q->where('time_end', '>', $period->time_begin)
-                              ->where('time_begin', '<', $period->time_end)
-                              ->where('weekday', $period->weekday);
+                              ->where('time_begin', '<', $period->time_end);
                         });
                 })
                 ->where('deleted_at', null)
@@ -110,10 +119,10 @@ class ActivityController extends Controller
             $classConflict = Activity::where('class_id', $validated['class_id'])
                 ->whereHas('period', function ($query) use ($period) {
                     $query->where('semester_id', $period->semester_id)
+                        ->where('weekday', $period->weekday)
                         ->where(function ($q) use ($period) {
                             $q->where('time_end', '>', $period->time_begin)
-                              ->where('time_begin', '<', $period->time_end)
-                              ->where('weekday', $period->weekday);
+                              ->where('time_begin', '<', $period->time_end);
                         });
                 })
                 ->where('deleted_at', null)
@@ -123,7 +132,6 @@ class ActivityController extends Controller
                 return back()->withErrors(['class_id' => 'Class has overlapping activities on this time slot.'])->withInput();
             }
 
-            
             $duplicate = Activity::where('subject_id', $validated['subject_id'])
                 ->where('teacher_id', $validated['teacher_id'])
                 ->where('period_id', $validated['period_id'])
@@ -139,7 +147,6 @@ class ActivityController extends Controller
 
             $activity = Activity::create($validated);
 
-            
             $students = SchoolClass::find($validated['class_id'])
                 ->students()
                 ->where('role', 'STUDENT')
@@ -182,14 +189,14 @@ class ActivityController extends Controller
         try {
             $subjects = Subject::all();
             $teachers = User::where('role', '!=', 'STUDENT')->get();
-            $periods = LessonPeriod::with('semester')->get();
+            $periods = LessonPeriod::with('semester', 'major', 'grade')->get();
             $classes = SchoolClass::with('major', 'grade')->get();
 
             $classSubjects = [];
             foreach ($classes as $class) {
-                $subjectIds = Subject::whereHas('majors', fn($q) => $q->where('id', $class->major_id))
-                    ->whereHas('grades', fn($q) => $q->where('id', $class->grade_id))
-                    ->pluck('id')
+                $subjectIds = SubjectAvailability::where('major_id', $class->major_id)
+                    ->where('grade_id', $class->grade_id)
+                    ->pluck('subject_id')
                     ->toArray();
                 $classSubjects[$class->id] = $subjectIds;
             }
@@ -223,20 +230,18 @@ class ActivityController extends Controller
             $period = LessonPeriod::find($validated['period_id']);
             $teacher = User::find($validated['teacher_id']);
 
-            
             if (!in_array($teacher->role, ['TEACHER', 'VP', 'ADMIN'])) {
                 return back()->withErrors(['teacher_id' => 'Selected user must be a teacher, VP, or admin.'])->withInput();
             }
 
-            
             $teacherConflict = Activity::where('teacher_id', $validated['teacher_id'])
                 ->where('id', '!=', $activity->id)
                 ->whereHas('period', function ($query) use ($period) {
                     $query->where('semester_id', $period->semester_id)
+                        ->where('weekday', $period->weekday)
                         ->where(function ($q) use ($period) {
                             $q->where('time_end', '>', $period->time_begin)
-                              ->where('time_begin', '<', $period->time_end)
-                              ->where('weekday', $period->weekday);
+                              ->where('time_begin', '<', $period->time_end);
                         });
                 })
                 ->where('deleted_at', null)
@@ -246,15 +251,14 @@ class ActivityController extends Controller
                 return back()->withErrors(['teacher_id' => 'Teacher has overlapping activities on this time slot.'])->withInput();
             }
 
-            
             $classConflict = Activity::where('class_id', $validated['class_id'])
                 ->where('id', '!=', $activity->id)
                 ->whereHas('period', function ($query) use ($period) {
                     $query->where('semester_id', $period->semester_id)
+                        ->where('weekday', $period->weekday)
                         ->where(function ($q) use ($period) {
                             $q->where('time_end', '>', $period->time_begin)
-                              ->where('time_begin', '<', $period->time_end)
-                              ->where('weekday', $period->weekday);
+                              ->where('time_begin', '<', $period->time_end);
                         });
                 })
                 ->where('deleted_at', null)
@@ -269,7 +273,6 @@ class ActivityController extends Controller
             $classChanged = $activity->class_id !== $validated['class_id'];
             $activity->update($validated);
 
-            
             if ($classChanged) {
                 $activity->students()->detach();
                 
@@ -299,20 +302,15 @@ class ActivityController extends Controller
     public function destroy(Activity $activity)
     {
         DB::transaction(function () use ($activity) {
-            
             ActivityStudent::where('activity_id', $activity->id)->delete();
-
-            
             $activity->forms()->delete();
             $activity->presences()->delete();
-
             $activity->delete();
         });
 
         return redirect()->route('activities.index')->with('success', 'Activity deleted.');
     }
 
-    
     public function restore(Activity $activity)
     {
         if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {

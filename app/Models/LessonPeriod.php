@@ -17,6 +17,8 @@ class LessonPeriod extends Model
         'time_begin',
         'time_end',
         'semester_id',
+        'major_id',
+        'grade_id',
         'parent_id',
     ];
 
@@ -25,18 +27,28 @@ class LessonPeriod extends Model
     ];
 
     const WEEKDAYS = [
-        0 => 'Monday',
-        1 => 'Tuesday',
-        2 => 'Wednesday',
-        3 => 'Thursday',
-        4 => 'Friday',
-        5 => 'Saturday',
-        6 => 'Sunday',
+        0 => 'Sunday',
+        1 => 'Monday',
+        2 => 'Tuesday',
+        3 => 'Wednesday',
+        4 => 'Thursday',
+        5 => 'Friday',
+        6 => 'Saturday',
     ];
 
     public function semester()
     {
         return $this->belongsTo(AcademicSemester::class, 'semester_id');
+    }
+
+    public function major()
+    {
+        return $this->belongsTo(Major::class, 'major_id');
+    }
+
+    public function grade()
+    {
+        return $this->belongsTo(Grade::class, 'grade_id');
     }
 
     public function activities()
@@ -58,10 +70,13 @@ class LessonPeriod extends Model
     {
         return self::WEEKDAYS[$this->weekday] ?? 'Unknown';
     }
-    
+
     public function overlapsWithPeriod(LessonPeriod $otherPeriod): bool
     {
-        if ($this->weekday != $otherPeriod->weekday || $this->semester_id != $otherPeriod->semester_id) {
+        if ($this->weekday != $otherPeriod->weekday ||
+            $this->semester_id != $otherPeriod->semester_id ||
+            $this->major_id != $otherPeriod->major_id ||
+            $this->grade_id != $otherPeriod->grade_id) {
             return false;
         }
 

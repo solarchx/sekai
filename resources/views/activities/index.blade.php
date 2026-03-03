@@ -16,7 +16,35 @@
                 </div>
 
                 <div class="p-6">
+                    {{-- Soft delete filter --}}
                     <x-soft-delete-filter />
+
+                    {{-- Major filter --}}
+                    <form method="GET" action="{{ route('activities.index') }}" class="mb-6">
+                        <div class="flex items-end gap-4">
+                            <div class="flex-1">
+                                <label for="major_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    {{ __('Filter by Major') }}
+                                </label>
+                                <select name="major_id" id="major_id"
+                                    class="block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                    onchange="this.form.submit()">
+                                    <option value="">-- {{ __('All Majors') }} --</option>
+                                    @foreach($majors as $major)
+                                        <option value="{{ $major->id }}" {{ $majorId == $major->id ? 'selected' : '' }}>
+                                            {{ $major->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @if($majorId)
+                                <a href="{{ route('activities.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
+                                    {{ __('Clear Filter') }}
+                                </a>
+                            @endif
+                        </div>
+                    </form>
+
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-xl font-semibold text-gray-900 dark:text-gray-100">{{ __('Activities List') }}
                             ({{ $activities->total() }})</h4>
@@ -31,105 +59,65 @@
                             </a>
                         @endif
                     </div>
+
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-white dark:bg-gray-800">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        ID</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        {{ __('Subject') }}
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        {{ __('Teacher') }}
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        {{ __('Class') }}
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        {{ __('Period') }}
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Status</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Actions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ __('Subject') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ __('Teacher') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ __('Class') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ __('Period') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 @forelse($activities as $activity)
-                                    <tr
-                                        class="hover:bg-gray-50 dark:hover:bg-gray-700 {{ $activity->deleted_at ? 'bg-red-50 dark:bg-red-900' : '' }}">
-                                        <td
-                                            class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                            {{ $activity->id }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $activity->subject->name ?? __('N/A') }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $activity->teacher->name ?? __('N/A') }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $activity->class->name ?? __('N/A') }}
-                                        </td>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 {{ $activity->deleted_at ? 'bg-red-50 dark:bg-red-900' : '' }}">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{{ $activity->id }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $activity->subject->name ?? __('N/A') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $activity->teacher->name ?? __('N/A') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $activity->class->name ?? __('N/A') }}</td>
                                         @if ($activity->period)
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                                 {{ $activity->period->weekday_name }} {{ $activity->period->time_begin }} -
                                                 {{ $activity->period->time_end }}
                                             </td>
                                         @else
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-red-900 dark:text-red-100">
-                                                {{ __('PERIOD UNAVAILABLE') }}
-                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-red-900 dark:text-red-100">{{ __('PERIOD UNAVAILABLE') }}</td>
                                         @endif
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if($activity->deleted_at)
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">{{ __('DELETED') }}</span>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">{{ __('DELETED') }}</span>
                                             @else
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{ __('ACTIVE') }}</span>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{ __('ACTIVE') }}</span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                             @if($activity->deleted_at)
-                                                <form action="{{ route('activities.restore', $activity) }}" method="POST"
-                                                    class="inline">
+                                                <form action="{{ route('activities.restore', $activity) }}" method="POST" class="inline">
                                                     @csrf
-                                                    <button type="submit"
-                                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
-                                                        title="{{ __('Restore') }}">
+                                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors" title="{{ __('Restore') }}">
                                                         <i class="bi bi-arrow-counterclockwise"></i> {{ __('Restore') }}
                                                     </button>
                                                 </form>
                                             @else
-                                                <button
-                                                    onclick="window.location.href='{{ route('score-distributions.index', $activity) }}'"
+                                                <button onclick="window.location.href='{{ route('score-distributions.index', $activity) }}'"
                                                     class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
                                                     title="Manage Score Distributions">Score Dist.</button>
-                                                <button
-                                                    onclick="window.location.href='{{ route('student-scores.index', $activity) }}'"
+                                                <button onclick="window.location.href='{{ route('student-scores.index', $activity) }}'"
                                                     class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
                                                     title="Manage Student Scores">Student Scores</button>
-                                                <button
-                                                    onclick="window.location.href='{{ route('activities.edit', $activity) }}'"
+                                                <button onclick="window.location.href='{{ route('activities.edit', $activity) }}'"
                                                     class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
                                                     title="Edit">Edit</button>
-                                                <form action="{{ route('activities.destroy', $activity) }}" method="POST"
-                                                    class="inline">
+                                                <form action="{{ route('activities.destroy', $activity) }}" method="POST" class="inline">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit"
-                                                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
-                                                        title="Delete"
-                                                        onclick="return confirm('{{ __('Are you sure?') }}')">{{ __('Delete') }}</button>
+                                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
+                                                        title="Delete" onclick="return confirm('{{ __('Are you sure?') }}')">{{ __('Delete') }}</button>
                                                 </form>
                                             @endif
                                         </td>
@@ -144,7 +132,6 @@
                             </tbody>
                         </table>
                     </div>
-
 
                     <div class="mt-6 flex justify-between items-center">
                         <div class="text-sm text-gray-600 dark:text-gray-400">

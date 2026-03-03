@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Subject;
+use App\Models\SubjectAvailability;
 use App\Models\Grade;
 use App\Models\Major;
 use Illuminate\Http\Request;
@@ -43,10 +44,9 @@ class SubjectController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:subjects,name',
-                'majors' => 'nullable|array',
-                'majors.*' => 'exists:majors,id',
-                'grades' => 'nullable|array',
-                'grades.*' => 'exists:grades,id',
+                'combinations' => 'nullable|array',
+                'combinations.*.major_id' => 'required|exists:majors,id',
+                'combinations.*.grade_id' => 'required|exists:grades,id',
             ], [
                 'name.required' => 'Subject name is required.',
                 'name.unique' => 'This subject name already exists.',
@@ -56,12 +56,14 @@ class SubjectController extends Controller
 
             $subject = Subject::create(['name' => $validated['name']]);
 
-            
-            if (!empty($validated['majors'])) {
-                $subject->majors()->sync($validated['majors']);
-            }
-            if (!empty($validated['grades'])) {
-                $subject->grades()->sync($validated['grades']);
+            if (!empty($validated['combinations'])) {
+                foreach ($validated['combinations'] as $combo) {
+                    SubjectAvailability::create([
+                        'subject_id' => $subject->id,
+                        'major_id' => $combo['major_id'],
+                        'grade_id' => $combo['grade_id'],
+                    ]);
+                }
             }
 
             DB::commit();
@@ -81,8 +83,12 @@ class SubjectController extends Controller
         $majors = Major::all();
         $grades = Grade::all();
         
-        $subject->load('majors', 'grades');
-        return view('subjects.edit', compact('subject', 'majors', 'grades'));
+        $existingCombinations = $subject->availabilities()
+            ->get(['major_id', 'grade_id'])
+            ->map(fn($item) => ['major_id' => $item->major_id, 'grade_id' => $item->grade_id])
+            ->toArray();
+
+        return view('subjects.edit', compact('subject', 'majors', 'grades', 'existingCombinations'));
     }
 
     public function update(Request $request, Subject $subject)
@@ -90,10 +96,9 @@ class SubjectController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:subjects,name,' . $subject->id,
-                'majors' => 'nullable|array',
-                'majors.*' => 'exists:majors,id',
-                'grades' => 'nullable|array',
-                'grades.*' => 'exists:grades,id',
+                'combinations' => 'nullable|array',
+                'combinations.*.major_id' => 'required|exists:majors,id',
+                'combinations.*.grade_id' => 'required|exists:grades,id',
             ], [
                 'name.required' => 'Subject name is required.',
                 'name.unique' => 'This subject name already exists.',
@@ -103,9 +108,17 @@ class SubjectController extends Controller
 
             $subject->update(['name' => $validated['name']]);
 
-            
-            $subject->majors()->sync($validated['majors'] ?? []);
-            $subject->grades()->sync($validated['grades'] ?? []);
+            $subject->availabilities()->delete();
+
+            if (!empty($validated['combinations'])) {
+                foreach ($validated['combinations'] as $combo) {
+                    SubjectAvailability::create([
+                        'subject_id' => $subject->id,
+                        'major_id' => $combo['major_id'],
+                        'grade_id' => $combo['grade_id'],
+                    ]);
+                }
+            }
 
             DB::commit();
 
@@ -123,9 +136,7 @@ class SubjectController extends Controller
     {
         try {
             DB::beginTransaction();
-
             $subject->delete();
-
             DB::commit();
 
             return redirect()->route('subjects.index')->with('success', 'Subject deleted successfully.');

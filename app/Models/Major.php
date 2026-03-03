@@ -21,10 +21,25 @@ class Major extends Model
         return $this->hasMany(SchoolClass::class, 'major_id');
     }
 
+    public function subjectAvailabilities()
+    {
+        return $this->hasMany(SubjectAvailability::class, 'major_id');
+    }
+
     public function subjects()
     {
-        return $this->belongsToMany(Subject::class, 'majors_subjects')
-                    ->withTimestamps()
-                    ->withPivot('deleted_at');
+        return $this->belongsToMany(Subject::class, 'subject_availabilities', 'major_id', 'subject_id')
+                    ->withPivot('grade_id')
+                    ->withTimestamps();
+    }
+
+    public function subjectsForGrade($gradeId)
+    {
+        return $this->subjects()->wherePivot('grade_id', $gradeId);
+    }
+
+    public function lessonPeriods()
+    {
+        return $this->hasMany(LessonPeriod::class, 'major_id');
     }
 }

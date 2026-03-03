@@ -16,18 +16,23 @@ class Subject extends Model
         'name',
     ];
 
+    public function availabilities()
+    {
+        return $this->hasMany(SubjectAvailability::class, 'subject_id');
+    }
+
     public function majors()
     {
-        return $this->belongsToMany(Major::class, 'majors_subjects')
-                    ->withTimestamps()
-                    ->withPivot('deleted_at');
+        return $this->belongsToMany(Major::class, 'subject_availabilities', 'subject_id', 'major_id')
+                    ->withPivot('grade_id')
+                    ->withTimestamps();
     }
 
     public function grades()
     {
-        return $this->belongsToMany(Grade::class, 'grades_subjects')
-                    ->withTimestamps()
-                    ->withPivot('deleted_at');
+        return $this->belongsToMany(Grade::class, 'subject_availabilities', 'subject_id', 'grade_id')
+                    ->withPivot('major_id')
+                    ->withTimestamps();
     }
 
     public function activities()

@@ -11,14 +11,14 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6" style="background: linear-gradient(to right, #7c3aed, #a855f7); color: white;">
-                    <h3 class="text-2xl font-bold">Lesson Period Management</h3>
-                    <p class="mt-2">Manage lesson periods and time slots.</p>
+                    <h3 class="text-2xl font-bold">{{ __('Lesson Period Management') }}</h3>
+                    <p class="mt-2">{{ __('Manage lesson periods and time slots.') }}</p>
                 </div>
                 <div class="p-6">
                     <x-soft-delete-filter />
 
                     <div class="flex justify-between items-center mb-6">
-                        <h4 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Periods List
+                        <h4 class="text-xl font-semibold text-gray-900 dark:text-gray-100">{{ __('Periods List') }}
                             ({{ $periods->total() }})</h4>
                         @if(!$showDeleted)
                             <a href="{{ route('periods.create') }}"
@@ -27,7 +27,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
-                                Add Period
+                                {{ __('Add Period') }}
                             </a>
                         @endif
                     </div>
@@ -37,25 +37,32 @@
                                 <tr>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        ID</th>
+                                        {{ __('ID') }}
+                                    </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Weekday</th>
+                                        {{ __('Weekday') }}
+                                    </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Time Begin</th>
+                                        {{ __('Time Begin') }}
+                                    </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Time End</th>
+                                        {{ __('Time End') }}
+                                    </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Semester</th>
+                                        {{ __('Semester') }}
+                                    </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Status</th>
+                                        {{ __('Status') }}
+                                    </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Actions</th>
+                                        {{ __('Actions') }}
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -64,22 +71,27 @@
                                         class="hover:bg-gray-50 dark:hover:bg-gray-700 {{ $period->deleted_at ? 'bg-red-50 dark:bg-red-900' : '' }}">
                                         <td
                                             class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                            {{ $period->id }}</td>
+                                            {{ $period->id }}
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $period->weekday_name }}</td>
+                                            {{ $period->weekday_name }}
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $period->time_begin }}</td>
+                                            {{ $period->time_begin }}
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $period->time_end }}</td>
+                                            {{ $period->time_end }}
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $period->semester->full_name ?? 'N/A' }}</td>
+                                            {{ $period->semester->full_name ?? __('N/A') }}
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if($period->deleted_at)
                                                 <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">DELETED</span>
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">{{ __('DELETED') }}</span>
                                             @else
                                                 <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">ACTIVE</span>
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{ __('ACTIVE') }}</span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
@@ -90,35 +102,36 @@
                                                     <button type="submit"
                                                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
                                                         title="Restore">
-                                                        <i class="bi bi-arrow-counterclockwise"></i> Restore
+                                                        <i class="bi bi-arrow-counterclockwise"></i> {{ __('Restore') }}
                                                     </button>
                                                 </form>
                                             @else
                                                 <button onclick="window.location.href='{{ route('periods.edit', $period) }}'"
                                                     class="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
-                                                    title="Edit">Edit</button>
+                                                    title="Edit">{{ __('Edit') }}</button>
                                                 <form action="{{ route('periods.destroy', $period) }}" method="POST"
                                                     class="inline">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
                                                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
-                                                        title="Delete" onclick="return confirm('Are you sure?')">Delete</button>
+                                                        title="Delete"
+                                                        onclick="return confirm('{{ __('Are you sure?') }}')">{{ __('Delete') }}</button>
                                                 </form>
                                             @endif
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No
-                                            periods found</td>
+                                        <td colspan="7" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                            {{ __('No periods found') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
 
-                    
+
                     <div class="mt-6 flex justify-between items-center">
                         <div class="text-sm text-gray-600 dark:text-gray-400">
                             Showing {{ $periods->firstItem() }} to {{ $periods->lastItem() }} of {{ $periods->total() }}

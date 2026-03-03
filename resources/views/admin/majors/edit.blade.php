@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Edit Major') }}
             </h2>
-            
+
         </div>
     </x-slot>
 
@@ -12,8 +12,8 @@
         <div class="max-w-lg mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6">
-                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Edit Major</h3>
-                    
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">{{ __('Edit Major') }}</h3>
+
                     <form action="{{ route('majors.update', $major) }}" method="POST">
                         @csrf
                         @method('PUT')
@@ -22,31 +22,21 @@
                             <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                 Major Name
                             </label>
-                            <input 
-                                type="text" 
-                                id="name"
-                                name="name" 
-                                value="{{ old('name', $major->name) }}"
+                            <input type="text" id="name" name="name" value="{{ old('name', $major->name) }}"
                                 class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition @error('name') border-red-500 @enderror"
-                                placeholder="Enter major name"
-                                required
-                            />
+                                placeholder="Enter major name" required />
                             @error('name')
                                 <span class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</span>
                             @enderror
                         </div>
 
                         <div class="flex gap-4">
-                            <button 
-                                type="submit" 
-                                class="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition duration-200"
-                            >
+                            <button type="submit"
+                                class="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition duration-200">
                                 Update Major
                             </button>
-                            <a 
-                                href="{{ route('majors.index') }}" 
-                                class="flex-1 px-4 py-2.5 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition duration-200 text-center"
-                            >
+                            <a href="{{ route('majors.index') }}"
+                                class="flex-1 px-4 py-2.5 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition duration-200 text-center">
                                 Cancel
                             </a>
                         </div>

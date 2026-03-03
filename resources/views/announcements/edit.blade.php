@@ -13,34 +13,48 @@
                     @method('PUT')
 
                     <div class="mb-6">
-                        <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
-                        <input type="text" name="title" id="title" value="{{ old('title', $announcement->title) }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('title') is-invalid @enderror" required>
+                        <label for="title"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
+                        <input type="text" name="title" id="title" value="{{ old('title', $announcement->title) }}"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('title') is-invalid @enderror"
+                            required>
                         @error('title')
                             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div class="mb-6">
-                        <label for="subtitle" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Subtitle</label>
-                        <input type="text" name="subtitle" id="subtitle" value="{{ old('subtitle', $announcement->subtitle) }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('subtitle') is-invalid @enderror" required>
+                        <label for="subtitle"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Subtitle</label>
+                        <input type="text" name="subtitle" id="subtitle"
+                            value="{{ old('subtitle', $announcement->subtitle) }}"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('subtitle') is-invalid @enderror"
+                            required>
                         @error('subtitle')
                             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div class="mb-6">
-                        <label for="content" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Content</label>
-                        <textarea name="content" id="content" rows="6" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('content') is-invalid @enderror" required>{{ old('content', $announcement->content) }}</textarea>
+                        <label for="content"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Content</label>
+                        <textarea name="content" id="content" rows="6"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('content') is-invalid @enderror"
+                            required>{{ old('content', $announcement->content) }}</textarea>
                         @error('content')
                             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div class="mb-6">
-                        <label for="scope" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Scope</label>
-                        <select name="scope" id="scope" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('scope') is-invalid @enderror" onchange="updateScopeOptions()" required>
+                        <label for="scope"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Scope</label>
+                        <select name="scope" id="scope"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('scope') is-invalid @enderror"
+                            onchange="updateScopeOptions()" required>
                             <option value="">Select Scope</option>
-                            <option value="PUBLIC" {{ old('scope', $announcement->scope) == 'PUBLIC' ? 'selected' : '' }}>Public (Everyone)</option>
+                            <option value="PUBLIC" {{ old('scope', $announcement->scope) == 'PUBLIC' ? 'selected' : '' }}>
+                                Public (Everyone)</option>
                             <option value="TEACHERS" {{ old('scope', $announcement->scope) == 'TEACHERS' ? 'selected' : '' }}>Teachers Only</option>
                             <option value="CLASS-TAUGHT" {{ old('scope', $announcement->scope) == 'CLASS-TAUGHT' ? 'selected' : '' }}>My Classes</option>
                             <option value="SPECIFIC-CLASS" {{ old('scope', $announcement->scope) == 'SPECIFIC-CLASS' ? 'selected' : '' }}>Specific Class</option>
@@ -51,13 +65,18 @@
                         @enderror
                     </div>
 
-                    <div id="activity-selector" class="mb-6 {{ old('scope', $announcement->scope) == 'SPECIFIC-CLASS' ? '' : 'hidden' }}">
-                        <label for="activity_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Class (Activity)</label>
-                        <select name="activity_id" id="activity_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
+                    <div id="activity-selector"
+                        class="mb-6 {{ old('scope', $announcement->scope) == 'SPECIFIC-CLASS' ? '' : 'hidden' }}">
+                        <label for="activity_id"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Class (Activity)</label>
+                        <select name="activity_id" id="activity_id"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
                             <option value="">Select Class</option>
                             @foreach($activities as $activity)
                                 <option value="{{ $activity->id }}" {{ old('activity_id', $announcement->activity_id) == $activity->id ? 'selected' : '' }}>
-                                    {{ $activity->subject->name }} – {{ $activity->class->name }} ({{ $activity->period->weekday_name }} {{ $activity->period->time_begin }}-{{ $activity->period->time_end }})
+                                    {{ $activity->subject->name }} – {{ $activity->class->name }}
+                                    ({{ $activity->period->weekday_name }}
+                                    {{ $activity->period->time_begin }}-{{ $activity->period->time_end }})
                                 </option>
                             @endforeach
                         </select>
@@ -66,9 +85,12 @@
                         @enderror
                     </div>
 
-                    <div id="grade-selector" class="mb-6 {{ old('scope', $announcement->scope) == 'SPECIFIC-GRADE' ? '' : 'hidden' }}">
-                        <label for="grade_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Grade</label>
-                        <select name="grade_id" id="grade_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
+                    <div id="grade-selector"
+                        class="mb-6 {{ old('scope', $announcement->scope) == 'SPECIFIC-GRADE' ? '' : 'hidden' }}">
+                        <label for="grade_id"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Grade</label>
+                        <select name="grade_id" id="grade_id"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
                             <option value="">Select Grade</option>
                             @foreach($grades as $grade)
                                 <option value="{{ $grade->id }}" {{ old('grade_id', $announcement->grade_id) == $grade->id ? 'selected' : '' }}>Grade {{ $grade->id }}</option>
@@ -80,8 +102,10 @@
                     </div>
 
                     <div class="flex justify-end gap-4">
-                        <a href="{{ route('announcements.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Cancel</a>
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Update</button>
+                        <a href="{{ route('announcements.index') }}"
+                            class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">{{ __('Cancel') }}</a>
+                        <button type="submit"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">{{ __('Update') }}</button>
                     </div>
                 </form>
             </div>

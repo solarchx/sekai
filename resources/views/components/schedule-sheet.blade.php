@@ -58,10 +58,13 @@
                                         <div
                                             class="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded p-2 text-xs">
                                             <div class="font-semibold text-blue-900 dark:text-blue-100">
-                                                {{ $activity->subject->name ?? 'N/A' }}</div>
+                                                {{ $activity->subject->name ?? __('N/A') }}
+                                            </div>
                                             <div class="text-blue-700 dark:text-blue-300">Teacher:
-                                                {{ $activity->teacher->name ?? 'N/A' }}</div>
-                                            <div class="text-blue-700 dark:text-blue-300">Class: {{ $activity->class->name ?? 'N/A' }}
+                                                {{ $activity->teacher->name ?? __('N/A') }}
+                                            </div>
+                                            <div class="text-blue-700 dark:text-blue-300">Class:
+                                                {{ $activity->class->name ?? __('N/A') }}
                                             </div>
                                         </div>
                                     @empty
@@ -78,7 +81,7 @@
                             <a href="{{ route('periods.edit', $parentPeriod) }}"
                                 class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">Edit</a>
                             <form action="{{ route('periods.destroy', $parentPeriod) }}" method="POST" class="inline"
-                                onsubmit="return confirm('Are you sure? All 7 day periods will be deleted.');">
+                                onsubmit="return confirm('{{ __('Are you sure? All 7 day periods will be deleted.') }}');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit"

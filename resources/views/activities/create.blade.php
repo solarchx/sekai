@@ -9,17 +9,23 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6">
-                    <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Create New Activity</h3>
-                    
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">{{ __('Create New Activity') }}
+                    </h3>
+
                     <form method="POST" action="{{ route('activities.store') }}">
                         @csrf
 
                         <div class="mb-6">
-                            <label for="subject_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Subject</label>
-                            <select name="subject_id" id="subject_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('subject_id') is-invalid @enderror" required>
+                            <label for="subject_id"
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Subject') }}</label>
+                            <select name="subject_id" id="subject_id"
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('subject_id') is-invalid @enderror"
+                                required>
                                 <option value="">Select Subject</option>
                                 @foreach($subjects as $subject)
-                                    <option value="{{ $subject->id }}" data-class-ids="{{ json_encode($classSubjects[$subject->id] ?? []) }}">{{ $subject->name }}</option>
+                                    <option value="{{ $subject->id }}"
+                                        data-class-ids="{{ json_encode($classSubjects[$subject->id] ?? []) }}">
+                                        {{ $subject->name }}</option>
                                 @endforeach
                             </select>
                             @error('subject_id')
@@ -28,8 +34,11 @@
                         </div>
 
                         <div class="mb-6">
-                            <label for="teacher_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Teacher</label>
-                            <select name="teacher_id" id="teacher_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('teacher_id') is-invalid @enderror" required>
+                            <label for="teacher_id"
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Teacher') }}</label>
+                            <select name="teacher_id" id="teacher_id"
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('teacher_id') is-invalid @enderror"
+                                required>
                                 <option value="">Select Teacher</option>
                                 @foreach($teachers as $teacher)
                                     <option value="{{ $teacher->id }}" {{ old('teacher_id') == $teacher->id ? 'selected' : '' }}>{{ $teacher->name }}</option>
@@ -41,11 +50,16 @@
                         </div>
 
                         <div class="mb-6">
-                            <label for="period_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Period</label>
-                            <select name="period_id" id="period_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('period_id') is-invalid @enderror" required>
+                            <label for="period_id"
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Period') }}</label>
+                            <select name="period_id" id="period_id"
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('period_id') is-invalid @enderror"
+                                required>
                                 <option value="">Select Period</option>
                                 @foreach($periods as $period)
-                                    <option value="{{ $period->id }}" {{ old('period_id') == $period->id ? 'selected' : '' }}>{{ $period->weekday_name }} {{ $period->time_begin }} - {{ $period->time_end }} ({{ $period->semester->full_name }})</option>
+                                    <option value="{{ $period->id }}" {{ old('period_id') == $period->id ? 'selected' : '' }}>
+                                        {{ $period->weekday_name }} {{ $period->time_begin }} - {{ $period->time_end }}
+                                        ({{ $period->semester->full_name }})</option>
                                 @endforeach
                             </select>
                             @error('period_id')
@@ -54,11 +68,15 @@
                         </div>
 
                         <div class="mb-6">
-                            <label for="class_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Class</label>
-                            <select name="class_id" id="class_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('class_id') is-invalid @enderror" required>
+                            <label for="class_id"
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Class') }}</label>
+                            <select name="class_id" id="class_id"
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('class_id') is-invalid @enderror"
+                                required>
                                 <option value="">Select Class</option>
                                 @foreach($classes as $class)
-                                    <option value="{{ $class->id }}" {{ old('class_id') == $class->id ? 'selected' : '' }}>{{ $class->name }}</option>
+                                    <option value="{{ $class->id }}" {{ old('class_id') == $class->id ? 'selected' : '' }}>
+                                        {{ $class->name }}</option>
                                 @endforeach
                             </select>
                             @error('class_id')
@@ -67,8 +85,10 @@
                         </div>
 
                         <div class="flex justify-end gap-4">
-                            <a href="{{ route('activities.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Cancel</a>
-                            <button type="submit" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Create</button>
+                            <a href="{{ route('activities.index') }}"
+                                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">{{ __('Cancel') }}</a>
+                            <button type="submit"
+                                class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">{{ __('Create') }}</button>
                         </div>
                     </form>
                 </div>
@@ -77,21 +97,21 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const classSelect = document.getElementById('class_id');
             const subjectSelect = document.getElementById('subject_id');
-            const allSubjects = Array.from(subjectSelect.options).slice(1); 
+            const allSubjects = Array.from(subjectSelect.options).slice(1);
 
             function filterSubjects() {
                 const classId = classSelect.value;
                 if (!classId) {
-                    
+
                     allSubjects.forEach(opt => opt.style.display = 'none');
                     subjectSelect.value = '';
                     return;
                 }
 
-                
+
                 const allowedSubjectIds = @json($classSubjects)[classId] || [];
 
                 allSubjects.forEach(opt => {
@@ -103,14 +123,14 @@
                     }
                 });
 
-                
+
                 if (subjectSelect.value && !allowedSubjectIds.includes(parseInt(subjectSelect.value))) {
                     subjectSelect.value = '';
                 }
             }
 
             classSelect.addEventListener('change', filterSubjects);
-            
+
             filterSubjects();
         });
     </script>

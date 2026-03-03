@@ -1,8 +1,8 @@
 @if(isset($schedule) && count($schedule) > 0)
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg mt-6">
         <div class="p-6" style="background: linear-gradient(to right, #06b6d4, #0891b2); color: white;">
-            <h3 class="text-2xl font-bold">My Schedule</h3>
-            <p class="mt-2">Your upcoming classes and activities.</p>
+            <h3 class="text-2xl font-bold">{{ __('My Schedule') }}</h3>
+            <p class="mt-2">{{ __('Your upcoming classes and activities.') }}</p>
         </div>
         <div class="p-6 overflow-x-auto">
             <table class="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -21,7 +21,7 @@
                 <tbody>
                     @foreach($schedule as $weekday => $activities)
                         @foreach($activities as $activity)
-                            @if ($activity->period) 
+                            @if ($activity->period)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                     <td class="px-4 py-2">{{ $activity->period->weekday_name }}</td>
                                     <td class="px-4 py-2">{{ $activity->period->time_begin }} - {{ $activity->period->time_end }}</td>
@@ -53,11 +53,11 @@
 @else
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg mt-6">
         <div class="p-6" style="background: linear-gradient(to right, #06b6d4, #0891b2); color: white;">
-            <h3 class="text-2xl font-bold">My Schedule</h3>
-            <p class="mt-2">Your upcoming classes and activities.</p>
+            <h3 class="text-2xl font-bold">{{ __('My Schedule') }}</h3>
+            <p class="mt-2">{{ __('Your upcoming classes and activities.') }}</p>
         </div>
         <div class="p-6 overflow-x-auto">
-            You have no upcoming class or activity.
+            {{ __('You have no upcoming class or activity.') }}
         </div>
     </div>
 @endif

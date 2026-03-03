@@ -61,6 +61,8 @@
     "Edit": "Ubah",
     "Delete": "Hapus",
     "Create": "Buat",
+    "Delete Subject": "Hapus Mata Pelajaran",
+    "Are you sure you want to delete this subject?": "Apakah Anda yakin ingin menghapus mata pelajaran ini?",
     "Are you sure?": "Apakah Anda yakin?",
     "No subjects found": "Tidak ada mata pelajaran ditemukan",
     "Showing :first to :last of :total results": "Menampilkan :first hingga :last dari :total hasil",
@@ -185,10 +187,14 @@
     "Admin Panel": "Panel Admin",
     "System Overview": "Ikhtisar Sistem",
     "Quick stats about the system.": "Statistik cepat tentang sistem.",
+    "Total Users": "Total Pengguna",
+    "Total Majors": "Total Program Studi",
+    "Total Classes": "Total Kelas",
+    "Total Activities": "Total Kegiatan",
     "Welcome to Sekai": "Selamat datang di Sekai",
-    "Documentation": "Dokumentasi",
-    "Laracasts": "Laracasts",
-    "Laravel News": "Berita Laravel",
+    "Select Subject": "Pilih Mata Pelajaran",
+    "My Schedule": "Jadwal Saya",
+    "Your upcoming classes and activities.": "Kelas dan kegiatan Anda yang akan datang.",
     "You're logged in as Administrator. Manage the entire system.": "Anda masuk sebagai Administrator. Kelola seluruh sistem.",
     "No announcements yet.": "Tidak ada pengumuman lagi.",
     "No students enrolled in this class.": "Tidak ada siswa yang terdaftar di kelas ini.",
@@ -273,8 +279,9 @@
     "Location": "Lokasi",
     "Actions": "Aksi",
     "No record": "Tidak ada catatan",
+    "No forms found for this activity.": "Tidak ada formulir yang ditemukan untuk kegiatan ini.",
     "Join Sekai to get started": "Bergabung dengan Sekai untuk memulai",
     "Already have an account?": "Sudah punya akun?",
     "By signing up, you agree to our Terms of Service": "Dengan mendaftar, Anda setuju dengan Ketentuan Layanan kami"
-    
+
 }

@@ -34,13 +34,13 @@
                             </p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Class</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Class') }}</label>
                             <p class="mt-1 text-lg text-gray-900 dark:text-gray-100">
                                 {{ $activity->class->name ?? __('N/A') }}
                             </p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Period</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Period') }}</label>
                             <p class="mt-1 text-lg text-gray-900 dark:text-gray-100">
                                 {{ $activity->period->weekday_name ?? __('N/A') }} {{ $activity->period->time_begin }} -
                                 {{ $activity->period->time_end }}
@@ -87,7 +87,7 @@
                                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
                                         </path>
                                     </svg>
-                                    Delete Activity
+                                    {{ __('Delete Activity') }}
                                 </button>
                             </form>
                         </div>
@@ -122,13 +122,13 @@
                                 <tr>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Date</th>
+                                        {{ __('Date') }}</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Activity</th>
+                                        {{ __('Activity') }}</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Actions</th>
+                                        {{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -143,17 +143,17 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                             <a href="{{ route('activity-forms.show', $form) }}"
                                                 class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">
-                                                View Details
+                                                {{ __('View Details') }}
                                             </a>
                                             @if(auth()->user()->role !== 'STUDENT')
                                                 <a href="{{ route('activity-forms.edit', $form) }}"
-                                                    class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">Edit</a>
+                                                    class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">{{ __('Edit') }}</a>
                                                 <form action="{{ route('activity-forms.destroy', $form) }}" method="POST"
                                                     class="inline" onsubmit="return confirm('Are you sure?');">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
-                                                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs transition-colors">Delete</button>
+                                                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs transition-colors">{{ __('Delete') }}</button>
                                                 </form>
                                             @elseif(auth()->user()->role === 'STUDENT')
                                                 @php
@@ -173,20 +173,18 @@
                                                     @if($now->between($windowStart, $windowEnd) && $now->toDateString() == $form->activity_date->toDateString())
                                                         <a href="{{ route('activity-presences.create', ['form_id' => $form->id]) }}"
                                                             class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">
-                                                            Submit Presence
+                                                            {{ __('Submit Presence') }}
                                                         </a>
                                                     @endif
                                                 @elseif($report)
                                                     <a href="{{ route('activity-reports.edit', $report) }}"
-                                                        class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">Edit
-                                                        Report</a>
+                                                        class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs transition-colors inline-block">{{ __('Edit Report') }}</a>
                                                     <form action="{{ route('activity-reports.destroy', $report) }}" method="POST"
                                                         class="inline" onsubmit="return confirm('Are you sure?');">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"
-                                                            class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs transition-colors">Delete
-                                                            Report</button>
+                                                            class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs transition-colors">{{ __('Delete Report') }}</button>
                                                     </form>
                                                 @endif
                                             @endif
@@ -194,8 +192,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No
-                                            forms found for this activity.</td>
+                                        <td colspan="3" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">{{ __('No forms found for this activity.') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>

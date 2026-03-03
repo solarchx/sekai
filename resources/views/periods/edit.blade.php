@@ -9,7 +9,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6">
-                    <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Edit Lesson Period</h3>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">{{ __('Edit Lesson Period') }}</h3>
 
                     <form method="POST" action="{{ route('periods.update', $period) }}">
                         @csrf
@@ -43,9 +43,9 @@
 
                         <div class="flex justify-end gap-4">
                             <a href="{{ route('periods.index', ['semester_id' => $period->semester_id]) }}"
-                                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Cancel</a>
+                                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">{{ __('Cancel') }}</a>
                             <button type="submit"
-                                class="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Update</button>
+                                class="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">{{ __('Update') }}</button>
                         </div>
                     </form>
                 </div>

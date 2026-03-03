@@ -31,7 +31,7 @@
                             @if(auth()->user()->role !== 'STUDENT' && (auth()->id() === $announcement->sender_id || auth()->user()->role === 'ADMIN'))
                                 <div class="flex gap-2">
                                     <a href="{{ route('announcements.edit', $announcement) }}"
-                                        class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">Edit</a>
+                                        class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">{{ __('Edit') }}</a>
                                     <form action="{{ route('announcements.destroy', $announcement) }}" method="POST"
                                         class="inline">
                                         @csrf
@@ -47,12 +47,12 @@
                         <p class="text-gray-800 dark:text-gray-200 mb-4">{{ $announcement->content }}</p>
 
                         <div class="text-xs text-gray-500 dark:text-gray-400 text-right">
-                            <p>From: <strong>{{ $announcement->sender->name }}</strong></p>
-                            <p>Scope: <strong>{{ $announcement->scope }}</strong>
+                            <p>{{ __('Sent by') }}: <strong>{{ $announcement->sender->name }}</strong></p>
+                            <p>{{ __('Scope') }}: <strong>{{ $announcement->scope }}</strong>
                                 @if($announcement->activity_id)
                                     – {{ $announcement->activity->subject->name }} ({{ $announcement->activity->class->name }})
                                 @elseif($announcement->grade_id)
-                                    – Grade {{ $announcement->grade->id }}
+                                    – {{ __('Grade') }} {{ $announcement->grade->id }}
                                 @endif
                             </p>
                         </div>

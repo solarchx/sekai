@@ -22,7 +22,7 @@
                             <select name="activity_id" id="activity_id"
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('activity_id') is-invalid @enderror"
                                 required>
-                                <option value="">Select Activity</option>
+                                <option value="">{{ __('Select Activity') }}</option>
                                 @foreach($activities as $activity)
                                     <option value="{{ $activity->id }}" {{ old('activity_id', $activityForm->activity_id) == $activity->id ? 'selected' : '' }}>
                                         {{ $activity->subject->name }} - {{ $activity->teacher->name }}

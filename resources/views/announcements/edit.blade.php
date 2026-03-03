@@ -14,7 +14,7 @@
 
                     <div class="mb-6">
                         <label for="title"
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Title') }}</label>
                         <input type="text" name="title" id="title" value="{{ old('title', $announcement->title) }}"
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('title') is-invalid @enderror"
                             required>
@@ -25,7 +25,7 @@
 
                     <div class="mb-6">
                         <label for="subtitle"
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Subtitle</label>
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Subtitle') }}</label>
                         <input type="text" name="subtitle" id="subtitle"
                             value="{{ old('subtitle', $announcement->subtitle) }}"
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('subtitle') is-invalid @enderror"
@@ -37,7 +37,7 @@
 
                     <div class="mb-6">
                         <label for="content"
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Content</label>
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Content') }}</label>
                         <textarea name="content" id="content" rows="6"
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('content') is-invalid @enderror"
                             required>{{ old('content', $announcement->content) }}</textarea>
@@ -48,17 +48,21 @@
 
                     <div class="mb-6">
                         <label for="scope"
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Scope</label>
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Scope') }}</label>
                         <select name="scope" id="scope"
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('scope') is-invalid @enderror"
                             onchange="updateScopeOptions()" required>
-                            <option value="">Select Scope</option>
+                            <option value="">{{ __('Select Scope') }}</option>
                             <option value="PUBLIC" {{ old('scope', $announcement->scope) == 'PUBLIC' ? 'selected' : '' }}>
-                                Public (Everyone)</option>
-                            <option value="TEACHERS" {{ old('scope', $announcement->scope) == 'TEACHERS' ? 'selected' : '' }}>Teachers Only</option>
-                            <option value="CLASS-TAUGHT" {{ old('scope', $announcement->scope) == 'CLASS-TAUGHT' ? 'selected' : '' }}>My Classes</option>
-                            <option value="SPECIFIC-CLASS" {{ old('scope', $announcement->scope) == 'SPECIFIC-CLASS' ? 'selected' : '' }}>Specific Class</option>
-                            <option value="SPECIFIC-GRADE" {{ old('scope', $announcement->scope) == 'SPECIFIC-GRADE' ? 'selected' : '' }}>Specific Grade</option>
+                                {{ __('Public (Everyone)') }}</option>
+                            <option value="TEACHERS" {{ old('scope', $announcement->scope) == 'TEACHERS' ? 'selected' : '' }}>
+                                {{ __('Teachers Only') }}</option>
+                            <option value="CLASS-TAUGHT" {{ old('scope', $announcement->scope) == 'CLASS-TAUGHT' ? 'selected' : '' }}>
+                                {{ __('My Classes') }}</option>
+                            <option value="SPECIFIC-CLASS" {{ old('scope', $announcement->scope) == 'SPECIFIC-CLASS' ? 'selected' : '' }}>
+                                {{ __('Specific Activity') }}</option>
+                            <option value="SPECIFIC-GRADE" {{ old('scope', $announcement->scope) == 'SPECIFIC-GRADE' ? 'selected' : '' }}>
+                                {{ __('Specific Grade') }}</option>
                         </select>
                         @error('scope')
                             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -68,10 +72,10 @@
                     <div id="activity-selector"
                         class="mb-6 {{ old('scope', $announcement->scope) == 'SPECIFIC-CLASS' ? '' : 'hidden' }}">
                         <label for="activity_id"
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Class (Activity)</label>
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Activity') }}</label>
                         <select name="activity_id" id="activity_id"
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
-                            <option value="">Select Class</option>
+                            <option value="">{{ __('Select Activity') }}</option>
                             @foreach($activities as $activity)
                                 <option value="{{ $activity->id }}" {{ old('activity_id', $announcement->activity_id) == $activity->id ? 'selected' : '' }}>
                                     {{ $activity->subject->name }} – {{ $activity->class->name }}
@@ -88,12 +92,14 @@
                     <div id="grade-selector"
                         class="mb-6 {{ old('scope', $announcement->scope) == 'SPECIFIC-GRADE' ? '' : 'hidden' }}">
                         <label for="grade_id"
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Grade</label>
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Grade') }}</label>
                         <select name="grade_id" id="grade_id"
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
-                            <option value="">Select Grade</option>
+                            <option value="">{{ __('Select Grade') }}</option>
                             @foreach($grades as $grade)
-                                <option value="{{ $grade->id }}" {{ old('grade_id', $announcement->grade_id) == $grade->id ? 'selected' : '' }}>Grade {{ $grade->id }}</option>
+                                <option value="{{ $grade->id }}" {{ old('grade_id', $announcement->grade_id) == $grade->id ? 'selected' : '' }}>
+                                    {{ __('Grade') }} {{ $grade->id }}
+                                </option>
                             @endforeach
                         </select>
                         @error('grade_id')

@@ -17,7 +17,7 @@
 
                         <div class="mb-6">
                             <label for="academic_year"
-                                class="block text-sm font-medium text-gray-700 dark:text-gray-300">Academic Year</label>
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Academic Year') }}</label>
                             <input type="text" name="academic_year" id="academic_year" placeholder="e.g., 2023-2024"
                                 value="{{ old('academic_year', $semester->academic_year) }}"
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('academic_year') is-invalid @enderror"
@@ -33,7 +33,7 @@
                             <select name="semester" id="semester"
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('semester') is-invalid @enderror"
                                 required>
-                                <option value="">Select Semester</option>
+                                <option value="">{{ __('Select a semester') }}</option>
                                 <option value="1" {{ old('semester', $semester->semester) == '1' ? 'selected' : '' }}>1
                                 </option>
                                 <option value="2" {{ old('semester', $semester->semester) == '2' ? 'selected' : '' }}>2
@@ -46,9 +46,9 @@
 
                         <div class="flex justify-end gap-4">
                             <a href="{{ route('semesters.index') }}"
-                                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Cancel</a>
+                                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">{{ __('Cancel') }}</a>
                             <button type="submit"
-                                class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Update</button>
+                                class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">{{ __('Update') }}</button>
                         </div>
                     </form>
                 </div>

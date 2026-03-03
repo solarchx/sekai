@@ -22,25 +22,25 @@
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Activity Date') }}</label>
                             <p class="mt-1 text-lg text-gray-900 dark:text-gray-100">
                                 {{ \Carbon\Carbon::parse($form->activity_date)->format('l, M d, Y') }}
                             </p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Activity</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Activity') }}</label>
                             <p class="mt-1 text-lg text-gray-900 dark:text-gray-100">
                                 {{ $form->activity->subject->name ?? 'N/A' }}
                             </p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Period</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Period') }}</label>
                             <p class="mt-1 text-lg text-gray-900 dark:text-gray-100">
                                 {{ $form->activity->period->time_begin }} - {{ $form->activity->period->time_end }}
                             </p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Class</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Class') }}</label>
                             <p class="mt-1 text-lg text-gray-900 dark:text-gray-100">
                                 {{ $form->activity->class->name ?? 'N/A' }}
                             </p>

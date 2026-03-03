@@ -19,11 +19,11 @@
 
                         <div class="mb-6">
                             <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Class Name
+                                {{ __('Class Name') }}
                             </label>
                             <input type="text" id="name" name="name" value="{{ old('name', $class->name) }}"
                                 class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition @error('name') border-red-500 @enderror"
-                                placeholder="Enter class name" required />
+                                placeholder="{{ __('Enter class name') }}" required />
                             @error('name')
                                 <span class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</span>
                             @enderror
@@ -32,12 +32,12 @@
                         <div class="mb-6">
                             <label for="major_id"
                                 class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Major
+                                {{ __('Major') }}
                             </label>
                             <select id="major_id" name="major_id"
                                 class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition @error('major_id') border-red-500 @enderror"
                                 required>
-                                <option value="">Select a major</option>
+                                <option value="">{{ __('Select a major') }}</option>
                                 @foreach($majors as $major)
                                     <option value="{{ $major->id }}" @selected(old('major_id', $class->major_id) == $major->id)>
                                         {{ $major->name }}
@@ -52,15 +52,15 @@
                         <div class="mb-6">
                             <label for="grade_id"
                                 class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Grade
+                                {{ __('Grade') }}
                             </label>
                             <select id="grade_id" name="grade_id"
                                 class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition @error('grade_id') border-red-500 @enderror"
                                 required>
-                                <option value="">Select a grade</option>
+                                <option value="">{{ __('Select a grade') }}</option>
                                 @foreach($grades as $grade)
                                     <option value="{{ $grade->id }}" @selected(old('grade_id', $class->grade_id) == $grade->id)>
-                                        Grade {{ $grade->id }}
+                                        {{ __('Grade') }} {{ $grade->id }}
                                     </option>
                                 @endforeach
                             </select>
@@ -72,12 +72,12 @@
                         <div class="mb-6">
                             <label for="capacity"
                                 class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Capacity
+                                {{ __('Capacity') }}
                             </label>
                             <input type="number" id="capacity" name="capacity"
                                 value="{{ old('capacity', $class->capacity) }}"
                                 class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition @error('capacity') border-red-500 @enderror"
-                                placeholder="Enter classroom capacity" min="1" max="100" required />
+                                placeholder="{{ __('Enter classroom capacity') }}" min="1" max="100" required />
                             @error('capacity')
                                 <span class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</span>
                             @enderror
@@ -87,11 +87,11 @@
                         <div class="mb-6">
                             <label for="homeroom_teacher_id"
                                 class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Homeroom Teacher (optional)
+                                {{ __('Homeroom Teacher (optional)') }}
                             </label>
                             <select id="homeroom_teacher_id" name="homeroom_teacher_id"
                                 class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition @error('homeroom_teacher_id') border-red-500 @enderror">
-                                <option value="">-- No homeroom teacher --</option>
+                                <option value="">-- {{ __('No homeroom teacher') }} --</option>
                                 @foreach($teachers as $teacher)
                                     <option value="{{ $teacher->id }}" @selected(old('homeroom_teacher_id', $class->homeroom_teacher_id) == $teacher->id)>
                                         {{ $teacher->name }}
@@ -106,11 +106,11 @@
                         <div class="flex gap-4">
                             <button type="submit"
                                 class="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition duration-200">
-                                Update Class
+                                {{ __('Update Class') }}
                             </button>
                             <a href="{{ route('classes.index') }}"
                                 class="flex-1 px-4 py-2.5 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition duration-200 text-center">
-                                Cancel
+                                {{ __('Cancel') }}
                             </a>
                         </div>
                     </form>

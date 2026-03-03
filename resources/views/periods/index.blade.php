@@ -134,8 +134,7 @@
 
                     <div class="mt-6 flex justify-between items-center">
                         <div class="text-sm text-gray-600 dark:text-gray-400">
-                            Showing {{ $periods->firstItem() }} to {{ $periods->lastItem() }} of {{ $periods->total() }}
-                            results
+                            {{ __('Showing results') }} {{ $periods->firstItem() }} {{ __('to') }} {{ $periods->lastItem() }} {{ __('of') }} {{ $periods->total() }}
                         </div>
                         <div class="flex gap-2">
                             {{ $periods->links() }}

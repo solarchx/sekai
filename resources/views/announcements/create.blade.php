@@ -58,7 +58,7 @@
                             <option value="CLASS-TAUGHT" {{ old('scope') == 'CLASS-TAUGHT' ? 'selected' : '' }}>
                                 {{ __('My Classes') }}</option>
                             <option value="SPECIFIC-CLASS" {{ old('scope') == 'SPECIFIC-CLASS' ? 'selected' : '' }}>
-                                {{ __('Specific Class') }}</option>
+                                {{ __('Specific Activity') }}</option>
                             <option value="SPECIFIC-GRADE" {{ old('scope') == 'SPECIFIC-GRADE' ? 'selected' : '' }}>
                                 {{ __('Specific Grade') }}</option>
                         </select>
@@ -69,10 +69,10 @@
 
                     <div id="activity-selector" class="mb-6 hidden">
                         <label for="activity_id"
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Class (Activity)</label>
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Activity') }}</label>
                         <select name="activity_id" id="activity_id"
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
-                            <option value="">Select Class</option>
+                            <option value="">{{ __('Select Activity') }}</option>
                             @foreach($activities as $activity)
                                 <option value="{{ $activity->id }}" {{ old('activity_id') == $activity->id ? 'selected' : '' }}>
                                     {{ $activity->subject->name }} – {{ $activity->class->name }}
@@ -88,12 +88,12 @@
 
                     <div id="grade-selector" class="mb-6 hidden">
                         <label for="grade_id"
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Grade</label>
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Grade') }}</label>
                         <select name="grade_id" id="grade_id"
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
-                            <option value="">Select Grade</option>
+                            <option value="">{{ __('Select Grade') }}</option>
                             @foreach($grades as $grade)
-                                <option value="{{ $grade->id }}" {{ old('grade_id') == $grade->id ? 'selected' : '' }}>Grade
+                                <option value="{{ $grade->id }}" {{ old('grade_id') == $grade->id ? 'selected' : '' }}>{{ __('Grade') }}
                                     {{ $grade->id }}</option>
                             @endforeach
                         </select>

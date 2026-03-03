@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ isset($distributions) ? 'Edit' : 'Create' }} Score Distributions for {{ $activity->subject->name }}
+            {{ isset($distributions) ? 'Edit' : 'Create' }} {{ __('Score Distributions') }} {{ __('for') }} {{ $activity->subject->name }}
         </h2>
     </x-slot>
 
@@ -13,7 +13,7 @@
                         {{ isset($distributions) ? 'Edit Distributions' : 'Add Distributions' }}
                     </h3>
                     <p class="mb-4 text-gray-600 dark:text-gray-400">
-                        Activity: {{ $activity->subject->name }} ({{ $activity->class->name }})
+                        {{ __('Activity') }}: {{ $activity->subject->name }} ({{ $activity->class->name }})
                     </p>
 
                     <form method="POST" action="{{ route('score-distributions.store', $activity) }}"
@@ -57,7 +57,7 @@
                                                     </td>
                                                     <td class="px-4 py-2 border text-center">
                                                         <button type="button" onclick="removeRow(this)"
-                                                            class="text-red-600 hover:text-red-800">Remove</button>
+                                                            class="text-red-600 hover:text-red-800">{{ __('Delete') }}</button>
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -101,7 +101,7 @@
                     <input type="number" name="distributions[${rowIndex}][weight]" min="1" max="100" class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" required>
                 </td>
                 <td class="px-4 py-2 border text-center">
-                    <button type="button" onclick="removeRow(this)" class="text-red-600 hover:text-red-800">Remove</button>
+                    <button type="button" onclick="removeRow(this)" class="text-red-600 hover:text-red-800">{{ __('Delete') }}</button>
                 </td>
             `;
             tbody.appendChild(newRow);

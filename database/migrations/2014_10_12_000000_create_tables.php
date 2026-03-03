@@ -87,37 +87,24 @@ return new class extends Migration
             $table->foreign('homeroom_teacher_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
         });
 
-        // Majors Subjects (Pivot)
-        Schema::create('majors_subjects', function (Blueprint $table) {
+        // Subject Availabilities (Pivot)
+        Schema::create('subject_availabilities', function (Blueprint $table) {
             $table->unsignedInteger('major_id');
             $table->unsignedInteger('subject_id');
-            $table->primary(['major_id', 'subject_id']);
-            $table->softDeletes();
+            $table->unsignedInteger('grade_id');
+            $table->primary(['major_id', 'subject_id', 'grade_id']);
             $table->timestamps();
 
-            $table->foreign('major_id', 'fk_majors_subjects_id_major')
+            $table->foreign('major_id', 'fk_subjects_avail_id_major')
                 ->references('id')->on('majors')
                 ->onUpdate('cascade')->onDelete('cascade');
 
-            $table->foreign('subject_id', 'fk_majors_subjects_id_subject')
+            $table->foreign('subject_id', 'fk_subjects_avail_id_subject')
                 ->references('id')->on('subjects')
                 ->onUpdate('cascade')->onDelete('cascade');
-        });
 
-        // Grades Subjects (Pivot)
-        Schema::create('grades_subjects', function (Blueprint $table) {
-            $table->unsignedInteger('grade_id');
-            $table->unsignedInteger('subject_id');
-            $table->primary(['grade_id', 'subject_id']);
-            $table->softDeletes();
-            $table->timestamps();
-
-            $table->foreign('grade_id', 'fk_grades_subjects_id_grade')
+            $table->foreign('grade_id', 'fk_subjects_avail_id_grade')
                 ->references('id')->on('grades')
-                ->onUpdate('cascade')->onDelete('cascade');
-
-            $table->foreign('subject_id', 'fk_grades_subjects_id_subject')
-                ->references('id')->on('subjects')
                 ->onUpdate('cascade')->onDelete('cascade');
         });
 
@@ -128,14 +115,24 @@ return new class extends Migration
             $table->time('time_begin');
             $table->time('time_end');
             $table->unsignedInteger('semester_id');
+            $table->unsignedInteger('major_id');
+            $table->unsignedInteger('grade_id');
             $table->unsignedInteger('parent_id')->nullable();
             $table->foreign('parent_id')->references('id')->on('lesson_periods')->onUpdate('cascade')->onDelete('cascade');
-            $table->unique(['weekday', 'time_begin', 'time_end', 'semester_id'], 'unique_period_per_semester');
+            $table->unique(['weekday', 'time_begin', 'time_end', 'semester_id', 'major_id', 'grade_id'], 'unique_periods');
             $table->softDeletes();
             $table->timestamps();
 
             $table->foreign('semester_id', 'fk_period_semester_id')
                 ->references('id')->on('academic_semesters')
+                ->onUpdate('cascade')->onDelete('cascade');
+            
+            $table->foreign('major_id', 'fk_period_major_id')
+                ->references('id')->on('majors')
+                ->onUpdate('cascade')->onDelete('cascade');
+            
+            $table->foreign('grade_id', 'fk_period_grade_id')
+                ->references('id')->on('grades')
                 ->onUpdate('cascade')->onDelete('cascade');
         });
 

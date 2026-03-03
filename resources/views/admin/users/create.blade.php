@@ -23,7 +23,7 @@
                                 <label for="name"
                                     class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('Name') }}</label>
                                 <input type="text" name="name" id="name" value="{{ old('name') }}"
-                                    placeholder="{{ __('e.g., Tanjiro Kamado') }}" required
+                                    placeholder="Kanade Yoisaki" required
                                     class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
                                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
                             </div>
@@ -31,7 +31,7 @@
                                 <label for="email"
                                     class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('Email') }}</label>
                                 <input type="email" name="email" id="email" value="{{ old('email') }}"
-                                    placeholder="{{ __('e.g., tanjiro@school.edu') }}" required
+                                    placeholder="user@example.com" required
                                     class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
                                 <x-input-error :messages="$errors->get('email')" class="mt-2" />
                             </div>
@@ -39,7 +39,7 @@
                                 <label for="identifier"
                                     class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('Identifier') }}</label>
                                 <input type="text" name="identifier" id="identifier" value="{{ old('identifier') }}"
-                                    placeholder="{{ __('e.g., TAN001') }}" required
+                                    placeholder="At least 8 digits" required
                                     class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
                                 <x-input-error :messages="$errors->get('identifier')" class="mt-2" />
                             </div>

@@ -14,17 +14,30 @@ class UserController extends Controller
     public function index(Request $request)
     {
         try {
-            $showDeleted = $request->has('show_deleted') && auth()->user()->role === 'ADMIN';
+            $user = auth()->user();
+            $showDeleted = $request->has('show_deleted') && $user->role === 'ADMIN';
             
             $query = User::orderBy('role')->orderBy('name');
+
+            $roleFilter = $request->query('role');
+            if ($roleFilter && in_array($roleFilter, ['STUDENT', 'TEACHER', 'VP', 'ADMIN'])) {
+                $query->where('role', $roleFilter);
+            }
+
+            $classFilter = $request->query('class_id');
+            if ($roleFilter === 'STUDENT' && $classFilter) {
+                $query->where('class_id', $classFilter);
+            }
             
             if ($showDeleted) {
                 $users = $query->onlyTrashed()->paginate(100);
             } else {
                 $users = $query->paginate(100);
             }
-            
-            return view('admin.users.index', compact('users', 'showDeleted'));
+
+            $classes = SchoolClass::orderBy('name')->get();
+
+            return view('admin.users.index', compact('users', 'showDeleted', 'classes', 'roleFilter', 'classFilter'));
         } catch (\Exception $e) {
             Log::error('Error loading users: ' . $e->getMessage());
             return redirect()->back()->withErrors('Error loading users: ' . $e->getMessage());

@@ -77,19 +77,14 @@
         document.addEventListener('DOMContentLoaded', function() {
             const majors = @json($majors);
             const allGrades = @json($grades);
-            const existingCombinations = @json($existingCombinations);
-
+            const combinationsFromServer = @json($combinations);
             const majorCheckboxes = document.querySelectorAll('.major-checkbox');
             const gradesContainer = document.getElementById('grades-container');
             const combinationsInput = document.getElementById('combinations-input');
 
-            let selectedMajorId = null;
+            let selectedCombinations = combinationsFromServer;
 
-            const selectedMap = new Map();
-            existingCombinations.forEach(combo => {
-                const key = `${combo.major_id}-${combo.grade_id}`;
-                selectedMap.set(key, true);
-            });
+            let selectedMajorId = null;
 
             function renderGradesForMajor(majorId) {
                 const major = majors.find(m => m.id == majorId);
@@ -98,8 +93,7 @@
                 let html = `<h5 class="font-medium text-gray-800 dark:text-gray-200 mb-2">{{ __('Major') }}: ${major.name}</h5>`;
                 allGrades.forEach(grade => {
                     const gradeId = grade.id;
-                    const key = `${majorId}-${gradeId}`;
-                    const checked = selectedMap.has(key) ? 'checked' : '';
+                    const checked = selectedCombinations[majorId][gradeId] ? 'checked' : '';
                     html += `
                         <div class="flex items-center">
                             <input type="checkbox" id="grade_${majorId}_${gradeId}" data-major="${majorId}" data-grade="${gradeId}" class="grade-checkbox focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" ${checked}>
@@ -110,6 +104,14 @@
                     `;
                 });
                 gradesContainer.innerHTML = html;
+
+                document.querySelectorAll('.grade-checkbox').forEach(cb => {
+                    cb.addEventListener('change', function() {
+                        const major = parseInt(this.dataset.major);
+                        const grade = parseInt(this.dataset.grade);
+                        selectedCombinations[major][grade] = this.checked;
+                    });
+                });
             }
 
             majorCheckboxes.forEach(checkbox => {
@@ -128,25 +130,21 @@
                     }
                 });
 
-                const hasAny = existingCombinations.some(combo => combo.major_id == checkbox.value);
-                if (hasAny) {
+                const hasSelected = Object.values(selectedCombinations[checkbox.value] || {}).some(v => v === true);
+                if (hasSelected) {
                     checkbox.checked = true;
                     if (!selectedMajorId) {
                         selectedMajorId = checkbox.value;
-                        renderGradesForMajor(selectedMajorId);
                     }
                 }
             });
+
+            if (selectedMajorId) {
+                renderGradesForMajor(selectedMajorId);
+            }
+
             document.getElementById('subjectForm').addEventListener('submit', function(e) {
-                const checkedGrades = document.querySelectorAll('.grade-checkbox:checked');
-                const combinations = [];
-                checkedGrades.forEach(cb => {
-                    combinations.push({
-                        major_id: parseInt(cb.dataset.major),
-                        grade_id: parseInt(cb.dataset.grade)
-                    });
-                });
-                combinationsInput.value = JSON.stringify(combinations);
+                combinationsInput.value = JSON.stringify(selectedCombinations);
             });
         });
     </script>

@@ -81,9 +81,15 @@
             const gradesContainer = document.getElementById('grades-container');
             const combinationsInput = document.getElementById('combinations-input');
 
-            let selectedMajorId = null;
+            let selectedCombinations = {};
+            majors.forEach(major => {
+                selectedCombinations[major.id] = {};
+                allGrades.forEach(grade => {
+                    selectedCombinations[major.id][grade.id] = false;
+                });
+            });
 
-            const gradeCheckboxes = {};
+            let selectedMajorId = null;
 
             function renderGradesForMajor(majorId) {
                 const major = majors.find(m => m.id == majorId);
@@ -92,17 +98,25 @@
                 let html = `<h5 class="font-medium text-gray-800 dark:text-gray-200 mb-2">{{ __('Major') }}: ${major.name}</h5>`;
                 allGrades.forEach(grade => {
                     const gradeId = grade.id;
-                    const checkboxId = `grade_${majorId}_${gradeId}`;
+                    const checked = selectedCombinations[majorId][gradeId] ? 'checked' : '';
                     html += `
                         <div class="flex items-center">
-                            <input type="checkbox" id="${checkboxId}" data-major="${majorId}" data-grade="${gradeId}" class="grade-checkbox focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                            <label for="${checkboxId}" class="ml-2 block text-sm text-gray-900 dark:text-gray-100">
+                            <input type="checkbox" id="grade_${majorId}_${gradeId}" data-major="${majorId}" data-grade="${gradeId}" class="grade-checkbox focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" ${checked}>
+                            <label for="grade_${majorId}_${gradeId}" class="ml-2 block text-sm text-gray-900 dark:text-gray-100">
                                 {{ __('Grade') }} ${gradeId}
                             </label>
                         </div>
                     `;
                 });
                 gradesContainer.innerHTML = html;
+
+                document.querySelectorAll('.grade-checkbox').forEach(cb => {
+                    cb.addEventListener('change', function() {
+                        const major = parseInt(this.dataset.major);
+                        const grade = parseInt(this.dataset.grade);
+                        selectedCombinations[major][grade] = this.checked;
+                    });
+                });
             }
 
             majorCheckboxes.forEach(checkbox => {
@@ -123,15 +137,7 @@
             });
 
             document.getElementById('subjectForm').addEventListener('submit', function(e) {
-                const checkedGrades = document.querySelectorAll('.grade-checkbox:checked');
-                const combinations = [];
-                checkedGrades.forEach(cb => {
-                    combinations.push({
-                        major_id: parseInt(cb.dataset.major),
-                        grade_id: parseInt(cb.dataset.grade)
-                    });
-                });
-                combinationsInput.value = JSON.stringify(combinations);
+                combinationsInput.value = JSON.stringify(selectedCombinations);
             });
         });
     </script>

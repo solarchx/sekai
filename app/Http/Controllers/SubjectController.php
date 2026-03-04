@@ -36,7 +36,14 @@ class SubjectController extends Controller
     {
         $majors = Major::all();
         $grades = Grade::all();
-        return view('subjects.create', compact('majors', 'grades'));
+        $combinations = [];
+        foreach ($majors as $major) {
+            $combinations[$major->id] = [];
+            foreach ($grades as $grade) {
+                $combinations[$major->id][$grade->id] = false;
+            }
+        }
+        return view('subjects.create', compact('majors', 'grades', 'combinations'));
     }
 
     public function store(Request $request)
@@ -44,25 +51,28 @@ class SubjectController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:subjects,name',
-                'combinations' => 'nullable|array',
-                'combinations.*.major_id' => 'required|exists:majors,id',
-                'combinations.*.grade_id' => 'required|exists:grades,id',
+                'combinations' => 'required|json',
             ], [
                 'name.required' => 'Subject name is required.',
                 'name.unique' => 'This subject name already exists.',
+                'combinations.required' => 'At least one major-grade combination must be selected.',
             ]);
+
+            $combinations = json_decode($validated['combinations'], true);
 
             DB::beginTransaction();
 
             $subject = Subject::create(['name' => $validated['name']]);
 
-            if (!empty($validated['combinations'])) {
-                foreach ($validated['combinations'] as $combo) {
-                    SubjectAvailability::create([
-                        'subject_id' => $subject->id,
-                        'major_id' => $combo['major_id'],
-                        'grade_id' => $combo['grade_id'],
-                    ]);
+            foreach ($combinations as $majorId => $grades) {
+                foreach ($grades as $gradeId => $selected) {
+                    if ($selected) {
+                        SubjectAvailability::create([
+                            'subject_id' => $subject->id,
+                            'major_id' => $majorId,
+                            'grade_id' => $gradeId,
+                        ]);
+                    }
                 }
             }
 
@@ -83,12 +93,23 @@ class SubjectController extends Controller
         $majors = Major::all();
         $grades = Grade::all();
         
-        $existingCombinations = $subject->availabilities()
+        $existing = $subject->availabilities()
             ->get(['major_id', 'grade_id'])
-            ->map(fn($item) => ['major_id' => $item->major_id, 'grade_id' => $item->grade_id])
+            ->groupBy('major_id')
+            ->map(function ($items) {
+                return $items->pluck('grade_id')->mapWithKeys(fn($id) => [$id => true])->toArray();
+            })
             ->toArray();
 
-        return view('subjects.edit', compact('subject', 'majors', 'grades', 'existingCombinations'));
+        $combinations = [];
+        foreach ($majors as $major) {
+            $combinations[$major->id] = [];
+            foreach ($grades as $grade) {
+                $combinations[$major->id][$grade->id] = $existing[$major->id][$grade->id] ?? false;
+            }
+        }
+
+        return view('subjects.edit', compact('subject', 'majors', 'grades', 'combinations'));
     }
 
     public function update(Request $request, Subject $subject)
@@ -96,13 +117,14 @@ class SubjectController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:subjects,name,' . $subject->id,
-                'combinations' => 'nullable|array',
-                'combinations.*.major_id' => 'required|exists:majors,id',
-                'combinations.*.grade_id' => 'required|exists:grades,id',
+                'combinations' => 'required|json',
             ], [
                 'name.required' => 'Subject name is required.',
                 'name.unique' => 'This subject name already exists.',
+                'combinations.required' => 'At least one major-grade combination must be selected.',
             ]);
+
+            $combinations = json_decode($validated['combinations'], true);
 
             DB::beginTransaction();
 
@@ -110,13 +132,15 @@ class SubjectController extends Controller
 
             $subject->availabilities()->delete();
 
-            if (!empty($validated['combinations'])) {
-                foreach ($validated['combinations'] as $combo) {
-                    SubjectAvailability::create([
-                        'subject_id' => $subject->id,
-                        'major_id' => $combo['major_id'],
-                        'grade_id' => $combo['grade_id'],
-                    ]);
+            foreach ($combinations as $majorId => $grades) {
+                foreach ($grades as $gradeId => $selected) {
+                    if ($selected) {
+                        SubjectAvailability::create([
+                            'subject_id' => $subject->id,
+                            'major_id' => $majorId,
+                            'grade_id' => $gradeId,
+                        ]);
+                    }
                 }
             }
 

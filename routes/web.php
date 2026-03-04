@@ -16,10 +16,13 @@ use App\Http\Controllers\ActivityReportController;
 use App\Http\Controllers\ScoreDistributionController;
 use App\Http\Controllers\StudentScoreController;
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\LanguageController;
 use Illuminate\Support\Facades\Route;
 
 
 Route::get('/',  function () {return view('auth/login');})->middleware('guest');
+
+Route::get('/language/{language}', [LanguageController::class, 'switchLanguage'])->name('language.switch');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -33,22 +36,22 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'vp'])->group(function () {
     Route::resource('users', UserController::class);
     Route::post('/users/{user}/restore', [UserController::class, 'restore'])->name('users.restore');
-    
+
     Route::resource('majors', MajorController::class);
     Route::post('/majors/{major}/restore', [MajorController::class, 'restore'])->name('majors.restore');
-    
+
     Route::resource('classes', SchoolClassController::class);
     Route::post('/classes/{class}/restore', [SchoolClassController::class, 'restore'])->name('classes.restore');
-    
+
     Route::resource('subjects', SubjectController::class);
     Route::post('/subjects/{subject}/restore', [SubjectController::class, 'restore'])->name('subjects.restore');
-    
+
     Route::resource('grades', GradeController::class);
     Route::post('/grades/{grade}/restore', [GradeController::class, 'restore'])->name('grades.restore');
-    
+
     Route::resource('semesters', AcademicSemesterController::class);
     Route::post('/semesters/{semester}/restore', [AcademicSemesterController::class, 'restore'])->name('semesters.restore');
-    
+
     Route::resource('periods', LessonPeriodController::class);
     Route::post('/periods/{period}/restore', [LessonPeriodController::class, 'restore'])->name('periods.restore');
 
@@ -56,7 +59,7 @@ Route::middleware(['auth', 'vp'])->group(function () {
     Route::post('/activities/{activity}/restore', [ActivityController::class, 'restore'])->name('activities.restore');
 });
 
-    
+
 
 
 Route::middleware(['auth', 'teacher'])->group(function () {

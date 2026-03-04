@@ -105,8 +105,7 @@
 
                     <div class="mt-6 flex justify-between items-center">
                         <div class="text-sm text-gray-600 dark:text-gray-400">
-                            Showing {{ $grades->firstItem() }} to {{ $grades->lastItem() }} of {{ $grades->total() }}
-                            results
+                            {{ __('Showing') }} {{ $grades->firstItem() }} {{ __('to') }} {{ $grades->lastItem() }} {{ __('of') }} {{ $grades->total() }} {{ __('results') }}
                         </div>
                         <div class="flex gap-2">
                             {{ $grades->links() }}

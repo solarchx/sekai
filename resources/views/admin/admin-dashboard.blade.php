@@ -13,7 +13,7 @@
                     <p class="mt-2">{{ __("You're logged in as Administrator. Manage the entire system.") }}</p>
                 </div>
 
-                <div class="mb-6 flex gap-4">
+                <div class="pt-6 px-6 mb-6 flex gap-4">
                     <a href="{{ route('dashboard.export') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
                         <i class="bi bi-download mr-2"></i>{{ __('Export Data') }}
                     </a>
@@ -29,7 +29,7 @@
                     </form>
                 </div>
 
-                <div class="p-6">
+                <div class="pb-6 px-6">
                     <h4 class="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">{{ __('Admin Panel') }}</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div
@@ -82,7 +82,7 @@
             </div>
         </div>
     </div>
-    <div class="pt-6">
+    <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg mt-6">
                 <div class="p-6" style="background: linear-gradient(to right, #3b82f6, #8b5cf6); color: white;">
@@ -112,7 +112,9 @@
                     </div>
                 </div>
             </div>
+            <div class="py-6">
             @include('partials.schedule-table')
+            </div>
         </div>
     </div>
 </x-app-layout>

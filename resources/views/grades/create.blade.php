@@ -28,9 +28,9 @@
 
                         <div class="flex justify-end gap-4">
                             <a href="{{ route('grades.index') }}"
-                                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Cancel</a>
+                                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">{{ __('Cancel') }}</a>
                             <button type="submit"
-                                class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Create</button>
+                                class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">{{ __('Create') }}</button>
                         </div>
                     </form>
                 </div>

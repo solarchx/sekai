@@ -16,8 +16,7 @@
                         @method('PUT')
 
                         <div class="mb-6">
-                            <label for="id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Grade
-                                ID</label>
+                            <label for="id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Grade ID') }}</label>
                             <input type="number" name="id" id="id" value="{{ old('id', $grade->id) }}"
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('id') is-invalid @enderror"
                                 required>
@@ -28,9 +27,9 @@
 
                         <div class="flex justify-end gap-4">
                             <a href="{{ route('grades.index') }}"
-                                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Cancel</a>
+                                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">{{ __('Cancel') }}</a>
                             <button type="submit"
-                                class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">Update</button>
+                                class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">{{ __('Update') }}</button>
                         </div>
                     </form>
                 </div>

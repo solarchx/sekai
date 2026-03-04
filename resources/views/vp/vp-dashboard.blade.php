@@ -15,21 +15,20 @@
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                        <div
-                            class="bg-blue-50 dark:bg-blue-900 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                            <div class="flex items-center">
-                                <div class="p-3 bg-blue-500 rounded-full">
-                                    <i class="bi bi-graph-up text-2xl text-white"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <h5 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                        {{ __('Academic Reports') }}</h5>
-                                    <p class="text-gray-600 dark:text-gray-400">{{ __('View performance analytics') }}
-                                    </p>
-                                    <a href="#"
-                                        class="mt-2 inline-block text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">{{ __('View Reports →') }}</a>
-                                </div>
-                            </div>
+                        <div class="mb-6 flex gap-4">
+                            <a href="{{ route('dashboard.export') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
+                                <i class="bi bi-download mr-2"></i>{{ __('Export Data') }}
+                            </a>
+                            <a href="{{ route('dashboard.template') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
+                                <i class="bi bi-file-earmark-spreadsheet mr-2"></i>{{ __('Download Template') }}
+                            </a>
+                            <button onclick="document.getElementById('import-file').click()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
+                                <i class="bi bi-upload mr-2"></i>{{ __('Import Data') }}
+                            </button>
+                            <form id="import-form" method="POST" action="{{ route('dashboard.import') }}" enctype="multipart/form-data" class="hidden">
+                                @csrf
+                                <input type="file" name="file" id="import-file" accept=".xlsx,.xls,.csv" onchange="document.getElementById('import-form').submit()">
+                            </form>
                         </div>
 
 

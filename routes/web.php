@@ -17,6 +17,7 @@ use App\Http\Controllers\ScoreDistributionController;
 use App\Http\Controllers\StudentScoreController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\DataTransferController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -57,10 +58,11 @@ Route::middleware(['auth', 'vp'])->group(function () {
 
     Route::resource('activities', ActivityController::class);
     Route::post('/activities/{activity}/restore', [ActivityController::class, 'restore'])->name('activities.restore');
+
+    Route::get('/dashboard/export', [DataTransferController::class, 'export'])->name('dashboard.export');
+    Route::get('/dashboard/template', [DataTransferController::class, 'downloadTemplate'])->name('dashboard.template');
+    Route::post('/dashboard/import', [DataTransferController::class, 'import'])->name('dashboard.import');
 });
-
-
-
 
 Route::middleware(['auth', 'teacher'])->group(function () {
     Route::resource('activity-forms', ActivityFormController::class);

@@ -12,6 +12,23 @@
                     <h3 class="text-2xl font-bold">{{ __("Welcome back, :name!", ['name' => auth()->user()->name]) }}</h3>
                     <p class="mt-2">{{ __("You're logged in as Administrator. Manage the entire system.") }}</p>
                 </div>
+
+                <div class="mb-6 flex gap-4">
+                    <a href="{{ route('dashboard.export') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
+                        <i class="bi bi-download mr-2"></i>{{ __('Export Data') }}
+                    </a>
+                    <a href="{{ route('dashboard.template') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
+                        <i class="bi bi-file-earmark-spreadsheet mr-2"></i>{{ __('Download Template') }}
+                    </a>
+                    <button onclick="document.getElementById('import-file').click()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
+                        <i class="bi bi-upload mr-2"></i>{{ __('Import Data') }}
+                    </button>
+                    <form id="import-form" method="POST" action="{{ route('dashboard.import') }}" enctype="multipart/form-data" class="hidden">
+                        @csrf
+                        <input type="file" name="file" id="import-file" accept=".xlsx,.xls,.csv" onchange="document.getElementById('import-form').submit()">
+                    </form>
+                </div>
+
                 <div class="p-6">
                     <h4 class="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">{{ __('Admin Panel') }}</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

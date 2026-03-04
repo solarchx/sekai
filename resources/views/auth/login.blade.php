@@ -21,18 +21,18 @@
 
 
                 <div class="mb-6">
-                    <x-input-label for="email" :value="__('Email Address')"
+                    <x-input-label for="identifier" :value="__('Identifier')"
                         class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2" />
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="bi bi-envelope text-gray-400 dark:text-gray-500"></i>
+                            <i class="bi bi-person text-gray-400 dark:text-gray-500"></i>
                         </div>
-                        <x-text-input id="email"
+                        <x-text-input id="identifier"
                             class="block w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition"
-                            type="email" name="email" :value="old('email')" required autofocus autocomplete="username"
-                            placeholder="your@email.com" />
+                            type="text" name="identifier" :value="old('identifier')" required autofocus autocomplete="username"
+                            placeholder="{{ __('Enter your identifier') }}" />
                     </div>
-                    <x-input-error :messages="$errors->get('email')" class="mt-2 text-sm" />
+                    <x-input-error :messages="$errors->get('identifier')" class="mt-2 text-sm" />
                 </div>
 
 

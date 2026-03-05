@@ -41,17 +41,31 @@ class DataTransferController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv',
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:40960',
         ]);
+
+        $file = $request->file('file');
+
+        if (!$file->isValid()) {
+            return back()->withErrors('File upload failed: ' . $file->getErrorMessage());
+        }
 
         try {
             DB::beginTransaction();
 
-            Excel::import(new DatabaseImport, $request->file('file'));
+            Excel::import(new DatabaseImport, $file);
 
             DB::commit();
 
             return redirect()->back()->with('success', 'Data imported successfully.');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            DB::rollBack();
+            $failures = $e->failures();
+            $errorMessages = [];
+            foreach ($failures as $failure) {
+                $errorMessages[] = "Row {$failure->row()}: " . implode(', ', $failure->errors());
+            }
+            return redirect()->back()->withErrors('Import validation failed: ' . implode('; ', $errorMessages));
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->withErrors('Import failed: ' . $e->getMessage());

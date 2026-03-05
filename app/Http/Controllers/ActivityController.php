@@ -311,6 +311,27 @@ class ActivityController extends Controller
         return redirect()->route('activities.index')->with('success', 'Activity deleted.');
     }
 
+    public function forceDestroy(Activity $activity)
+    {
+        try {
+            if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {
+                return redirect()->back()->withErrors('Unauthorized action.');
+            }
+
+            DB::beginTransaction();
+
+            $activity->forceDelete();
+
+            DB::commit();
+
+            return redirect()->route('activities.index')->with('success', 'Activity permanently deleted. All related forms, presences, reports, and scores have also been deleted.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error force deleting activity: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error deleting activity: ' . $e->getMessage());
+        }
+    }
+
     public function restore(Activity $activity)
     {
         if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {

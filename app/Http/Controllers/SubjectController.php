@@ -171,6 +171,26 @@ class SubjectController extends Controller
         }
     }
 
+    public function forceDestroy(Subject $subject)
+    {
+        try {
+            if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {
+                return redirect()->back()->withErrors('Unauthorized action.');
+            }
+
+            DB::beginTransaction();
+            $subject->forceDelete();
+
+            DB::commit();
+
+            return redirect()->route('subjects.index')->with('success', 'Subject permanently deleted. All related activities and availabilities have also been deleted.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error force deleting subject: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error deleting subject: ' . $e->getMessage());
+        }
+    }
+
     public function restore(Subject $subject)
     {
         try {

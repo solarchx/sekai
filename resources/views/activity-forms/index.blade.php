@@ -58,75 +58,60 @@
                         <table class="min-w-full bg-white dark:bg-gray-800">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        ID</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Activity</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Date</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Status</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Actions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Activity</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 @forelse($forms as $form)
-                                    <tr
-                                        class="hover:bg-gray-50 dark:hover:bg-gray-700 {{ $form->deleted_at ? 'bg-red-50 dark:bg-red-900' : '' }}">
-                                        <td
-                                            class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                            {{ $form->id }}</td>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 {{ $form->deleted_at ? 'bg-red-50 dark:bg-red-900' : '' }}">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{{ $form->id }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                             {{ $form->activity->subject->name ?? __('N/A') }} -
                                             {{ $form->activity->class->name ?? __('N/A') }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $form->activity_date }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $form->activity_date }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if($form->deleted_at)
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">DELETED</span>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">{{ __('DELETED') }}</span>
                                             @else
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">ACTIVE</span>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{ __('ACTIVE') }}</span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                             @if($form->deleted_at)
-                                                <form action="{{ route('activity-forms.restore', $form) }}" method="POST"
-                                                    class="inline">
+                                                {{-- Restore button --}}
+                                                <form action="{{ route('activity-forms.restore', $form) }}" method="POST" class="inline">
                                                     @csrf
-                                                    <button type="submit"
-                                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
-                                                        title="Restore">
-                                                        <i class="bi bi-arrow-counterclockwise"></i> Restore
+                                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors" title="Restore">
+                                                        <i class="bi bi-arrow-counterclockwise"></i> {{ __('Restore') }}
+                                                    </button>
+                                                </form>
+                                                {{-- Permanent delete button --}}
+                                                <form action="{{ route('activity-forms.force-destroy', $form) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to permanently delete this form? All associated presences and reports will also be deleted. This action cannot be undone.') }}');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded-lg shadow-md transition-colors" title="Permanently delete this form">
+                                                        <i class="bi bi-trash"></i> {{ __('Delete Permanently') }}
                                                     </button>
                                                 </form>
                                             @else
-                                                <a href="{{ route('activity-forms.show', $form) }}"
-                                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs inline-block">View</a>
-                                                <a href="{{ route('activity-forms.edit', $form) }}"
-                                                    class="bg-violet-600 hover:bg-violet-700 text-white px-3 py-1 rounded-lg text-xs inline-block">Edit</a>
-                                                <form action="{{ route('activity-forms.destroy', $form) }}" method="POST"
-                                                    class="inline" onsubmit="return confirm('{{ __('Are you sure?') }}');">
+                                                <a href="{{ route('activity-forms.show', $form) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs inline-block">{{ __('View') }}</a>
+                                                <a href="{{ route('activity-forms.edit', $form) }}" class="bg-violet-600 hover:bg-violet-700 text-white px-3 py-1 rounded-lg text-xs inline-block">{{ __('Edit') }}</a>
+                                                <form action="{{ route('activity-forms.destroy', $form) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure?') }}');">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit"
-                                                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs">Delete</button>
+                                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs">{{ __('Delete') }}</button>
                                                 </form>
                                             @endif
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No
-                                            forms found</td>
+                                        <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">{{ __('No forms found') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -135,8 +120,7 @@
 
                     <div class="mt-6 flex justify-between items-center">
                         <div class="text-sm text-gray-600 dark:text-gray-400">
-                            Showing {{ $forms->firstItem() }} to {{ $forms->lastItem() }} of {{ $forms->total() }}
-                            results
+                            {{ __('Showing') }} {{ $forms->firstItem() }} {{ __('to') }} {{ $forms->lastItem() }} {{ __('of') }} {{ $forms->total() }} {{ __('results') }}
                         </div>
                         <div class="flex gap-2">
                             {{ $forms->links() }}

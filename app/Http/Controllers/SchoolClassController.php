@@ -215,6 +215,27 @@ class SchoolClassController extends Controller
         }
     }
 
+    public function forceDestroy(SchoolClass $class)
+    {
+        try {
+            if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {
+                return redirect()->back()->withErrors('Unauthorized action.');
+            }
+
+            DB::beginTransaction();
+
+            User::where('class_id', $class->id)->update(['class_id' => null]);
+            $class->forceDelete();
+
+            DB::commit();
+
+            return redirect()->route('classes.index')->with('success', 'Class permanently deleted. All related activities, forms, and presences have also been deleted.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error force deleting class: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error deleting class: ' . $e->getMessage());
+        }
+    }
     
     public function restore(SchoolClass $class)
     {

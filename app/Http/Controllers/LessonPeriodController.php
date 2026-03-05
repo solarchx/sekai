@@ -252,6 +252,35 @@ class LessonPeriodController extends Controller
         }
     }
 
+    public function forceDestroy(LessonPeriod $period)
+    {
+        try {
+            if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {
+                return redirect()->back()->withErrors('Unauthorized action.');
+            }
+
+            if ($period->parent_id !== null) {
+                return redirect()->route('periods.index')->withErrors('You can only delete parent periods directly.');
+            }
+
+            DB::beginTransaction();
+
+            $period->forceDelete();
+
+            DB::commit();
+
+            return redirect()->route('periods.index', [
+                'semester_id' => $period->semester_id,
+                'major_id'    => $period->major_id,
+                'grade_id'    => $period->grade_id,
+            ])->with('success', 'Lesson period permanently deleted. All related child periods and activities have also been deleted.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error force deleting period: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error deleting period: ' . $e->getMessage());
+        }
+    }
+
     public function restore(LessonPeriod $period)
     {
         if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {

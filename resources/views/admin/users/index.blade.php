@@ -110,18 +110,27 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                             @if($user->deleted_at)
+                                                {{-- Restore button --}}
                                                 <form action="{{ route('users.restore', $user) }}" method="POST" class="inline">
                                                     @csrf
-                                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors" title="{{ __('Restore this user') }}">
+                                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors" title="{{ __('Restore this user') }}">
                                                         <i class="bi bi-arrow-counterclockwise"></i> {{ __('Restore') }}
                                                     </button>
                                                 </form>
+                                                {{-- Permanent delete button --}}
+                                                <form action="{{ route('users.force-destroy', $user) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to permanently delete this user? This action cannot be undone.') }}');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded-lg shadow-md transition-colors" title="{{ __('Permanently delete this user') }}">
+                                                        <i class="bi bi-trash"></i> {{ __('Delete Permanently') }}
+                                                    </button>
+                                                </form>
                                             @else
-                                                <button onclick="window.location.href='{{ route('users.edit', $user) }}'" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors bi bi-pencil-square" title="{{ __('Edit this user') }}"></button>
+                                                <button onclick="window.location.href='{{ route('users.edit', $user) }}'" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors bi bi-pencil-square" title="{{ __('Edit this user') }}"></button>
                                                 <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors bi bi-trash" title="{{ __('Delete this user') }}" onclick="return confirm('{{ __('Are you sure?') }}');"></button>
+                                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors bi bi-trash" title="{{ __('Soft delete this user') }}" onclick="return confirm('{{ __('Are you sure?') }}');"></button>
                                                 </form>
                                             @endif
                                         </td>

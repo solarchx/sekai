@@ -223,6 +223,26 @@ class ActivityFormController extends Controller
         }
     }
 
+    public function forceDestroy(ActivityForm $activityForm)
+    {
+        try {
+            if (!in_array(auth()->user()->role, ['TEACHER', 'VP', 'ADMIN'])) {
+                return redirect()->back()->withErrors('Unauthorized action.');
+            }
+
+            DB::beginTransaction();
+            $activityForm->forceDelete();
+
+            DB::commit();
+
+            return redirect()->route('activity-forms.index')->with('success', 'Activity form permanently deleted. All related presences and reports have also been deleted.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error force deleting activity form: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error deleting form: ' . $e->getMessage());
+        }
+    }
+
     public function restore(ActivityForm $activityForm)
     {
         try {

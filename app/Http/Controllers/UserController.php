@@ -215,6 +215,26 @@ class UserController extends Controller
         }
     }
 
+    public function forceDestroy(User $user)
+    {
+        try {
+            if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {
+                return redirect()->back()->withErrors('Unauthorized action.');
+            }
+
+            if ($user->role === 'ADMIN' && User::where('role', 'ADMIN')->count() <= 1) {
+                return redirect()->route('users.index')->withErrors('Cannot delete the last admin user.');
+            }
+
+            $user->forceDelete();
+
+            return redirect()->route('users.index')->with('success', 'User permanently deleted.');
+        } catch (\Exception $e) {
+            Log::error('Error force deleting user: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error deleting user: ' . $e->getMessage());
+        }
+    }
+
     public function restore(User $user)
     {
         try {

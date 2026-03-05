@@ -110,6 +110,27 @@ class GradeController extends Controller
         }
     }
 
+    public function forceDestroy(Grade $grade)
+    {
+        try {
+            if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {
+                return redirect()->back()->withErrors('Unauthorized action.');
+            }
+
+            DB::beginTransaction();
+
+            $grade->forceDelete();
+
+            DB::commit();
+
+            return redirect()->route('grades.index')->with('success', 'Grade permanently deleted. All related classes, activities, and other records have also been deleted.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error force deleting grade: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error deleting grade: ' . $e->getMessage());
+        }
+    }
+
     public function restore(Grade $grade)
     {
         try {

@@ -16,7 +16,6 @@
                 </div>
 
                 <div class="p-6">
-                    {{-- Soft delete filter --}}
                     <x-soft-delete-filter />
 
                     {{-- Major filter --}}
@@ -97,26 +96,35 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                             @if($activity->deleted_at)
+                                                {{-- Restore button --}}
                                                 <form action="{{ route('activities.restore', $activity) }}" method="POST" class="inline">
                                                     @csrf
-                                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors" title="{{ __('Restore') }}">
+                                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors" title="{{ __('Restore') }}">
                                                         <i class="bi bi-arrow-counterclockwise"></i> {{ __('Restore') }}
+                                                    </button>
+                                                </form>
+                                                {{-- Permanent delete button --}}
+                                                <form action="{{ route('activities.force-destroy', $activity) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to permanently delete this activity? All related forms, presences, reports, and scores will also be deleted. This action cannot be undone.') }}');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded-lg shadow-md transition-colors" title="Permanently delete this activity">
+                                                        <i class="bi bi-trash"></i> {{ __('Delete Permanently') }}
                                                     </button>
                                                 </form>
                                             @else
                                                 <button onclick="window.location.href='{{ route('score-distributions.index', $activity) }}'"
-                                                    class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
+                                                    class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors"
                                                     title="Manage Score Distributions">Score Dist.</button>
                                                 <button onclick="window.location.href='{{ route('student-scores.index', $activity) }}'"
-                                                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
+                                                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors"
                                                     title="Manage Student Scores">Student Scores</button>
                                                 <button onclick="window.location.href='{{ route('activities.edit', $activity) }}'"
-                                                    class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
+                                                    class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors"
                                                     title="Edit">Edit</button>
                                                 <form action="{{ route('activities.destroy', $activity) }}" method="POST" class="inline">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
+                                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors"
                                                         title="Delete" onclick="return confirm('{{ __('Are you sure?') }}')">{{ __('Delete') }}</button>
                                                 </form>
                                             @endif

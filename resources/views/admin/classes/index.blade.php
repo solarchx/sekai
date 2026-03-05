@@ -34,96 +34,58 @@
                         <table class="min-w-full bg-white dark:bg-gray-800">
                             <thead class="bg-gray-200 dark:bg-gray-700">
                                 <tr>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        {{ __('ID') }}
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        {{ __('Name') }}
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        {{ __('Major') }}
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        {{ __('Grade') }}
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        {{ __('Capacity') }}
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        {{ __('Status') }}
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        {{ __('Actions') }}
-                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ __('ID') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ __('Name') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ __('Major') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ __('Grade') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ __('Capacity') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ __('Status') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 @foreach($classes as $class)
-                                    <tr
-                                        class="hover:bg-gray-100 dark:hover:bg-gray-600 {{ $class->deleted_at ? 'bg-red-50 dark:bg-red-900' : 'odd:bg-white dark:odd:bg-gray-800 even:bg-gray-200 dark:even:bg-gray-700' }}">
-                                        <td
-                                            class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                            {{ $class->id }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $class->name }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $class->major->name ?? __('N/A') }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $class->grade->id ?? __('N/A') }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ $class->capacity }}
-                                        </td>
+                                    <tr class="hover:bg-gray-100 dark:hover:bg-gray-600 {{ $class->deleted_at ? 'bg-red-50 dark:bg-red-900' : 'odd:bg-white dark:odd:bg-gray-800 even:bg-gray-200 dark:even:bg-gray-700' }}">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{{ $class->id }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $class->name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $class->major->name ?? __('N/A') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $class->grade->id ?? __('N/A') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $class->capacity }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if($class->deleted_at)
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">{{ __('DELETED') }}</span>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">{{ __('DELETED') }}</span>
                                             @else
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{ __('ACTIVE') }}</span>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{ __('ACTIVE') }}</span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                             @if($class->deleted_at)
-                                                <form action="{{ route('classes.restore', $class) }}" method="POST"
-                                                    class="inline">
+                                                {{-- Restore button --}}
+                                                <form action="{{ route('classes.restore', $class) }}" method="POST" class="inline">
                                                     @csrf
-                                                    <button type="submit"
-                                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
-                                                        title="{{ __('Restore') }}">
+                                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors" title="{{ __('Restore') }}">
                                                         <i class="bi bi-arrow-counterclockwise"></i> {{ __('Restore') }}
                                                     </button>
                                                 </form>
-                                            @else
-
-                                                <a href="{{ route('classes.student-order', $class) }}"
-                                                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors inline-flex items-center"
-                                                    title="Manage Student Order">
-                                                    <i class="bi bi-sort-numeric-up"></i> Order
-                                                </a>
-
-                                                <a href="{{ route('classes.edit', $class) }}"
-                                                    class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors inline-flex items-center"
-                                                    title="Edit">
-                                                    <i class="bi bi-pencil-square"></i> Edit
-                                                </a>
-                                                <form action="{{ route('classes.destroy', $class) }}" method="POST"
-                                                    class="inline">
+                                                {{-- Permanent delete button with warning --}}
+                                                <form action="{{ route('classes.force-destroy', $class) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to permanently delete this class? All associated activities, forms, presences, and reports will also be permanently deleted. This action cannot be undone.') }}');">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit"
-                                                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
-                                                        title="Delete" onclick="return confirm('{{ __('Are you sure?') }}')">
+                                                    <button type="submit" class="bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded-lg shadow-md transition-colors" title="{{ __('Permanently delete this class') }}">
+                                                        <i class="bi bi-trash"></i> {{ __('Delete Permanently') }}
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <a href="{{ route('classes.student-order', $class) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors inline-flex items-center" title="Manage Student Order">
+                                                    <i class="bi bi-sort-numeric-up"></i> Order
+                                                </a>
+                                                <a href="{{ route('classes.edit', $class) }}" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors inline-flex items-center" title="Edit">
+                                                    <i class="bi bi-pencil-square"></i> Edit
+                                                </a>
+                                                <form action="{{ route('classes.destroy', $class) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors" title="Delete" onclick="return confirm('{{ __('Are you sure?') }}')">
                                                         <i class="bi bi-trash"></i> Delete
                                                     </button>
                                                 </form>
@@ -136,8 +98,7 @@
                     </div>
                     <div class="mt-6 flex justify-between items-center">
                         <div class="text-sm text-gray-600 dark:text-gray-400">
-                            Showing {{ $classes->firstItem() }} to {{ $classes->lastItem() }} of {{ $classes->total() }}
-                            results
+                            Showing {{ $classes->firstItem() }} to {{ $classes->lastItem() }} of {{ $classes->total() }} results
                         </div>
                         <div class="flex gap-2">
                             {{ $classes->links() }}

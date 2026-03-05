@@ -63,25 +63,37 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                             @if($subject->deleted_at)
+                                                {{-- Restore button --}}
                                                 <form action="{{ route('subjects.restore', $subject) }}" method="POST"
                                                     class="inline">
                                                     @csrf
                                                     <button type="submit"
-                                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
+                                                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors"
                                                         title="Restore">
                                                         <i class="bi bi-arrow-counterclockwise"></i> {{ __('Restore') }}
                                                     </button>
                                                 </form>
+                                                {{-- Permanent delete button --}}
+                                                <form action="{{ route('subjects.force-destroy', $subject) }}" method="POST"
+                                                    class="inline" onsubmit="return confirm('{{ __('Are you sure you want to permanently delete this subject? All associated activities and availabilities will also be deleted. This action cannot be undone.') }}');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                        class="bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded-lg shadow-md transition-colors"
+                                                        title="Permanently delete this subject">
+                                                        <i class="bi bi-trash"></i> {{ __('Delete Permanently') }}
+                                                    </button>
+                                                </form>
                                             @else
                                                 <button onclick="window.location.href='{{ route('subjects.edit', $subject) }}'"
-                                                    class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
+                                                    class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors"
                                                     title="{{ __('Edit') }}">{{ __('Edit') }}</button>
                                                 <form action="{{ route('subjects.destroy', $subject) }}" method="POST"
                                                     class="inline">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
-                                                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
+                                                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors"
                                                         title="{{ __('Delete') }}"
                                                         onclick="return confirm('{{ __('Are you sure?') }}')">{{ __('Delete') }}</button>
                                                 </form>
@@ -97,7 +109,6 @@
                             </tbody>
                         </table>
                     </div>
-
 
                     <div class="mt-6 flex justify-between items-center">
                         <div class="text-sm text-gray-600 dark:text-gray-400">

@@ -4,7 +4,6 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Major Management') }}
             </h2>
-
         </div>
     </x-slot>
 
@@ -25,7 +24,7 @@
                                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors">
                                 <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            {{ $major->description ?? __('N/A') }}
+                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
                                 {{ __('Add Major') }}
                             </a>
@@ -75,25 +74,37 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                             @if($major->deleted_at)
+                                                {{-- Restore button --}}
                                                 <form action="{{ route('majors.restore', $major) }}" method="POST"
                                                     class="inline">
                                                     @csrf
                                                     <button type="submit"
-                                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
+                                                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors"
                                                         title="{{ __('Restore') }}">
                                                         <i class="bi bi-arrow-counterclockwise"></i> {{ __('Restore') }}
                                                     </button>
                                                 </form>
+                                                {{-- Permanent delete button --}}
+                                                <form action="{{ route('majors.force-destroy', $major) }}" method="POST"
+                                                    class="inline" onsubmit="return confirm('{{ __('Are you sure you want to permanently delete this major? This action cannot be undone.') }}');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                        class="bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded-lg shadow-md transition-colors"
+                                                        title="{{ __('Permanently delete this major') }}">
+                                                        <i class="bi bi-trash"></i> {{ __('Delete Permanently') }}
+                                                    </button>
+                                                </form>
                                             @else
                                                 <button onclick="window.location.href='{{ route('majors.edit', $major) }}'"
-                                                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors bi bi-pencil-square"
+                                                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors bi bi-pencil-square"
                                                     title="Edit"></button>
                                                 <form action="{{ route('majors.destroy', $major) }}" method="POST"
                                                     class="inline">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
-                                                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors bi bi-trash"
+                                                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors bi bi-trash"
                                                         title="Delete" onclick="return confirm('{{ __('Are you sure?') }}')"></button>
                                                 </form>
                                             @endif

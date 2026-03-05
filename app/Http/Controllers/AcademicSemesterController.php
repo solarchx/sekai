@@ -135,6 +135,27 @@ class AcademicSemesterController extends Controller
         }
     }
 
+    public function forceDestroy(AcademicSemester $semester)
+    {
+        try {
+            if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {
+                return redirect()->back()->withErrors('Unauthorized action.');
+            }
+
+            DB::beginTransaction();
+
+            $semester->forceDelete();
+
+            DB::commit();
+
+            return redirect()->route('semesters.index')->with('success', 'Semester permanently deleted. All related lesson periods and activities have also been deleted.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error force deleting semester: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error deleting semester: ' . $e->getMessage());
+        }
+    }
+
     public function restore(AcademicSemester $semester)
     {
         try {

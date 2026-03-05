@@ -114,6 +114,21 @@ class MajorController extends Controller
         }
     }
 
+    public function forceDestroy(Major $major)
+    {
+        try {
+            if (!in_array(auth()->user()->role, ['VP', 'ADMIN'])) {
+                return redirect()->back()->withErrors('Unauthorized action.');
+            }
+
+            $major->forceDelete();
+
+            return redirect()->route('majors.index')->with('success', 'Major permanently deleted.');
+        } catch (\Exception $e) {
+            Log::error('Error force deleting major: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Error deleting major: ' . $e->getMessage());
+        }
+    }
     
     public function restore(Major $major)
     {

@@ -21,10 +21,13 @@
 
                         <div class="mb-6">
                             <label for="time_begin" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {{ __('Start Time') }}
+                                {{ __('Start Time (HH:MM)') }}
                             </label>
-                            <input type="time" name="time_begin" id="time_begin"
+                            <input type="text" name="time_begin" id="time_begin"
                                 value="{{ old('time_begin', substr($period->time_begin, 0, 5)) }}"
+                                placeholder="14:30"
+                                pattern="^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$"
+                                title="Please enter time in 24-hour format HH:MM (e.g., 08:00, 14:30)"
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('time_begin') is-invalid @enderror"
                                 required>
                             @error('time_begin')
@@ -34,10 +37,13 @@
 
                         <div class="mb-6">
                             <label for="time_end" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {{ __('End Time') }}
+                                {{ __('End Time (HH:MM)') }}
                             </label>
-                            <input type="time" name="time_end" id="time_end"
+                            <input type="text" name="time_end" id="time_end"
                                 value="{{ old('time_end', substr($period->time_end, 0, 5)) }}"
+                                placeholder="15:45"
+                                pattern="^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$"
+                                title="Please enter time in 24-hour format HH:MM (e.g., 08:00, 14:30)"
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white @error('time_end') is-invalid @enderror"
                                 required>
                             @error('time_end')
